@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bible-bot-v1';
+const CACHE_NAME = 'bible-bot-v2';
 const APP_SHELL = [
   './',
   'index.html',
@@ -13,6 +13,7 @@ const APP_SHELL = [
   'data/comfort-topics.json',
   'data/growth-themes.json',
   'data/geo-regions.json',
+  'data/timeline-eras.json',
   'icons/icon-192.png',
   'icons/icon-512.png',
 ];

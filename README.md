@@ -54,6 +54,14 @@ tablet, or desktop.
   location (Jerusalem, Nineveh, Mount Sinai, Ephesus, Athens...) to see the
   verses tied to that ground.
 
+### History Timeline
+- A vertical timeline from the Patriarchs (c. 2000 BC) through the early
+  church (c. 100 AD) — ten eras, each tagged with the surrounding
+  civilization (Egypt, Assyria, Babylon, Persia, Greece, Rome). Click an
+  era to see its key events, then an event for the verses tied to it.
+  Dates are approximate and traditional — meant for orientation, not a
+  scholarly chronology.
+
 ### Everywhere
 - **Light/dark theme**, adjustable text size, responsive layout that works
   on phone, tablet, and desktop.
@@ -121,6 +129,7 @@ data/study-themes.json         Curated theme/keyword study notes
 data/comfort-topics.json       Emotion → curated comfort verses + framing
 data/growth-themes.json        Weekly growth tracks (memory verse + 7 days each)
 data/geo-regions.json          Bible Geolocator regions, locations, and verses
+data/timeline-eras.json        History Timeline eras, events, and verses
 ```
 
 ## Data & credits

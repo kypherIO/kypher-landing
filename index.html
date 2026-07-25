@@ -83,6 +83,7 @@
     <button class="nav-tab is-active" type="button" data-view="search" aria-selected="true">Search Scripture</button>
     <button class="nav-tab" type="button" data-view="planner" aria-selected="false">Weekly Planner</button>
     <button class="nav-tab" type="button" data-view="geo" aria-selected="false">Bible Geolocator</button>
+    <button class="nav-tab" type="button" data-view="timeline" aria-selected="false">History Timeline</button>
   </div>
 </nav>
 
@@ -208,6 +209,30 @@
       </div>
       <div id="geoRegionPanel" class="geo-panel" hidden></div>
       <div id="geoLocationPanel" class="geo-panel" hidden></div>
+    </div>
+  </section>
+</div>
+
+<div id="timelineView" hidden>
+  <section class="planner-hero">
+    <div class="wrap">
+      <p class="eyebrow">History Timeline</p>
+      <h1>See Scripture inside history.</h1>
+      <p class="hero-sub">From Abraham to the early church, click an era to see how it lines up with Egypt, Assyria, Babylon, Persia, Greece, and Rome — then click an event for the verses.</p>
+      <nav class="geo-breadcrumb" id="timelineBreadcrumb" aria-label="Timeline navigation">
+        <button type="button" class="geo-crumb is-active" data-level="list">Timeline</button>
+      </nav>
+    </div>
+  </section>
+
+  <section class="plan-section">
+    <div class="wrap">
+      <div id="timelineListPanel" class="geo-panel">
+        <ol class="timeline-rail" id="timelineRail"></ol>
+        <p class="geo-map-caption">Dates are approximate and traditional, meant to give a sense of order and context — not a scholarly chronology.</p>
+      </div>
+      <div id="timelineEraPanel" class="geo-panel" hidden></div>
+      <div id="timelineEventPanel" class="geo-panel" hidden></div>
     </div>
   </section>
 </div>

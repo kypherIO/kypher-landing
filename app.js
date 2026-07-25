@@ -17,6 +17,7 @@
     comfortTopics: [],
     growthThemes: [],
     geoRegions: [],
+    timelineEras: [],
     fontScale: 1,
     bookAliases: new Map(),
     translation: 'kjv',
@@ -90,6 +91,12 @@
     geoMapPanel: $('#geoMapPanel'),
     geoRegionPanel: $('#geoRegionPanel'),
     geoLocationPanel: $('#geoLocationPanel'),
+    timelineView: $('#timelineView'),
+    timelineBreadcrumb: $('#timelineBreadcrumb'),
+    timelineRail: $('#timelineRail'),
+    timelineListPanel: $('#timelineListPanel'),
+    timelineEraPanel: $('#timelineEraPanel'),
+    timelineEventPanel: $('#timelineEventPanel'),
     fontSmallerBtn: $('#fontSmallerBtn'),
     fontLargerBtn: $('#fontLargerBtn'),
     footerShareBtn: $('#footerShareBtn'),
@@ -154,15 +161,16 @@
   }
 
   async function loadCoreData() {
-    const [metaRes, themesRes, comfortRes, growthRes, geoRes] = await Promise.all([
+    const [metaRes, themesRes, comfortRes, growthRes, geoRes, timelineRes] = await Promise.all([
       fetch('data/books-meta.json'),
       fetch('data/study-themes.json'),
       fetch('data/comfort-topics.json'),
       fetch('data/growth-themes.json'),
       fetch('data/geo-regions.json'),
+      fetch('data/timeline-eras.json'),
     ]);
-    const [meta, themes, comfort, growth, geo] = await Promise.all([
-      metaRes.json(), themesRes.json(), comfortRes.json(), growthRes.json(), geoRes.json(),
+    const [meta, themes, comfort, growth, geo, timeline] = await Promise.all([
+      metaRes.json(), themesRes.json(), comfortRes.json(), growthRes.json(), geoRes.json(), timelineRes.json(),
     ]);
     state.booksMeta = meta;
     meta.forEach(m => state.booksByName.set(m.name, m));
@@ -171,6 +179,7 @@
     state.comfortTopics = comfort;
     state.growthThemes = growth;
     state.geoRegions = geo;
+    state.timelineEras = timeline;
     buildBookAliases();
     populateBookFilter();
   }
@@ -1205,6 +1214,107 @@
     showGeoMap();
   }
 
+  /* =========================================================
+     History Timeline
+     ========================================================= */
+  function renderTimelineList() {
+    els.timelineRail.innerHTML = state.timelineEras.map(era => `
+      <li class="timeline-era" data-era="${escapeHtml(era.id)}">
+        <span class="timeline-dot" aria-hidden="true"></span>
+        <button type="button" class="timeline-era-btn">
+          <span class="timeline-era-year">${escapeHtml(era.yearLabel)}</span>
+          <span class="timeline-era-label">${escapeHtml(era.label)}</span>
+          <span class="timeline-era-civ">${escapeHtml(era.civContext)}</span>
+        </button>
+      </li>`).join('');
+
+    $$('.timeline-era-btn', els.timelineRail).forEach((btn, i) => {
+      btn.addEventListener('click', () => selectEra(state.timelineEras[i].id));
+    });
+  }
+
+  function setTimelineBreadcrumb(crumbs) {
+    els.timelineBreadcrumb.innerHTML = crumbs.map((c, i) => {
+      const isLast = i === crumbs.length - 1;
+      return `<button type="button" class="geo-crumb${isLast ? ' is-active' : ''}" data-level="${c.level}">${escapeHtml(c.label)}</button>`;
+    }).join('<span class="geo-crumb-sep">›</span>');
+    $$('.geo-crumb', els.timelineBreadcrumb).forEach((btn, i) => {
+      btn.addEventListener('click', () => {
+        const c = crumbs[i];
+        if (c.level === 'list') showTimelineList();
+        else if (c.level === 'era') selectEra(c.id);
+      });
+    });
+  }
+
+  function showTimelineList() {
+    els.timelineListPanel.hidden = false;
+    els.timelineEraPanel.hidden = true;
+    els.timelineEventPanel.hidden = true;
+    setTimelineBreadcrumb([{ level: 'list', label: 'Timeline' }]);
+  }
+
+  function selectEra(eraId) {
+    const era = state.timelineEras.find(e => e.id === eraId);
+    if (!era) return;
+    els.timelineListPanel.hidden = true;
+    els.timelineEventPanel.hidden = true;
+    els.timelineEraPanel.hidden = false;
+    setTimelineBreadcrumb([{ level: 'list', label: 'Timeline' }, { level: 'era', id: era.id, label: era.label }]);
+
+    els.timelineEraPanel.innerHTML = `
+      <p class="geo-region-year">${escapeHtml(era.yearLabel)}</p>
+      <h2 class="geo-region-title">${escapeHtml(era.label)}</h2>
+      <p class="geo-region-civ">${escapeHtml(era.civContext)}</p>
+      <p class="geo-region-blurb">${escapeHtml(era.blurb)}</p>
+      <div class="geo-location-grid">
+        ${era.events.map(ev => `
+          <button type="button" class="geo-location-card" data-event="${escapeHtml(ev.id)}">
+            <span class="timeline-event-year">${escapeHtml(ev.yearLabel)}</span>
+            <span class="geo-location-name">${escapeHtml(ev.name)}</span>
+            <span class="geo-location-blurb">${escapeHtml(ev.blurb)}</span>
+          </button>
+        `).join('')}
+      </div>`;
+
+    $$('.geo-location-card', els.timelineEraPanel).forEach(card => {
+      card.addEventListener('click', () => selectTimelineEvent(era.id, card.dataset.event));
+    });
+  }
+
+  function selectTimelineEvent(eraId, eventId) {
+    const era = state.timelineEras.find(e => e.id === eraId);
+    if (!era) return;
+    const ev = era.events.find(e => e.id === eventId);
+    if (!ev) return;
+    els.timelineListPanel.hidden = true;
+    els.timelineEraPanel.hidden = true;
+    els.timelineEventPanel.hidden = false;
+    setTimelineBreadcrumb([
+      { level: 'list', label: 'Timeline' },
+      { level: 'era', id: era.id, label: era.label },
+      { level: 'event', label: ev.name },
+    ]);
+
+    els.timelineEventPanel.innerHTML = `
+      <p class="geo-region-year">${escapeHtml(ev.yearLabel)}</p>
+      <h2 class="geo-region-title">${escapeHtml(ev.name)}</h2>
+      <p class="geo-region-blurb">${escapeHtml(ev.blurb)}</p>
+      <ol class="results-list" id="timelineVerseList"></ol>`;
+
+    const list = $('#timelineVerseList', els.timelineEventPanel);
+    ev.verses.forEach(ref => {
+      const v = resolveVerseRef(ref);
+      if (!v) return;
+      list.appendChild(buildVerseCard(v, ''));
+    });
+  }
+
+  function initTimeline() {
+    renderTimelineList();
+    showTimelineList();
+  }
+
   /* ---------------- Font size control ---------------- */
   function applyFontScale() {
     document.documentElement.style.setProperty('--font-scale', state.fontScale);
@@ -1342,6 +1452,7 @@
     els.searchView.hidden = view !== 'search';
     els.plannerView.hidden = view !== 'planner';
     els.geoView.hidden = view !== 'geo';
+    els.timelineView.hidden = view !== 'timeline';
     if (speechSynthesis.speaking) {
       speechSynthesis.cancel();
       els.audioBar.hidden = true;
@@ -1415,6 +1526,7 @@
     }
     els.statusBar.textContent = '';
     initGeo();
+    initTimeline();
 
     Object.keys(TRANSLATIONS).forEach(key => {
       if (key !== state.translation) loadTranslation(key).catch(() => {});
@@ -1424,6 +1536,7 @@
     if (!sharedLoaded) {
       if (location.hash === '#planner') switchView('planner');
       else if (location.hash === '#geo') switchView('geo');
+      else if (location.hash === '#timeline') switchView('timeline');
       const params = new URL(location.href).searchParams;
       const initialQ = params.get('q');
       if (initialQ) {

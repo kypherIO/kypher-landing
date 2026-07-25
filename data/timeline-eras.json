@@ -1,0 +1,353 @@
+[
+  {
+    "id": "patriarchs",
+    "label": "The Patriarchs",
+    "yearLabel": "c. 2000–1800 BC",
+    "civContext": "Middle Bronze Age Canaan · Egypt's Middle Kingdom",
+    "blurb": "Abraham, Isaac, and Jacob move through Canaan as pastoral clan leaders while Egypt's Middle Kingdom pharaohs rule the Nile and Mesopotamia is a patchwork of city-states.",
+    "events": [
+      {
+        "id": "abrahams-call", "name": "Abraham's Call", "yearLabel": "c. 2000 BC",
+        "blurb": "God calls Abram to leave Ur and Haran for a land he'd only later inherit.",
+        "verses": [
+          { "book": "Genesis", "chapter": 12, "verse": 1, "verseEnd": 2 },
+          { "book": "Genesis", "chapter": 15, "verse": 5 },
+          { "book": "Hebrews", "chapter": 11, "verse": 8 }
+        ]
+      },
+      {
+        "id": "jacob-israel", "name": "Jacob Becomes Israel", "yearLabel": "c. 1900 BC",
+        "blurb": "The covenant passes to Jacob, whose new name becomes the nation's name.",
+        "verses": [
+          { "book": "Genesis", "chapter": 28, "verse": 13, "verseEnd": 14 },
+          { "book": "Genesis", "chapter": 32, "verse": 28 },
+          { "book": "Genesis", "chapter": 35, "verse": 10 }
+        ]
+      },
+      {
+        "id": "joseph-egypt", "name": "Joseph in Egypt", "yearLabel": "c. 1880–1800 BC",
+        "blurb": "Sold into slavery by his brothers, Joseph rises to power in Egypt and saves his family from famine.",
+        "verses": [
+          { "book": "Genesis", "chapter": 37, "verse": 28 },
+          { "book": "Genesis", "chapter": 41, "verse": 41 },
+          { "book": "Genesis", "chapter": 50, "verse": 20 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "exodus",
+    "label": "Bondage & Exodus",
+    "yearLabel": "c. 1800–1400 BC",
+    "civContext": "Egypt's New Kingdom — the age of the great empire-building pharaohs",
+    "blurb": "Jacob's family grows into a nation inside Egypt, is enslaved for generations, and is led out under Moses toward Sinai and, eventually, Canaan.",
+    "events": [
+      {
+        "id": "israel-enslaved", "name": "Israel Enslaved", "yearLabel": "c. 1600s–1450s BC",
+        "blurb": "A pharaoh who \"knew not Joseph\" forces the growing Israelite population into hard labor.",
+        "verses": [
+          { "book": "Exodus", "chapter": 1, "verse": 11 },
+          { "book": "Exodus", "chapter": 1, "verse": 14 },
+          { "book": "Exodus", "chapter": 2, "verse": 23, "verseEnd": 24 }
+        ]
+      },
+      {
+        "id": "the-exodus", "name": "The Exodus", "yearLabel": "c. 1446 BC (traditional)",
+        "blurb": "After the plagues, Pharaoh releases Israel, and God parts the Red Sea for their escape.",
+        "verses": [
+          { "book": "Exodus", "chapter": 12, "verse": 31 },
+          { "book": "Exodus", "chapter": 12, "verse": 40, "verseEnd": 41 },
+          { "book": "Exodus", "chapter": 14, "verse": 21 }
+        ]
+      },
+      {
+        "id": "law-at-sinai", "name": "The Law at Sinai", "yearLabel": "c. 1446 BC",
+        "blurb": "God gives Israel the Ten Commandments and the Law at Mount Sinai, formalizing the covenant.",
+        "verses": [
+          { "book": "Exodus", "chapter": 20, "verse": 1, "verseEnd": 2 },
+          { "book": "Exodus", "chapter": 24, "verse": 12 },
+          { "book": "Exodus", "chapter": 31, "verse": 18 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "conquest-judges",
+    "label": "Conquest & Judges",
+    "yearLabel": "c. 1400–1050 BC",
+    "civContext": "Late Bronze Age collapse · the Philistines (one of the 'Sea Peoples') settle Canaan's coast",
+    "blurb": "Joshua leads Israel into Canaan; centuries of a repeating cycle — unfaithfulness, oppression, and deliverance — follow under a series of judges, with the Philistines as a recurring rival power.",
+    "events": [
+      {
+        "id": "crossing-jordan", "name": "Crossing the Jordan", "yearLabel": "c. 1400 BC",
+        "blurb": "Under Joshua, Israel crosses into Canaan and begins to take the land.",
+        "verses": [
+          { "book": "Joshua", "chapter": 3, "verse": 17 },
+          { "book": "Joshua", "chapter": 24, "verse": 13 },
+          { "book": "Joshua", "chapter": 24, "verse": 15 }
+        ]
+      },
+      {
+        "id": "judges-cycle", "name": "The Judges Cycle", "yearLabel": "c. 1375–1050 BC",
+        "blurb": "\"Everyone did what was right in his own eyes\" — a recurring pattern of drifting, oppression, and rescue.",
+        "verses": [
+          { "book": "Judges", "chapter": 2, "verse": 16 },
+          { "book": "Judges", "chapter": 2, "verse": 18, "verseEnd": 19 },
+          { "book": "Judges", "chapter": 21, "verse": 25 }
+        ]
+      },
+      {
+        "id": "samson-philistines", "name": "Samson & the Philistines", "yearLabel": "c. 1075 BC",
+        "blurb": "Israel's most famous judge spends his life in conflict with the Philistines on the coastal plain.",
+        "verses": [
+          { "book": "Judges", "chapter": 13, "verse": 5 },
+          { "book": "Judges", "chapter": 15, "verse": 20 },
+          { "book": "Judges", "chapter": 16, "verse": 30 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "united-kingdom",
+    "label": "The United Kingdom",
+    "yearLabel": "c. 1050–930 BC",
+    "civContext": "Phoenician city-states (Tyre, Sidon) flourish as trade partners · Egypt's New Kingdom is fading",
+    "blurb": "Israel's first kings — Saul, David, and Solomon — unite the twelve tribes into a single kingdom, establish Jerusalem as its capital, and build the Temple.",
+    "events": [
+      {
+        "id": "saul-first-king", "name": "Saul, Israel's First King", "yearLabel": "c. 1050 BC",
+        "blurb": "Israel asks for a king \"like all the nations,\" and Saul is anointed.",
+        "verses": [
+          { "book": "1 Samuel", "chapter": 10, "verse": 1 },
+          { "book": "1 Samuel", "chapter": 15, "verse": 23 },
+          { "book": "1 Samuel", "chapter": 31, "verse": 4 }
+        ]
+      },
+      {
+        "id": "davids-reign", "name": "David's Reign", "yearLabel": "c. 1010–970 BC",
+        "blurb": "David unites the tribes, takes Jerusalem, and receives God's promise of an everlasting throne.",
+        "verses": [
+          { "book": "2 Samuel", "chapter": 5, "verse": 4 },
+          { "book": "2 Samuel", "chapter": 7, "verse": 16 },
+          { "book": "1 Chronicles", "chapter": 29, "verse": 28 }
+        ]
+      },
+      {
+        "id": "solomon-temple", "name": "Solomon & the Temple", "yearLabel": "c. 970–930 BC",
+        "blurb": "Solomon builds the First Temple in Jerusalem and becomes renowned for wisdom and wealth.",
+        "verses": [
+          { "book": "1 Kings", "chapter": 6, "verse": 1 },
+          { "book": "1 Kings", "chapter": 8, "verse": 10, "verseEnd": 11 },
+          { "book": "1 Kings", "chapter": 10, "verse": 23 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "divided-kingdom",
+    "label": "Divided Kingdom & the Prophets",
+    "yearLabel": "c. 930–722 BC",
+    "civContext": "The Neo-Assyrian Empire rises to become the dominant regional power",
+    "blurb": "After Solomon, the kingdom splits into Israel (north) and Judah (south). Prophets like Elijah, Elisha, Amos, and Hosea confront both nations, until Assyria conquers the northern kingdom.",
+    "events": [
+      {
+        "id": "kingdom-divides", "name": "The Kingdom Divides", "yearLabel": "c. 930 BC",
+        "blurb": "Solomon's son Rehoboam's harshness splits the kingdom into Israel and Judah.",
+        "verses": [
+          { "book": "1 Kings", "chapter": 12, "verse": 16 },
+          { "book": "1 Kings", "chapter": 12, "verse": 19 },
+          { "book": "1 Kings", "chapter": 12, "verse": 20 }
+        ]
+      },
+      {
+        "id": "elijah-elisha", "name": "Elijah & Elisha", "yearLabel": "c. 870–800 BC",
+        "blurb": "Two prophets confront idolatry in the northern kingdom with dramatic signs and miracles.",
+        "verses": [
+          { "book": "1 Kings", "chapter": 18, "verse": 21 },
+          { "book": "1 Kings", "chapter": 19, "verse": 11, "verseEnd": 12 },
+          { "book": "2 Kings", "chapter": 2, "verse": 11 }
+        ]
+      },
+      {
+        "id": "fall-of-israel", "name": "The Fall of Israel", "yearLabel": "722 BC",
+        "blurb": "Assyria conquers the northern kingdom and deports much of its population.",
+        "verses": [
+          { "book": "2 Kings", "chapter": 17, "verse": 6 },
+          { "book": "2 Kings", "chapter": 17, "verse": 22, "verseEnd": 23 },
+          { "book": "Hosea", "chapter": 4, "verse": 6 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "exile",
+    "label": "Judah Alone & the Exile",
+    "yearLabel": "c. 722–539 BC",
+    "civContext": "Assyria dominates, then Babylon under Nebuchadnezzar conquers the entire region",
+    "blurb": "Judah outlasts Assyria but eventually falls to Babylon; Jerusalem and the Temple are destroyed, and the people are carried into exile — the world of Daniel and Ezekiel.",
+    "events": [
+      {
+        "id": "jerusalem-falls", "name": "Jerusalem Falls", "yearLabel": "586 BC",
+        "blurb": "Nebuchadnezzar's Babylonian army destroys Jerusalem and the Temple.",
+        "verses": [
+          { "book": "2 Kings", "chapter": 25, "verse": 8, "verseEnd": 9 },
+          { "book": "2 Kings", "chapter": 25, "verse": 11 },
+          { "book": "Lamentations", "chapter": 1, "verse": 1 }
+        ]
+      },
+      {
+        "id": "daniel-exile", "name": "Daniel in Exile", "yearLabel": "c. 605–536 BC",
+        "blurb": "A young Judean exile rises in Babylon's royal court while staying faithful to God.",
+        "verses": [
+          { "book": "Daniel", "chapter": 1, "verse": 8 },
+          { "book": "Daniel", "chapter": 6, "verse": 10 },
+          { "book": "Daniel", "chapter": 6, "verse": 22 }
+        ]
+      },
+      {
+        "id": "ezekiels-visions", "name": "Ezekiel's Visions", "yearLabel": "c. 593–571 BC",
+        "blurb": "From Babylon, Ezekiel sees visions of judgment — and of restoration and new life for Israel.",
+        "verses": [
+          { "book": "Ezekiel", "chapter": 1, "verse": 1 },
+          { "book": "Ezekiel", "chapter": 37, "verse": 11, "verseEnd": 12 },
+          { "book": "Ezekiel", "chapter": 37, "verse": 14 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "persian-return",
+    "label": "Persian Period & the Return",
+    "yearLabel": "c. 539–332 BC",
+    "civContext": "Cyrus the Great founds the Persian Achaemenid Empire, the largest the world had yet seen",
+    "blurb": "Persia conquers Babylon and allows the Jewish exiles to return home. Ezra and Nehemiah rebuild Jerusalem's temple and walls; Esther becomes queen inside the Persian court itself.",
+    "events": [
+      {
+        "id": "cyrus-decree", "name": "Cyrus's Decree", "yearLabel": "538 BC",
+        "blurb": "Cyrus of Persia — named by Isaiah roughly 150 years before he was born — frees the exiles to return.",
+        "verses": [
+          { "book": "Ezra", "chapter": 1, "verse": 1, "verseEnd": 2 },
+          { "book": "Isaiah", "chapter": 44, "verse": 28 },
+          { "book": "2 Chronicles", "chapter": 36, "verse": 23 }
+        ]
+      },
+      {
+        "id": "rebuilding-jerusalem", "name": "Rebuilding Jerusalem", "yearLabel": "c. 445 BC",
+        "blurb": "Nehemiah rebuilds Jerusalem's walls in the face of local opposition; Ezra restores the Law.",
+        "verses": [
+          { "book": "Nehemiah", "chapter": 2, "verse": 17 },
+          { "book": "Nehemiah", "chapter": 6, "verse": 15 },
+          { "book": "Ezra", "chapter": 3, "verse": 11 }
+        ]
+      },
+      {
+        "id": "esther-persia", "name": "Esther in the Persian Court", "yearLabel": "c. 479 BC",
+        "blurb": "A Jewish queen in Persia's royal court saves her people from an empire-wide plot.",
+        "verses": [
+          { "book": "Esther", "chapter": 2, "verse": 17 },
+          { "book": "Esther", "chapter": 4, "verse": 14 },
+          { "book": "Esther", "chapter": 9, "verse": 22 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "greek-age",
+    "label": "The Greek Age",
+    "yearLabel": "c. 332–63 BC",
+    "civContext": "Alexander the Great topples Persia and spreads Greek language and culture; after his death, rival Greek kingdoms (the Ptolemies in Egypt, the Seleucids in Syria) fight over Judea",
+    "blurb": "Roughly four \"silent\" centuries pass between the Old and New Testaments. Greek becomes the region's common language — setting the stage for the New Testament to be written in Greek — while Daniel had described this very age in advance.",
+    "events": [
+      {
+        "id": "daniels-greece-prophecy", "name": "Daniel's Prophecy of Greece", "yearLabel": "written c. 530s BC, describing events after 332 BC",
+        "blurb": "Daniel's visions describe a swift conquering kingdom — read by many as pointing to Alexander and the four kingdoms that followed his death.",
+        "verses": [
+          { "book": "Daniel", "chapter": 8, "verse": 20 },
+          { "book": "Daniel", "chapter": 8, "verse": 21 },
+          { "book": "Daniel", "chapter": 11, "verse": 3 }
+        ]
+      },
+      {
+        "id": "desecration-foreshadowed", "name": "A Coming Desecration Foreshadowed", "yearLabel": "events c. 167 BC",
+        "blurb": "A brutal Greek ruler's persecution of Judea — later echoed in Jesus's own end-times teaching.",
+        "verses": [
+          { "book": "Daniel", "chapter": 11, "verse": 31 },
+          { "book": "Daniel", "chapter": 8, "verse": 23 },
+          { "book": "Daniel", "chapter": 8, "verse": 25 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "roman-gospels",
+    "label": "Roman Judea & the Gospels",
+    "yearLabel": "c. 63 BC – 33 AD",
+    "civContext": "Rome annexes Judea as a client territory; Herod the Great and his sons rule under Roman authority; Roman roads and the common Greek language make travel and communication easier than ever before",
+    "blurb": "Jesus is born under Roman rule during Herod the Great's reign, teaches across Galilee and Judea, and is crucified under the Roman governor Pontius Pilate — then rises again.",
+    "events": [
+      {
+        "id": "jesus-birth-rome", "name": "Jesus's Birth Under Rome", "yearLabel": "c. 6–4 BC",
+        "blurb": "A Roman census, a Judean king named Herod, and a child born in Bethlehem.",
+        "verses": [
+          { "book": "Luke", "chapter": 2, "verse": 1, "verseEnd": 3 },
+          { "book": "Matthew", "chapter": 2, "verse": 1 },
+          { "book": "Luke", "chapter": 2, "verse": 11 }
+        ]
+      },
+      {
+        "id": "jesus-ministry", "name": "Jesus's Ministry", "yearLabel": "c. 27–30 AD",
+        "blurb": "Jesus teaches, heals, and gathers disciples across Galilee and Judea for roughly three years.",
+        "verses": [
+          { "book": "Luke", "chapter": 4, "verse": 18, "verseEnd": 19 },
+          { "book": "Matthew", "chapter": 4, "verse": 23 },
+          { "book": "John", "chapter": 3, "verse": 16 }
+        ]
+      },
+      {
+        "id": "crucifixion-pilate", "name": "The Crucifixion Under Pilate", "yearLabel": "c. 30–33 AD",
+        "blurb": "Jesus is tried before the Roman governor Pontius Pilate and crucified outside Jerusalem.",
+        "verses": [
+          { "book": "Matthew", "chapter": 27, "verse": 2 },
+          { "book": "John", "chapter": 19, "verse": 19 },
+          { "book": "Luke", "chapter": 23, "verse": 46 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "early-church",
+    "label": "The Early Church & the Roman Empire",
+    "yearLabel": "c. 33–100 AD",
+    "civContext": "The gospel spreads along Roman roads and sea routes across the empire — from Jerusalem to Antioch, Asia Minor, Greece, and Rome itself",
+    "blurb": "The apostles and Paul plant churches across the Roman world. Persecution under emperors like Nero and later Domitian shapes the early church and produces the book of Revelation.",
+    "events": [
+      {
+        "id": "pentecost", "name": "Pentecost & the Church's Birth", "yearLabel": "c. 33 AD",
+        "blurb": "The Holy Spirit comes on the disciples in Jerusalem, and the church begins.",
+        "verses": [
+          { "book": "Acts", "chapter": 2, "verse": 1, "verseEnd": 4 },
+          { "book": "Acts", "chapter": 2, "verse": 41 },
+          { "book": "Acts", "chapter": 2, "verse": 46, "verseEnd": 47 }
+        ]
+      },
+      {
+        "id": "pauls-journeys", "name": "Paul's Journeys Across the Empire", "yearLabel": "c. 46–62 AD",
+        "blurb": "Paul plants churches from Antioch to Asia Minor to Greece, then reaches Rome itself.",
+        "verses": [
+          { "book": "Acts", "chapter": 9, "verse": 15 },
+          { "book": "Acts", "chapter": 13, "verse": 2, "verseEnd": 3 },
+          { "book": "Acts", "chapter": 28, "verse": 16 }
+        ]
+      },
+      {
+        "id": "revelation-persecution", "name": "Revelation Under Roman Persecution", "yearLabel": "c. 95 AD",
+        "blurb": "Exiled on Patmos under Emperor Domitian, John writes to churches enduring pressure to compromise or suffer.",
+        "verses": [
+          { "book": "Revelation", "chapter": 1, "verse": 9 },
+          { "book": "Revelation", "chapter": 2, "verse": 10 },
+          { "book": "Revelation", "chapter": 22, "verse": 20 }
+        ]
+      }
+    ]
+  }
+]
