@@ -29,7 +29,9 @@
             "chapter": 19,
             "verse": 41
           }
-        ]
+        ],
+        "lat": 31.7683,
+        "lon": 35.2137
       },
       {
         "id": "bethlehem",
@@ -52,7 +54,9 @@
             "chapter": 2,
             "verse": 1
           }
-        ]
+        ],
+        "lat": 31.7054,
+        "lon": 35.2024
       },
       {
         "id": "nazareth",
@@ -76,7 +80,9 @@
             "chapter": 2,
             "verse": 23
           }
-        ]
+        ],
+        "lat": 32.6996,
+        "lon": 35.3035
       },
       {
         "id": "galilee",
@@ -100,7 +106,9 @@
             "verse": 23,
             "verseEnd": 24
           }
-        ]
+        ],
+        "lat": 32.8,
+        "lon": 35.59
       },
       {
         "id": "jericho",
@@ -122,10 +130,18 @@
             "chapter": 19,
             "verse": 5
           }
-        ]
+        ],
+        "lat": 31.8667,
+        "lon": 35.45
       }
     ],
-    "labelPos": "top"
+    "labelPos": "top",
+    "bbox": {
+      "latMin": 30.505,
+      "latMax": 34.0,
+      "lonMin": 34.002,
+      "lonMax": 36.79
+    }
   },
   {
     "id": "egypt",
@@ -157,7 +173,9 @@
             "chapter": 1,
             "verse": 7
           }
-        ]
+        ],
+        "lat": 30.7,
+        "lon": 31.8
       },
       {
         "id": "nile",
@@ -180,7 +198,9 @@
             "verse": 20,
             "verseEnd": 21
           }
-        ]
+        ],
+        "lat": 29.2,
+        "lon": 31.0
       },
       {
         "id": "pharaohs-court",
@@ -203,7 +223,9 @@
             "chapter": 12,
             "verse": 31
           }
-        ]
+        ],
+        "lat": 29.85,
+        "lon": 31.25
       },
       {
         "id": "flight-to-egypt",
@@ -226,10 +248,18 @@
             "chapter": 11,
             "verse": 1
           }
-        ]
+        ],
+        "lat": 30.6,
+        "lon": 31.4
       }
     ],
-    "labelPos": "bottom"
+    "labelPos": "bottom",
+    "bbox": {
+      "latMin": 28.0,
+      "latMax": 31.9,
+      "lonMin": 29.8,
+      "lonMax": 33.0
+    }
   },
   {
     "id": "sinai",
@@ -262,7 +292,9 @@
             "chapter": 15,
             "verse": 1
           }
-        ]
+        ],
+        "lat": 29.4,
+        "lon": 32.8
       },
       {
         "id": "mount-sinai",
@@ -285,7 +317,9 @@
             "chapter": 31,
             "verse": 18
           }
-        ]
+        ],
+        "lat": 28.539,
+        "lon": 33.975
       },
       {
         "id": "wilderness-wandering",
@@ -307,7 +341,9 @@
             "chapter": 8,
             "verse": 3
           }
-        ]
+        ],
+        "lat": 29.9,
+        "lon": 34.2
       },
       {
         "id": "kadesh-barnea",
@@ -330,10 +366,18 @@
             "chapter": 20,
             "verse": 1
           }
-        ]
+        ],
+        "lat": 30.6833,
+        "lon": 34.4167
       }
     ],
-    "labelPos": "right"
+    "labelPos": "right",
+    "bbox": {
+      "latMin": 27.339,
+      "latMax": 31.883,
+      "lonMin": 31.6,
+      "lonMax": 35.617
+    }
   },
   {
     "id": "mesopotamia",
@@ -365,7 +409,9 @@
             "chapter": 9,
             "verse": 7
           }
-        ]
+        ],
+        "lat": 30.9626,
+        "lon": 46.1031
       },
       {
         "id": "nineveh",
@@ -388,7 +434,9 @@
             "chapter": 3,
             "verse": 10
           }
-        ]
+        ],
+        "lat": 36.3594,
+        "lon": 43.1522
       },
       {
         "id": "babylon",
@@ -411,7 +459,9 @@
             "verse": 1,
             "verseEnd": 2
           }
-        ]
+        ],
+        "lat": 32.5364,
+        "lon": 44.4208
       },
       {
         "id": "daniel-babylon",
@@ -434,10 +484,18 @@
             "chapter": 6,
             "verse": 22
           }
-        ]
+        ],
+        "lat": 32.5364,
+        "lon": 44.4208
       }
     ],
-    "labelPos": "top"
+    "labelPos": "top",
+    "bbox": {
+      "latMin": 29.074,
+      "latMax": 38.248,
+      "lonMin": 41.952,
+      "lonMax": 47.303
+    }
   },
   {
     "id": "asia-minor",
@@ -469,7 +527,9 @@
             "chapter": 2,
             "verse": 4
           }
-        ]
+        ],
+        "lat": 37.9411,
+        "lon": 27.3419
       },
       {
         "id": "galatia",
@@ -492,7 +552,9 @@
             "chapter": 16,
             "verse": 6
           }
-        ]
+        ],
+        "lat": 39.9334,
+        "lon": 32.8597
       },
       {
         "id": "colossae",
@@ -514,7 +576,9 @@
             "chapter": 4,
             "verse": 16
           }
-        ]
+        ],
+        "lat": 37.7906,
+        "lon": 29.2611
       },
       {
         "id": "tarsus",
@@ -536,10 +600,18 @@
             "chapter": 22,
             "verse": 3
           }
-        ]
+        ],
+        "lat": 36.9177,
+        "lon": 34.8951
       }
     ],
-    "labelPos": "top"
+    "labelPos": "top",
+    "bbox": {
+      "latMin": 35.718,
+      "latMax": 41.133,
+      "lonMin": 24.698,
+      "lonMax": 37.539
+    }
   },
   {
     "id": "greece",
@@ -571,7 +643,9 @@
             "chapter": 1,
             "verse": 1
           }
-        ]
+        ],
+        "lat": 41.0136,
+        "lon": 24.2861
       },
       {
         "id": "athens",
@@ -593,7 +667,9 @@
             "chapter": 17,
             "verse": 34
           }
-        ]
+        ],
+        "lat": 37.9838,
+        "lon": 23.7275
       },
       {
         "id": "corinth",
@@ -615,7 +691,9 @@
             "chapter": 18,
             "verse": 9
           }
-        ]
+        ],
+        "lat": 37.9061,
+        "lon": 22.8783
       },
       {
         "id": "thessalonica",
@@ -637,10 +715,18 @@
             "chapter": 17,
             "verse": 6
           }
-        ]
+        ],
+        "lat": 40.6401,
+        "lon": 22.9444
       }
     ],
-    "labelPos": "top"
+    "labelPos": "top",
+    "bbox": {
+      "latMin": 36.706,
+      "latMax": 42.214,
+      "lonMin": 21.678,
+      "lonMax": 25.486
+    }
   },
   {
     "id": "arabia",
@@ -672,7 +758,9 @@
             "chapter": 42,
             "verse": 12
           }
-        ]
+        ],
+        "lat": 30.3,
+        "lon": 35.6
       },
       {
         "id": "midian",
@@ -694,7 +782,9 @@
             "chapter": 18,
             "verse": 1
           }
-        ]
+        ],
+        "lat": 28.4,
+        "lon": 35.3
       },
       {
         "id": "sheba",
@@ -716,7 +806,9 @@
             "chapter": 10,
             "verse": 13
           }
-        ]
+        ],
+        "lat": 15.4,
+        "lon": 45.3
       },
       {
         "id": "moab",
@@ -738,9 +830,17 @@
             "chapter": 20,
             "verse": 14
           }
-        ]
+        ],
+        "lat": 31.4,
+        "lon": 35.75
       }
     ],
-    "labelPos": "bottom"
+    "labelPos": "bottom",
+    "bbox": {
+      "latMin": 9.8,
+      "latMax": 37.0,
+      "lonMin": 31.8,
+      "lonMax": 48.8
+    }
   }
 ]

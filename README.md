@@ -56,13 +56,15 @@ tablet, or desktop.
   whoever opens it — no account or backend involved.
 
 ### Bible Geolocator
-- A real map — coastlines and country borders from Natural Earth (public
-  domain), covering the Mediterranean, Middle East, North Africa, and Asia
-  Minor — with 7 clickable regions (Israel & Canaan, Egypt, Sinai, Assyria
-  & Babylon, Asia Minor, Greece & Macedonia, Arabia) positioned by their
-  real coordinates. Click a region to see key locations within it, then a
-  location (Jerusalem, Nineveh, Mount Sinai, Ephesus, Athens...) for the
-  verses tied to that ground.
+- A real, zoomable map. Coastlines, country borders, lakes (incl. the Dead
+  Sea) and rivers (Nile, Jordan, Tigris, Euphrates) come from Natural Earth
+  50m data (public domain), stored as raw lon/lat and reprojected on the
+  fly — so the same dataset draws both the overview and each zoomed-in
+  region.
+- Click one of the 7 regions and the map **zooms to that region** with a
+  labelled, tappable pin on every place in it — Nineveh, Babylon and Ur sit
+  along the Tigris and Euphrates where they actually are. Click a pin (or a
+  card) for the verses tied to that ground.
 
 ### History Timeline
 - A vertical timeline from the Patriarchs (c. 2000 BC) through the early
@@ -71,6 +73,15 @@ tablet, or desktop.
   era to see its key events, then an event for the verses tied to it.
   Dates are approximate and traditional — meant for orientation, not a
   scholarly chronology.
+
+### Built for short attention and short weeks
+- **"Just today"** on both planners collapses the week to the single day
+  you're on, so the plan never shows more than one thing to act on.
+- One small, concrete action per day rather than open-ended reading.
+- Collapsible days with only today expanded by default; progress bar and
+  per-day checkboxes that persist locally.
+- Large tap targets (44px nav, 40px buttons, 22px checkboxes), adjustable
+  text size, and `prefers-reduced-motion` respected throughout.
 
 ### Everywhere
 - **Light/dark theme**, adjustable text size, responsive layout that works
@@ -95,14 +106,25 @@ Any static file server works (`npx serve`, VS Code Live Server, etc.).
 
 ## Deploying
 
-This is a fully static site — deploy the repository as-is to GitHub Pages,
-Netlify, Vercel, Cloudflare Pages, or any static host. There are no
-environment variables or build steps required.
+This is a fully static site — no build step, no runtime, no database.
 
-**Before going live on a real domain**, update the placeholder URL
-(`https://kypher.io/`) used in `index.html` (canonical link, Open Graph/
-Twitter tags, JSON-LD) and in `sitemap.xml`/`robots.txt` to match wherever
-it's actually hosted.
+**On your own VPS (kypher.cc):** see **[`deploy/DEPLOY.md`](deploy/DEPLOY.md)**
+for the full walkthrough. Short version, as root on a fresh Ubuntu 24.04 box:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/kypherIO/kypher-landing/main/deploy/bootstrap.sh -o bootstrap.sh
+bash bootstrap.sh
+```
+
+That installs Caddy with automatic HTTPS, a firewall, fail2ban, swap
+(important at 1 GB RAM), unattended security upgrades, publishes the site,
+and optionally installs Claude Code on the server so you can manage it
+conversationally afterwards.
+
+**Anywhere else:** deploy the repo as-is to GitHub Pages, Netlify, Vercel,
+or Cloudflare Pages. If you use a domain other than `kypher.cc`, update the
+URL in `index.html` (canonical, Open Graph/Twitter, JSON-LD) plus
+`sitemap.xml` and `robots.txt`.
 
 ### About the native mobile app
 
@@ -141,6 +163,12 @@ data/growth-themes.json        Weekly growth tracks (memory verse + 7 days each)
 data/geo-regions.json          Bible Geolocator regions, locations, and verses
 data/world-outline.json        Real coastline/border paths (Natural Earth, public domain)
 data/timeline-eras.json        History Timeline eras, events, and verses
+deploy/bootstrap.sh            One-shot VPS setup (Caddy, TLS, firewall, swap)
+deploy/update.sh               Pull latest and republish
+deploy/harden-ssh.sh           Switch SSH to key-only auth
+deploy/Caddyfile               Web server config
+deploy/DEPLOY.md               Full deployment walkthrough
+deploy/optional-feedback-api/  Optional SQLite feedback endpoint (off by default)
 ```
 
 ## Data & credits

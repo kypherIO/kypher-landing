@@ -928,6 +928,7 @@
           <span class="plan-progress-label" data-role="progress-label">${doneCount}/${plan.days.length} days complete</span>
         </div>
         <div class="plan-toolbar">
+          <button data-action="focus" class="btn-small btn-focus" type="button" aria-pressed="false">Just today</button>
           <button data-action="copy" class="btn-small" type="button">Copy as text</button>
           <button data-action="print" class="btn-small" type="button">Print / Save PDF</button>
           <button data-action="share" class="btn-small" type="button">Copy shareable link</button>
@@ -1003,6 +1004,26 @@
       }
       setTimeout(() => { btn.textContent = original; }, 1500);
     });
+
+    // "Just today" — ADHD-friendly focus mode: hide every day except today's,
+    // so the week never presents more than one thing to act on at a time.
+    const focusBtn = $('[data-action="focus"]', root);
+    const todayLi = $('.plan-day.is-today', root);
+    const applyFocus = (on) => {
+      root.classList.toggle('is-focus-mode', on);
+      focusBtn.setAttribute('aria-pressed', String(on));
+      focusBtn.textContent = on ? 'Show whole week' : 'Just today';
+      if (on && todayLi) {
+        const head = $('.plan-day-head', todayLi);
+        if (head && head.getAttribute('aria-expanded') !== 'true') head.click();
+      }
+    };
+    if (!todayLi) {
+      focusBtn.disabled = true;
+      focusBtn.title = "This plan's week isn't the current week";
+    } else {
+      focusBtn.addEventListener('click', () => applyFocus(!root.classList.contains('is-focus-mode')));
+    }
 
     $('[data-action="print"]', root).addEventListener('click', () => window.print());
 
@@ -1132,86 +1153,188 @@
   }
 
   /* =========================================================
-     Bible Geolocator — real coastline basemap (Natural Earth
-     110m country outlines, public domain), equirectangular
-     projection into the 800x560 map viewBox.
+     Bible Geolocator
+     Basemap: Natural Earth 50m coastlines, lakes and rivers
+     (public domain), stored as raw lon/lat and reprojected on
+     the fly so the same data drives both the overview map and
+     each zoomed-in region map.
      ========================================================= */
-  const GEO_LON_MIN = -12, GEO_LON_MAX = 63, GEO_LAT_MIN = 10, GEO_LAT_MAX = 43;
-  const GEO_MAP_W = 800, GEO_MAP_H = 560;
-  function projectLatLon(lon, lat) {
-    const x = (lon - GEO_LON_MIN) / (GEO_LON_MAX - GEO_LON_MIN) * GEO_MAP_W;
-    const y = (GEO_LAT_MAX - lat) / (GEO_LAT_MAX - GEO_LAT_MIN) * GEO_MAP_H;
-    return { x, y };
+  const GEO_W = 800, GEO_H = 520;
+
+  // Equirectangular with a cos(midLat) correction so shapes stay
+  // proportioned at the latitudes we care about, letterboxed to fit.
+  function makeProjector(bbox, w, h) {
+    const midLat = (bbox.latMin + bbox.latMax) / 2;
+    const k = Math.cos(midLat * Math.PI / 180);
+    const spanX = (bbox.lonMax - bbox.lonMin) * k;
+    const spanY = bbox.latMax - bbox.latMin;
+    const scale = Math.min(w / spanX, h / spanY);
+    const offX = (w - spanX * scale) / 2;
+    const offY = (h - spanY * scale) / 2;
+    return (lon, lat) => ({
+      x: offX + (lon - bbox.lonMin) * k * scale,
+      y: offY + (bbox.latMax - lat) * scale,
+    });
   }
 
-  function renderGeoMap() {
-    const svgNS = 'http://www.w3.org/2000/svg';
-    els.geoMap.innerHTML = '';
+  function ringToPath(ring, project, close) {
+    let d = '';
+    for (let i = 0; i < ring.length; i++) {
+      const p = project(ring[i][0], ring[i][1]);
+      d += (i === 0 ? 'M' : 'L') + p.x.toFixed(1) + ',' + p.y.toFixed(1);
+    }
+    return close ? d + 'Z' : d;
+  }
 
-    const landGroup = document.createElementNS(svgNS, 'g');
-    landGroup.setAttribute('class', 'geo-land-group');
-    state.worldOutline.forEach(country => {
-      const path = document.createElementNS(svgNS, 'path');
-      path.setAttribute('d', country.d);
-      path.setAttribute('class', 'geo-land');
-      const title = document.createElementNS(svgNS, 'title');
-      title.textContent = country.name;
-      path.appendChild(title);
-      landGroup.appendChild(path);
+  const svgEl = (name, attrs) => {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', name);
+    if (attrs) Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
+    return el;
+  };
+
+  function drawBasemap(svg, bbox) {
+    const outline = state.worldOutline || {};
+    const project = makeProjector(bbox, GEO_W, GEO_H);
+
+    const sea = svgEl('rect', { x: 0, y: 0, width: GEO_W, height: GEO_H, class: 'geo-sea' });
+    svg.appendChild(sea);
+
+    const landG = svgEl('g', { class: 'geo-land-group' });
+    (outline.land || []).forEach(c => {
+      const d = c.r.map(ring => ringToPath(ring, project, true)).join(' ');
+      const path = svgEl('path', { d, class: 'geo-land' });
+      const t = svgEl('title'); t.textContent = c.n || '';
+      path.appendChild(t);
+      landG.appendChild(path);
     });
-    els.geoMap.appendChild(landGroup);
+    svg.appendChild(landG);
+
+    const waterG = svgEl('g', { class: 'geo-water-group' });
+    (outline.lakes || []).forEach(l => {
+      const d = l.r.map(ring => ringToPath(ring, project, true)).join(' ');
+      const path = svgEl('path', { d, class: 'geo-lake' });
+      const t = svgEl('title'); t.textContent = l.n || '';
+      path.appendChild(t);
+      waterG.appendChild(path);
+    });
+    (outline.rivers || []).forEach(r => {
+      const d = r.r.map(line => ringToPath(line, project, false)).join(' ');
+      const path = svgEl('path', { d, class: 'geo-river' });
+      const t = svgEl('title'); t.textContent = r.n || '';
+      path.appendChild(t);
+      waterG.appendChild(path);
+    });
+    svg.appendChild(waterG);
+
+    return project;
+  }
+
+  /* ----- Overview map: whole biblical world, regions as markers ----- */
+  function renderGeoMap() {
+    const svg = els.geoMap;
+    svg.setAttribute('viewBox', `0 0 ${GEO_W} ${GEO_H}`);
+    svg.innerHTML = '';
+    const bbox = { lonMin: -8, lonMax: 58, latMin: 11, latMax: 44 };
+    const project = drawBasemap(svg, bbox);
 
     state.geoRegions.forEach(region => {
-      const { x, y } = projectLatLon(region.lon, region.lat);
-      const g = document.createElementNS(svgNS, 'g');
-      g.setAttribute('class', 'geo-region');
-      g.setAttribute('tabindex', '0');
-      g.setAttribute('role', 'button');
-      g.setAttribute('aria-label', `${region.name} — ${region.subtitle}`);
+      const { x, y } = project(region.lon, region.lat);
+      const g = svgEl('g', {
+        class: 'geo-region', tabindex: '0', role: 'button',
+        'aria-label': `${region.name} — ${region.subtitle}. ${region.locations.length} places.`,
+      });
 
-      const ellipse = document.createElementNS(svgNS, 'ellipse');
-      ellipse.setAttribute('cx', x);
-      ellipse.setAttribute('cy', y);
-      ellipse.setAttribute('rx', region.rx);
-      ellipse.setAttribute('ry', region.ry);
-      g.appendChild(ellipse);
+      // Oversized transparent hit area so the whole marker is comfortably
+      // tappable — the labels themselves are pointer-events:none.
+      g.appendChild(svgEl('circle', {
+        cx: x, cy: y, r: Math.max(region.rx, region.ry) + 10, class: 'geo-region-hit',
+      }));
+      g.appendChild(svgEl('ellipse', { cx: x, cy: y, rx: region.rx, ry: region.ry, class: 'geo-region-shape' }));
 
       const pos = region.labelPos || 'top';
-      let labelX = x, labelY, anchor = 'middle';
-      if (pos === 'top') { labelY = y - region.ry - 18; }
-      else if (pos === 'bottom') { labelY = y + region.ry + 16; }
-      else if (pos === 'right') { labelX = x + region.rx + 10; labelY = y - 2; anchor = 'start'; }
-      else if (pos === 'left') { labelX = x - region.rx - 10; labelY = y - 2; anchor = 'end'; }
+      let lx = x, ly, anchor = 'middle';
+      if (pos === 'bottom') ly = y + region.ry + 17;
+      else if (pos === 'right') { lx = x + region.rx + 9; ly = y - 1; anchor = 'start'; }
+      else if (pos === 'left') { lx = x - region.rx - 9; ly = y - 1; anchor = 'end'; }
+      else ly = y - region.ry - 17;
 
-      const label = document.createElementNS(svgNS, 'text');
-      label.setAttribute('x', labelX);
-      label.setAttribute('y', labelY);
-      label.setAttribute('class', 'geo-region-label');
-      label.setAttribute('text-anchor', anchor);
+      const label = svgEl('text', { x: lx, y: ly, class: 'geo-region-label', 'text-anchor': anchor });
       label.textContent = region.name;
       g.appendChild(label);
 
-      const sub = document.createElementNS(svgNS, 'text');
-      sub.setAttribute('x', labelX);
-      sub.setAttribute('y', labelY + 15);
-      sub.setAttribute('class', 'geo-region-sublabel');
-      sub.setAttribute('text-anchor', anchor);
+      const sub = svgEl('text', { x: lx, y: ly + 14, class: 'geo-region-sublabel', 'text-anchor': anchor });
       sub.textContent = region.subtitle;
       g.appendChild(sub);
 
-      const activate = () => selectGeoRegion(region.id);
-      g.addEventListener('click', activate);
-      g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); } });
+      const go = () => selectGeoRegion(region.id);
+      g.addEventListener('click', go);
+      g.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
+      });
+      svg.appendChild(g);
+    });
+  }
 
-      els.geoMap.appendChild(g);
+  /* ----- Pin layout: fan out pins that would otherwise overlap ----- */
+  function layoutPins(points, minDist) {
+    const placed = [];
+    points.forEach(p => {
+      let { x, y } = p;
+      for (let guard = 0; guard < 24; guard++) {
+        const hit = placed.find(q => Math.hypot(q.x - x, q.y - y) < minDist);
+        if (!hit) break;
+        const ang = (placed.length * 2.399 + guard * 0.7);
+        x = hit.x + Math.cos(ang) * minDist;
+        y = hit.y + Math.sin(ang) * minDist;
+      }
+      placed.push({ ...p, x, y });
+    });
+    return placed;
+  }
+
+  /* ----- Zoomed region map with clickable location pins ----- */
+  function renderRegionMap(svg, region, activeLocationId) {
+    svg.setAttribute('viewBox', `0 0 ${GEO_W} ${GEO_H}`);
+    svg.innerHTML = '';
+    const project = drawBasemap(svg, {
+      lonMin: region.bbox.lonMin, lonMax: region.bbox.lonMax,
+      latMin: region.bbox.latMin, latMax: region.bbox.latMax,
+    });
+
+    const pts = region.locations.map(loc => {
+      const p = project(loc.lon, loc.lat);
+      return { loc, x: p.x, y: p.y };
+    });
+
+    layoutPins(pts, 74).forEach(({ loc, x, y }) => {
+      const isActive = loc.id === activeLocationId;
+      const g = svgEl('g', {
+        class: 'geo-pin' + (isActive ? ' is-active' : ''),
+        tabindex: '0', role: 'button', 'aria-label': `${loc.name}. ${loc.blurb}`,
+      });
+
+      // Oversized transparent hit area — comfortable touch target.
+      g.appendChild(svgEl('circle', { cx: x, cy: y, r: 26, class: 'geo-pin-hit' }));
+      g.appendChild(svgEl('circle', { cx: x, cy: y, r: 7, class: 'geo-pin-dot' }));
+
+      const label = svgEl('text', { x, y: y - 14, class: 'geo-pin-label', 'text-anchor': 'middle' });
+      label.textContent = loc.name;
+      g.appendChild(label);
+
+      const go = () => selectGeoLocation(region.id, loc.id);
+      g.addEventListener('click', go);
+      g.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
+      });
+      svg.appendChild(g);
     });
   }
 
   function setGeoBreadcrumb(crumbs) {
     els.geoBreadcrumb.innerHTML = crumbs.map((c, i) => {
       const isLast = i === crumbs.length - 1;
-      return `<button type="button" class="geo-crumb${isLast ? ' is-active' : ''}" data-level="${c.level}">${escapeHtml(c.label)}</button>`;
-    }).join('<span class="geo-crumb-sep">›</span>');
+      return `<button type="button" class="geo-crumb${isLast ? ' is-active' : ''}"${isLast ? ' aria-current="page"' : ''}>${escapeHtml(c.label)}</button>`;
+    }).join('<span class="geo-crumb-sep" aria-hidden="true">›</span>');
     $$('.geo-crumb', els.geoBreadcrumb).forEach((btn, i) => {
       btn.addEventListener('click', () => {
         const c = crumbs[i];
@@ -1239,15 +1362,18 @@
     els.geoRegionPanel.innerHTML = `
       <h2 class="geo-region-title">${escapeHtml(region.name)}</h2>
       <p class="geo-region-blurb">${escapeHtml(region.blurb)}</p>
+      <svg class="geo-map geo-map-region" role="img"
+           aria-label="Zoomed map of ${escapeHtml(region.name)} showing ${region.locations.length} places"></svg>
+      <p class="geo-map-caption">Tap a marker on the map, or pick a place below.</p>
       <div class="geo-location-grid">
         ${region.locations.map(loc => `
           <button type="button" class="geo-location-card" data-location="${escapeHtml(loc.id)}">
             <span class="geo-location-name">${escapeHtml(loc.name)}</span>
             <span class="geo-location-blurb">${escapeHtml(loc.blurb)}</span>
-          </button>
-        `).join('')}
+          </button>`).join('')}
       </div>`;
 
+    renderRegionMap($('.geo-map-region', els.geoRegionPanel), region, null);
     $$('.geo-location-card', els.geoRegionPanel).forEach(card => {
       card.addEventListener('click', () => selectGeoLocation(region.id, card.dataset.location));
     });
@@ -1270,7 +1396,12 @@
     els.geoLocationPanel.innerHTML = `
       <h2 class="geo-region-title">${escapeHtml(loc.name)}</h2>
       <p class="geo-region-blurb">${escapeHtml(loc.blurb)}</p>
+      <svg class="geo-map geo-map-region" role="img"
+           aria-label="Map of ${escapeHtml(region.name)} with ${escapeHtml(loc.name)} highlighted"></svg>
+      <p class="geo-map-caption">${escapeHtml(loc.name)} is highlighted. Tap another marker to jump there.</p>
       <ol class="results-list" id="geoVerseList"></ol>`;
+
+    renderRegionMap($('.geo-map-region', els.geoLocationPanel), region, loc.id);
 
     const list = $('#geoVerseList', els.geoLocationPanel);
     loc.verses.forEach(ref => {

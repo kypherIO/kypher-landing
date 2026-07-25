@@ -438,7 +438,19 @@ select, input{ font-family: inherit; font-size: inherit; color: inherit; }
   display:flex; align-items:flex-start; gap:.6rem; font-family: var(--font-ui); font-size:.9rem;
   background: var(--bg-soft); border-radius: var(--radius-sm); padding: .7rem .8rem; cursor:pointer;
 }
-.plan-day-checkbox{ margin-top:.15rem; width:16px; height:16px; accent-color: var(--signal); flex-shrink:0; cursor:pointer; }
+/* Focus mode: only today's step is shown. */
+.plan-root.is-focus-mode .plan-day:not(.is-today){ display:none; }
+.plan-root.is-focus-mode .plan-progress{ opacity:.75; }
+.btn-focus[aria-pressed="true"]{ background: var(--signal); color:#06211d; border-color: var(--signal); }
+.btn-focus[disabled]{ opacity:.45; cursor:not-allowed; }
+
+/* Comfortable tap targets (>=44px) on primary controls. */
+.action-btn{ min-height: 40px; }
+.btn-small{ min-height: 40px; }
+.tag-btn{ min-height: 36px; }
+.nav-tab{ min-height: 44px; }
+
+.plan-day-checkbox{ margin-top:.1rem; width:22px; height:22px; accent-color: var(--signal); flex-shrink:0; cursor:pointer; }
 
 /* ---------- Text size control ---------- */
 .text-size-control{ display:flex; align-items:center; gap:.3rem; }
@@ -464,28 +476,55 @@ select, input{ font-family: inherit; font-size: inherit; color: inherit; }
 .geo-panel{ background: var(--bg-elevated); border:1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; }
 .geo-map{
   width:100%; height:auto; display:block; border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--signal) 9%, var(--bg-soft));
+  border: 1px solid var(--border); touch-action: manipulation;
 }
-.geo-map-caption{ text-align:center; font-family: var(--font-ui); font-size:.78rem; color: var(--text-muted); margin: .8rem 0 0; }
+.geo-map-region{ margin: 1rem 0 0; }
+.geo-map-caption{ text-align:center; font-family: var(--font-ui); font-size:.78rem; color: var(--text-muted); margin: .7rem 0 1.2rem; }
+.geo-sea{ fill: color-mix(in srgb, var(--signal) 13%, var(--bg-soft)); }
 .geo-land{
-  fill: color-mix(in srgb, var(--gold) 20%, var(--bg-elevated));
-  stroke: color-mix(in srgb, var(--gold) 50%, var(--border)); stroke-width:1;
+  fill: color-mix(in srgb, var(--gold) 22%, var(--bg-elevated));
+  stroke: color-mix(in srgb, var(--gold) 55%, var(--border)); stroke-width:.8;
+  stroke-linejoin: round;
 }
+.geo-lake{ fill: color-mix(in srgb, var(--signal) 32%, var(--bg-soft)); stroke:none; }
+.geo-river{
+  fill:none; stroke: color-mix(in srgb, var(--signal) 55%, transparent);
+  stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round;
+}
+
 .geo-region{ cursor:pointer; }
-.geo-region ellipse{
-  fill: color-mix(in srgb, var(--signal) 30%, var(--bg-elevated)); stroke: var(--signal); stroke-width:1.5; opacity:.8;
+.geo-region-hit{ fill: transparent; }
+.geo-region-shape{
+  fill: color-mix(in srgb, var(--signal) 34%, var(--bg-elevated)); stroke: var(--signal); stroke-width:1.5; opacity:.82;
   transition: opacity .15s, stroke-width .15s;
 }
-.geo-region:hover ellipse, .geo-region:focus-visible ellipse{ opacity:1; stroke-width:2.5; }
+.geo-region:hover .geo-region-shape,
+.geo-region:focus-visible .geo-region-shape{ opacity:1; stroke-width:3; }
 .geo-region:focus-visible{ outline:none; }
 .geo-region-label{
-  font-family: var(--font-display); font-weight:600; font-size:16px; fill: var(--text); pointer-events:none;
-  paint-order: stroke; stroke: var(--bg); stroke-width: 3px;
+  font-family: var(--font-display); font-weight:600; font-size:16px; fill: var(--text); cursor:pointer;
+  paint-order: stroke; stroke: var(--bg); stroke-width: 3.5px;
 }
 .geo-region-sublabel{
-  font-family: var(--font-ui); font-size:10px; fill: var(--text-muted); pointer-events:none;
-  paint-order: stroke; stroke: var(--bg); stroke-width: 3px;
+  font-family: var(--font-ui); font-size:10px; fill: var(--text-muted); cursor:pointer;
+  paint-order: stroke; stroke: var(--bg); stroke-width: 3.5px;
 }
+
+.geo-pin{ cursor:pointer; }
+.geo-pin:focus-visible{ outline:none; }
+.geo-pin-hit{ fill: transparent; }
+.geo-pin-dot{
+  fill: var(--signal); stroke: var(--bg); stroke-width:2.5;
+  transition: r .12s ease, fill .12s ease;
+}
+.geo-pin:hover .geo-pin-dot,
+.geo-pin:focus-visible .geo-pin-dot{ r: 10; }
+.geo-pin.is-active .geo-pin-dot{ fill: var(--gold); r: 10; }
+.geo-pin-label{
+  font-family: var(--font-ui); font-weight:700; font-size:12px; fill: var(--text); cursor:pointer;
+  paint-order: stroke; stroke: var(--bg); stroke-width: 3.5px;
+}
+.geo-pin.is-active .geo-pin-label{ fill: var(--gold); }
 
 .geo-region-title{ font-family: var(--font-display); font-weight:600; font-size: clamp(1.4rem, 3vw, 1.8rem); margin: 0 0 .5rem; }
 .geo-region-blurb{ font-family: var(--font-body); font-size: 1.05rem; line-height:1.6; color: var(--text); margin: 0 0 1.4rem; max-width: 60ch; }

@@ -134,7 +134,6 @@
       "feeling sad",
       "makes me sad",
       "broken hearted",
-      "depressed",
       "feel depressed",
       "feeling depressed",
       "in mourning"
@@ -190,8 +189,7 @@
       "feel alone",
       "feeling alone",
       "no one understands",
-      "feel unseen",
-      "feel invisible"
+      "feel unseen"
     ],
     "intro": "Feeling unseen is one of the hardest kinds of pain. You are known, even in the room where no one else seems to notice.",
     "verses": [
@@ -530,7 +528,6 @@
       "feeling weary",
       "so drained",
       "feel drained",
-      "running on empty",
       "need rest"
     ],
     "intro": "Rest isn't a reward you earn after everything is finished. It's an invitation, offered right in the middle of the mess.",

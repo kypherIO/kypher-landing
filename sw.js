@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bible-bot-v2';
+const CACHE_NAME = 'bible-bot-v3';
 const APP_SHELL = [
   './',
   'index.html',
