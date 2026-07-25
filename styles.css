@@ -71,7 +71,7 @@
 }
 
 *, *::before, *::after{ box-sizing: border-box; }
-html{ color-scheme: dark light; }
+html{ color-scheme: dark light; font-size: calc(16px * var(--font-scale, 1)); }
 body{
   margin: 0;
   background: var(--bg);
@@ -408,6 +408,54 @@ select, input{ font-family: inherit; font-size: inherit; color: inherit; }
 }
 .plan-day-checkbox{ margin-top:.15rem; width:16px; height:16px; accent-color: var(--signal); flex-shrink:0; cursor:pointer; }
 
+/* ---------- Text size control ---------- */
+.text-size-control{ display:flex; align-items:center; gap:.3rem; }
+.text-size-btn{ width:34px; height:34px; font-family: var(--font-ui); font-size:.85rem; font-weight:700; position:relative; }
+.text-size-btn:first-child{ font-size:.7rem; }
+.ts-sub{ font-size:.7em; margin-left:1px; }
+
+/* ---------- Footer extras ---------- */
+.footer-about{ margin-bottom: 1.1rem; padding-bottom: 1.1rem; border-bottom: 1px solid var(--border); }
+.footer-about-lead{ font-family: var(--font-body); font-size: 1rem; line-height:1.6; color: var(--text); margin: 0 0 .6rem; }
+.footer-contact-link{ display:inline-block; color: var(--gold); font-family: var(--font-ui); font-weight:600; font-size:.85rem; text-decoration:none; }
+.footer-contact-link:hover{ text-decoration: underline; }
+.footer-share{ margin-top: .9rem; }
+.footer-share-btn{ border:1px solid var(--border); background: var(--bg-soft); color: var(--gold); font-family: var(--font-ui); font-weight:600; font-size:.78rem; padding: .3rem .7rem; border-radius: 999px; cursor:pointer; }
+.footer-share-btn:hover{ border-color: var(--gold); }
+
+/* ---------- Bible Geolocator ---------- */
+.geo-breadcrumb{ display:flex; align-items:center; justify-content:center; gap:.4rem; flex-wrap:wrap; margin-top: 1.4rem; font-family: var(--font-ui); }
+.geo-crumb{ border:none; background:none; color: var(--text-muted); font-size:.85rem; font-weight:600; cursor:pointer; padding:.2rem .3rem; }
+.geo-crumb.is-active{ color: var(--gold); cursor:default; }
+.geo-crumb-sep{ color: var(--text-muted); }
+
+.geo-panel{ background: var(--bg-elevated); border:1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; }
+.geo-map{ width:100%; height:auto; display:block; }
+.geo-map-caption{ text-align:center; font-family: var(--font-ui); font-size:.78rem; color: var(--text-muted); margin: .8rem 0 0; }
+.geo-sea{ fill: color-mix(in srgb, var(--signal) 12%, transparent); stroke:none; }
+.geo-river{ fill:none; stroke: color-mix(in srgb, var(--signal) 35%, transparent); stroke-width:3; stroke-linecap:round; }
+.geo-region{ cursor:pointer; }
+.geo-region ellipse{
+  fill: color-mix(in srgb, var(--gold) 16%, var(--bg-soft)); stroke: var(--gold); stroke-width:1.5; opacity:.85;
+  transition: opacity .15s, stroke-width .15s;
+}
+.geo-region:hover ellipse, .geo-region:focus-visible ellipse{ opacity:1; stroke-width:2.5; }
+.geo-region:focus-visible{ outline:none; }
+.geo-region-label{ font-family: var(--font-display); font-weight:600; font-size:19px; fill: var(--text); text-anchor:middle; pointer-events:none; }
+.geo-region-sublabel{ font-family: var(--font-ui); font-size:11px; fill: var(--text-muted); text-anchor:middle; pointer-events:none; }
+
+.geo-region-title{ font-family: var(--font-display); font-weight:600; font-size: clamp(1.4rem, 3vw, 1.8rem); margin: 0 0 .5rem; }
+.geo-region-blurb{ font-family: var(--font-body); font-size: 1.05rem; line-height:1.6; color: var(--text); margin: 0 0 1.4rem; max-width: 60ch; }
+.geo-location-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: .9rem; }
+.geo-location-card{
+  text-align:left; border:1px solid var(--border); background: var(--bg-soft); border-radius: var(--radius-md);
+  padding: 1rem 1.1rem; cursor:pointer; display:flex; flex-direction:column; gap:.4rem; transition: border-color .15s, transform .1s;
+}
+.geo-location-card:hover{ border-color: var(--gold); }
+.geo-location-card:active{ transform: scale(.98); }
+.geo-location-name{ font-family: var(--font-display); font-weight:600; font-size: 1.08rem; color: var(--text); }
+.geo-location-blurb{ font-family: var(--font-body); font-size:.92rem; line-height:1.5; color: var(--text-muted); }
+
 /* ---------- Print (weekly plan → PDF) ---------- */
 @media print{
   body *{ visibility: hidden; }
@@ -416,7 +464,7 @@ select, input{ font-family: inherit; font-size: inherit; color: inherit; }
   .plan-day-body{ display:block !important; }
   .plan-day{ break-inside: avoid; page-break-inside: avoid; border-color:#999; }
   .plan-day-head{ cursor:default; }
-  .plan-chev, .plan-day-listen, .mv-listen-btn, .plan-toolbar, .plan-progress{ display:none !important; }
+  .plan-chev, .plan-day-listen, .mv-listen-btn, .mv-share-btn, .plan-toolbar, .plan-progress{ display:none !important; }
   .memory-verse-box{ border-color:#999; }
 }
 

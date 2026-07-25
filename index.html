@@ -3,13 +3,52 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Bible Bot — Search Scripture, Listen, Understand</title>
-<meta name="description" content="Search the Bible by word or phrase in KJV or WEB. Read verses in context, listen with text-to-speech, and open a study note on the theme behind the word." />
+<title>Bible Bot — Search Scripture, Listen, and Build a Weekly Plan</title>
+<meta name="description" content="Search the Bible by word, feeling, or place across KJV, WEB, and BSB. Listen to any verse, build a weekly growth plan from a goal or a sermon, and explore Scripture by ancient geography — free, and works on any device." />
+<meta name="keywords" content="bible search, bible app, weekly bible plan, bible verses by feeling, bible verses by topic, sermon notes, bible geography, KJV, BSB, WEB bible" />
+<link rel="canonical" href="https://kypher.io/" />
+<meta name="robots" content="index, follow" />
+<meta name="author" content="Rod Andrews" />
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Bible Bot" />
+<meta property="og:title" content="Bible Bot — Search Scripture, Listen, and Build a Weekly Plan" />
+<meta property="og:description" content="Free Bible search with audio, a weekly growth planner built from your goals or your pastor's sermon, and a map to explore verses by ancient geography." />
+<meta property="og:url" content="https://kypher.io/" />
+<meta property="og:image" content="https://kypher.io/social-card.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Bible Bot — Search Scripture, Listen, and Build a Weekly Plan" />
+<meta name="twitter:description" content="Free Bible search with audio, a weekly growth planner built from your goals or a sermon, and verses by ancient geography." />
+<meta name="twitter:image" content="https://kypher.io/social-card.png" />
+
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📖%3C/text%3E%3C/svg%3E" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#12131c" media="(prefers-color-scheme: dark)" />
+<meta name="theme-color" content="#f6f2e7" media="(prefers-color-scheme: light)" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Bible Bot" />
+
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;1,500&family=Source+Serif+4:ital,wght@0,400;1,400&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="styles.css" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Bible Bot",
+  "url": "https://kypher.io/",
+  "description": "Free Bible search with audio, a weekly growth planner built from a goal or a sermon, and verses explored by ancient geography.",
+  "applicationCategory": "LifestyleApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Person", "name": "Rod Andrews" }
+}
+</script>
 </head>
 <body>
 
@@ -23,8 +62,13 @@
     </a>
     <div class="header-actions">
       <div class="translation-toggle" id="translationToggle" role="group" aria-label="Choose translation">
-        <button class="tt-btn is-active" data-translation="kjv" type="button">KJV</button>
-        <button class="tt-btn" data-translation="web" type="button">WEB</button>
+        <button class="tt-btn is-active" data-translation="kjv" type="button" title="King James Version">KJV</button>
+        <button class="tt-btn" data-translation="web" type="button" title="World English Bible">WEB</button>
+        <button class="tt-btn" data-translation="bsb" type="button" title="Berean Standard Bible — closest free reading to the NIV">BSB</button>
+      </div>
+      <div class="text-size-control" role="group" aria-label="Text size">
+        <button id="fontSmallerBtn" class="icon-btn text-size-btn" type="button" aria-label="Decrease text size" title="Smaller text">A<span class="ts-sub">−</span></button>
+        <button id="fontLargerBtn" class="icon-btn text-size-btn" type="button" aria-label="Increase text size" title="Larger text">A<span class="ts-sub">+</span></button>
       </div>
       <button id="themeToggle" class="icon-btn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
         <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 4.5a1 1 0 0 1-1-1V2a1 1 0 1 1 2 0v1.5a1 1 0 0 1-1 1Zm0 15a1 1 0 0 1 1 1V22a1 1 0 1 1-2 0v-1.5a1 1 0 0 1 1-1ZM4.5 12a1 1 0 0 1-1 1H2a1 1 0 1 1 0-2h1.5a1 1 0 0 1 1 1Zm18 0a1 1 0 0 1-1 1h-1.5a1 1 0 1 1 0-2H21a1 1 0 0 1 1 1ZM6.34 6.34a1 1 0 0 1-1.41 0L3.87 5.28a1 1 0 0 1 1.41-1.41l1.06 1.06a1 1 0 0 1 0 1.41Zm12.73 12.73a1 1 0 0 1-1.41 0l-1.06-1.06a1 1 0 0 1 1.41-1.41l1.06 1.06a1 1 0 0 1 0 1.41ZM6.34 17.66a1 1 0 0 1 0 1.41l-1.06 1.06a1 1 0 1 1-1.41-1.41l1.06-1.06a1 1 0 0 1 1.41 0ZM19.07 4.87a1 1 0 0 1 0 1.41l-1.06 1.06a1 1 0 1 1-1.41-1.41l1.06-1.06a1 1 0 0 1 1.41 0ZM12 7a5 5 0 1 1 0 10A5 5 0 0 1 12 7Z"/></svg>
@@ -38,6 +82,7 @@
   <div class="wrap app-nav-inner">
     <button class="nav-tab is-active" type="button" data-view="search" aria-selected="true">Search Scripture</button>
     <button class="nav-tab" type="button" data-view="planner" aria-selected="false">Weekly Planner</button>
+    <button class="nav-tab" type="button" data-view="geo" aria-selected="false">Bible Geolocator</button>
   </div>
 </nav>
 
@@ -47,7 +92,7 @@
     <div class="wrap">
       <p class="eyebrow">A scripture companion</p>
       <h1>Type a word. Bible Bot finds every verse that holds it.</h1>
-      <p class="hero-sub">Search the King James or World English Bible, hear any verse read aloud, and open a short note on how the word is used across Scripture.</p>
+      <p class="hero-sub">Search KJV, WEB, or BSB, hear any verse read aloud, and open a short note on how the word is used across Scripture.</p>
 
       <form id="searchForm" class="search-bar" role="search" autocomplete="off">
         <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="m21.71 20.29-3.4-3.39A8 8 0 1 0 16.9 18.3l3.39 3.4a1 1 0 0 0 1.42-1.41ZM4 10a6 6 0 1 1 6 6 6 6 0 0 1-6-6Z"/></svg>
@@ -142,6 +187,30 @@
     </div>
   </section>
 </div>
+
+<div id="geoView" hidden>
+  <section class="planner-hero">
+    <div class="wrap">
+      <p class="eyebrow">Bible Geolocator</p>
+      <h1>Explore Scripture by ancient geography.</h1>
+      <p class="hero-sub">Click a region on the map, then a place within it, to see the verses tied to that ground.</p>
+      <nav class="geo-breadcrumb" id="geoBreadcrumb" aria-label="Geolocator navigation">
+        <button type="button" class="geo-crumb is-active" data-level="map">Map</button>
+      </nav>
+    </div>
+  </section>
+
+  <section class="plan-section">
+    <div class="wrap">
+      <div id="geoMapPanel" class="geo-panel">
+        <svg id="geoMap" class="geo-map" viewBox="0 0 800 560" role="img" aria-label="Stylized map of the ancient Near East and Mediterranean"></svg>
+        <p class="geo-map-caption">A stylized, not-to-scale map — for getting your bearings, not for navigation.</p>
+      </div>
+      <div id="geoRegionPanel" class="geo-panel" hidden></div>
+      <div id="geoLocationPanel" class="geo-panel" hidden></div>
+    </div>
+  </section>
+</div>
 </main>
 
 <div id="chapterModal" class="modal" hidden aria-hidden="true">
@@ -183,8 +252,13 @@
 
 <footer class="site-footer">
   <div class="wrap">
-    <p>Bible Bot runs entirely in your browser. Text: King James Version and World English Bible, both public domain. Audio is generated locally via the Web Speech API — nothing is uploaded or stored.</p>
+    <div class="footer-about">
+      <p class="footer-about-lead">Bible Bot is a personal project by Rod Andrews, built to make Scripture a little easier to reach, read aloud, and actually live out during a busy week.</p>
+      <a class="footer-contact-link" href="mailto:rod@kypher.io?subject=Bible%20Bot%20feedback">Got an idea, a bug, or just want to say hi? Email Rod →</a>
+    </div>
+    <p>Bible Bot runs entirely in your browser. Text: King James Version, World English Bible, and Berean Standard Bible — all public domain. Audio is generated locally via the Web Speech API — nothing is uploaded or stored.</p>
     <p class="footer-note">Study notes are brief, non-denominational starting points for reflection, not authoritative theological commentary — please study alongside your own church, pastor, or trusted resources.</p>
+    <p class="footer-share">Know someone this could help? <button type="button" id="footerShareBtn" class="footer-share-btn">Share Bible Bot</button></p>
   </div>
 </footer>
 
@@ -211,6 +285,10 @@
       <button class="action-btn copy-btn" type="button">
         <svg class="action-icon" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M15.5 3h-8A1.5 1.5 0 0 0 6 4.5v12A1.5 1.5 0 0 0 7.5 18h8a1.5 1.5 0 0 0 1.5-1.5v-12A1.5 1.5 0 0 0 15.5 3Zm0 13.5h-8v-12h8v12ZM4 7.5v13A1.5 1.5 0 0 0 5.5 22h9v-1.5h-9v-13H4Z"/></svg>
         <span class="label">Copy</span>
+      </button>
+      <button class="action-btn share-img-btn" type="button">
+        <svg class="action-icon" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M18 16.08a2.9 2.9 0 0 0-1.94.75l-7.05-4.11a2.9 2.9 0 0 0 0-1.44l6.97-4.06A3 3 0 1 0 15 5.5a3 3 0 0 0 .05.53l-6.97 4.06a3 3 0 1 0 0 3.82l7.05 4.11a2.9 2.9 0 1 0 2.87-2.94Z"/></svg>
+        <span class="label">Share</span>
       </button>
     </div>
     <div class="verse-note" hidden></div>

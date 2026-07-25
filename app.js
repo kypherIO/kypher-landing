@@ -5,6 +5,7 @@
   const TRANSLATIONS = {
     kjv: { label: 'KJV', name: 'King James Version', file: 'data/bible-kjv.json' },
     web: { label: 'WEB', name: 'World English Bible', file: 'data/bible-web.json' },
+    bsb: { label: 'BSB', name: 'Berean Standard Bible', file: 'data/bible-bsb.json' },
   };
 
   /* ---------------- State ---------------- */
@@ -15,6 +16,8 @@
     themeKeys: [],
     comfortTopics: [],
     growthThemes: [],
+    geoRegions: [],
+    fontScale: 1,
     bookAliases: new Map(),
     translation: 'kjv',
     bibles: {},
@@ -81,6 +84,15 @@
     sermonKeywordsInput: $('#sermonKeywordsInput'),
     planEmptyState: $('#planEmptyState'),
     planRoot: $('#planRoot'),
+    geoView: $('#geoView'),
+    geoBreadcrumb: $('#geoBreadcrumb'),
+    geoMap: $('#geoMap'),
+    geoMapPanel: $('#geoMapPanel'),
+    geoRegionPanel: $('#geoRegionPanel'),
+    geoLocationPanel: $('#geoLocationPanel'),
+    fontSmallerBtn: $('#fontSmallerBtn'),
+    fontLargerBtn: $('#fontLargerBtn'),
+    footerShareBtn: $('#footerShareBtn'),
   };
 
   /* ---------------- Utilities ---------------- */
@@ -142,14 +154,15 @@
   }
 
   async function loadCoreData() {
-    const [metaRes, themesRes, comfortRes, growthRes] = await Promise.all([
+    const [metaRes, themesRes, comfortRes, growthRes, geoRes] = await Promise.all([
       fetch('data/books-meta.json'),
       fetch('data/study-themes.json'),
       fetch('data/comfort-topics.json'),
       fetch('data/growth-themes.json'),
+      fetch('data/geo-regions.json'),
     ]);
-    const [meta, themes, comfort, growth] = await Promise.all([
-      metaRes.json(), themesRes.json(), comfortRes.json(), growthRes.json(),
+    const [meta, themes, comfort, growth, geo] = await Promise.all([
+      metaRes.json(), themesRes.json(), comfortRes.json(), growthRes.json(), geoRes.json(),
     ]);
     state.booksMeta = meta;
     meta.forEach(m => state.booksByName.set(m.name, m));
@@ -157,6 +170,7 @@
     state.themeKeys = Object.keys(themes).sort((a, b) => b.length - a.length);
     state.comfortTopics = comfort;
     state.growthThemes = growth;
+    state.geoRegions = geo;
     buildBookAliases();
     populateBookFilter();
   }
@@ -414,6 +428,12 @@
         labelEl.textContent = 'Failed';
       }
       setTimeout(() => { labelEl.textContent = original; }, 1500);
+    });
+
+    const shareImgBtn = $('.share-img-btn', node);
+    shareImgBtn.addEventListener('click', () => {
+      const label = `${v.book} ${v.chapter}:${v.verse}${vEnd !== v.verse ? '-' + vEnd : ''} (${TRANSLATIONS[state.translation].label})`;
+      shareVerseAsImage(label, v.text, v.book, shareImgBtn);
     });
 
     return node;
@@ -828,6 +848,10 @@
             <svg class="action-icon" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M3 10v4h4l5 5V5L7 10H3Zm13.5 2a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4Z"/></svg>
             <span class="label">Listen</span>
           </button>
+          <button class="action-btn mv-share-btn" type="button">
+            <svg class="action-icon" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M18 16.08a2.9 2.9 0 0 0-1.94.75l-7.05-4.11a2.9 2.9 0 0 0 0-1.44l6.97-4.06A3 3 0 1 0 15 5.5a3 3 0 0 0 .05.53l-6.97 4.06a3 3 0 1 0 0 3.82l7.05 4.11a2.9 2.9 0 1 0 2.87-2.94Z"/></svg>
+            <span class="label">Share</span>
+          </button>
         </div>
         <div class="plan-progress">
           <div class="plan-progress-bar"><div class="plan-progress-fill" style="width:${pct}%"></div></div>
@@ -865,6 +889,15 @@
         toggleSpeak(btn, () => ({ text: `${refLabel(day)}. ${v.text}`, label: `${refLabel(day)}, ${TRANSLATIONS[state.translation].label}` }));
       });
     });
+
+    const mvShareBtn = $('.mv-share-btn', els.planRoot);
+    if (mvShareBtn) {
+      mvShareBtn.addEventListener('click', () => {
+        const mv = resolveVerseRef(plan.memoryVerse);
+        if (!mv) return;
+        shareVerseAsImage(refLabel(plan.memoryVerse), mv.text, plan.title, mvShareBtn);
+      });
+    }
 
     const mvListenBtn = $('.mv-listen-btn', els.planRoot);
     if (mvListenBtn) {
@@ -1035,6 +1068,269 @@
     });
   }
 
+  /* =========================================================
+     Bible Geolocator
+     ========================================================= */
+  const SEA_SHAPE = 'M0,120 C120,90 180,150 260,120 C320,98 340,140 380,150 C300,220 200,260 60,260 C20,220 0,170 0,120 Z';
+  const NILE_PATH = 'M270,540 C280,470 300,420 320,380 C335,352 320,320 300,290';
+  const EUPHRATES_PATH = 'M600,150 C640,220 660,280 680,340 C695,382 720,420 760,450';
+
+  function renderGeoMap() {
+    const svgNS = 'http://www.w3.org/2000/svg';
+    els.geoMap.innerHTML = '';
+
+    const sea = document.createElementNS(svgNS, 'path');
+    sea.setAttribute('d', SEA_SHAPE);
+    sea.setAttribute('class', 'geo-sea');
+    els.geoMap.appendChild(sea);
+
+    [NILE_PATH, EUPHRATES_PATH].forEach(d => {
+      const river = document.createElementNS(svgNS, 'path');
+      river.setAttribute('d', d);
+      river.setAttribute('class', 'geo-river');
+      els.geoMap.appendChild(river);
+    });
+
+    state.geoRegions.forEach(region => {
+      const g = document.createElementNS(svgNS, 'g');
+      g.setAttribute('class', 'geo-region');
+      g.setAttribute('tabindex', '0');
+      g.setAttribute('role', 'button');
+      g.setAttribute('aria-label', `${region.name} — ${region.subtitle}`);
+
+      const ellipse = document.createElementNS(svgNS, 'ellipse');
+      ellipse.setAttribute('cx', region.cx);
+      ellipse.setAttribute('cy', region.cy);
+      ellipse.setAttribute('rx', region.rx);
+      ellipse.setAttribute('ry', region.ry);
+      g.appendChild(ellipse);
+
+      const label = document.createElementNS(svgNS, 'text');
+      label.setAttribute('x', region.cx);
+      label.setAttribute('y', region.cy - 4);
+      label.setAttribute('class', 'geo-region-label');
+      label.textContent = region.name;
+      g.appendChild(label);
+
+      const sub = document.createElementNS(svgNS, 'text');
+      sub.setAttribute('x', region.cx);
+      sub.setAttribute('y', region.cy + 16);
+      sub.setAttribute('class', 'geo-region-sublabel');
+      sub.textContent = region.subtitle;
+      g.appendChild(sub);
+
+      const activate = () => selectGeoRegion(region.id);
+      g.addEventListener('click', activate);
+      g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); } });
+
+      els.geoMap.appendChild(g);
+    });
+  }
+
+  function setGeoBreadcrumb(crumbs) {
+    els.geoBreadcrumb.innerHTML = crumbs.map((c, i) => {
+      const isLast = i === crumbs.length - 1;
+      return `<button type="button" class="geo-crumb${isLast ? ' is-active' : ''}" data-level="${c.level}">${escapeHtml(c.label)}</button>`;
+    }).join('<span class="geo-crumb-sep">›</span>');
+    $$('.geo-crumb', els.geoBreadcrumb).forEach((btn, i) => {
+      btn.addEventListener('click', () => {
+        const c = crumbs[i];
+        if (c.level === 'map') showGeoMap();
+        else if (c.level === 'region') selectGeoRegion(c.id);
+      });
+    });
+  }
+
+  function showGeoMap() {
+    els.geoMapPanel.hidden = false;
+    els.geoRegionPanel.hidden = true;
+    els.geoLocationPanel.hidden = true;
+    setGeoBreadcrumb([{ level: 'map', label: 'Map' }]);
+  }
+
+  function selectGeoRegion(regionId) {
+    const region = state.geoRegions.find(r => r.id === regionId);
+    if (!region) return;
+    els.geoMapPanel.hidden = true;
+    els.geoLocationPanel.hidden = true;
+    els.geoRegionPanel.hidden = false;
+    setGeoBreadcrumb([{ level: 'map', label: 'Map' }, { level: 'region', id: region.id, label: region.name }]);
+
+    els.geoRegionPanel.innerHTML = `
+      <h2 class="geo-region-title">${escapeHtml(region.name)}</h2>
+      <p class="geo-region-blurb">${escapeHtml(region.blurb)}</p>
+      <div class="geo-location-grid">
+        ${region.locations.map(loc => `
+          <button type="button" class="geo-location-card" data-location="${escapeHtml(loc.id)}">
+            <span class="geo-location-name">${escapeHtml(loc.name)}</span>
+            <span class="geo-location-blurb">${escapeHtml(loc.blurb)}</span>
+          </button>
+        `).join('')}
+      </div>`;
+
+    $$('.geo-location-card', els.geoRegionPanel).forEach(card => {
+      card.addEventListener('click', () => selectGeoLocation(region.id, card.dataset.location));
+    });
+  }
+
+  function selectGeoLocation(regionId, locationId) {
+    const region = state.geoRegions.find(r => r.id === regionId);
+    if (!region) return;
+    const loc = region.locations.find(l => l.id === locationId);
+    if (!loc) return;
+    els.geoMapPanel.hidden = true;
+    els.geoRegionPanel.hidden = true;
+    els.geoLocationPanel.hidden = false;
+    setGeoBreadcrumb([
+      { level: 'map', label: 'Map' },
+      { level: 'region', id: region.id, label: region.name },
+      { level: 'location', label: loc.name },
+    ]);
+
+    els.geoLocationPanel.innerHTML = `
+      <h2 class="geo-region-title">${escapeHtml(loc.name)}</h2>
+      <p class="geo-region-blurb">${escapeHtml(loc.blurb)}</p>
+      <ol class="results-list" id="geoVerseList"></ol>`;
+
+    const list = $('#geoVerseList', els.geoLocationPanel);
+    loc.verses.forEach(ref => {
+      const v = resolveVerseRef(ref);
+      if (!v) return;
+      list.appendChild(buildVerseCard(v, ''));
+    });
+  }
+
+  function initGeo() {
+    renderGeoMap();
+    showGeoMap();
+  }
+
+  /* ---------------- Font size control ---------------- */
+  function applyFontScale() {
+    document.documentElement.style.setProperty('--font-scale', state.fontScale);
+  }
+  function initFontSize() {
+    const saved = parseFloat(localStorage.getItem('biblebot-font-scale'));
+    if (!isNaN(saved)) state.fontScale = saved;
+    applyFontScale();
+    els.fontSmallerBtn.addEventListener('click', () => {
+      state.fontScale = Math.max(0.85, Math.round((state.fontScale - 0.1) * 10) / 10);
+      applyFontScale();
+      localStorage.setItem('biblebot-font-scale', state.fontScale);
+    });
+    els.fontLargerBtn.addEventListener('click', () => {
+      state.fontScale = Math.min(1.4, Math.round((state.fontScale + 0.1) * 10) / 10);
+      applyFontScale();
+      localStorage.setItem('biblebot-font-scale', state.fontScale);
+    });
+  }
+
+  /* ---------------- Shareable verse images ---------------- */
+  function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
+    const words = text.split(' ');
+    let line = '';
+    const lines = [];
+    for (const w of words) {
+      const test = line + w + ' ';
+      if (ctx.measureText(test).width > maxWidth && line) { lines.push(line.trim()); line = w + ' '; }
+      else line = test;
+    }
+    lines.push(line.trim());
+    const startY = y - ((lines.length - 1) * lineHeight) / 2;
+    lines.forEach((l, i) => ctx.fillText(l, x, startY + i * lineHeight));
+    return lines.length;
+  }
+
+  async function generateVerseImage(refText, verseText, kicker) {
+    if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch {} }
+    const size = 1080;
+    const canvas = document.createElement('canvas');
+    canvas.width = size; canvas.height = size;
+    const ctx = canvas.getContext('2d');
+
+    const grad = ctx.createLinearGradient(0, 0, size, size);
+    grad.addColorStop(0, '#14151f');
+    grad.addColorStop(1, '#1f2233');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, size, size);
+
+    ctx.strokeStyle = 'rgba(205,164,94,0.8)';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(50, 50, size - 100, size - 100);
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#5fd0c4';
+    ctx.font = '700 26px "Space Grotesk", sans-serif';
+    ctx.fillText(kicker.toUpperCase(), size / 2, 160);
+
+    ctx.fillStyle = '#ece7d9';
+    ctx.font = 'italic 500 46px "Fraunces", Georgia, serif';
+    const quote = verseText.length > 260 ? verseText.slice(0, 257).trim() + '…' : verseText;
+    wrapCanvasText(ctx, `“${quote}”`, size / 2, size / 2 - 20, size - 220, 62);
+
+    ctx.fillStyle = '#cda45e';
+    ctx.font = '700 32px "Space Grotesk", sans-serif';
+    ctx.fillText(refText, size / 2, size - 160);
+
+    ctx.fillStyle = '#9d97ab';
+    ctx.font = '600 24px "Space Grotesk", sans-serif';
+    ctx.fillText('Bible Bot', size / 2, size - 96);
+
+    return canvas;
+  }
+
+  async function shareVerseAsImage(refText, verseText, kicker, btn) {
+    const labelEl = btn ? $('.label', btn) : null;
+    const original = labelEl ? labelEl.textContent : null;
+    if (labelEl) labelEl.textContent = 'Making…';
+    try {
+      const canvas = await generateVerseImage(refText, verseText, kicker);
+      canvas.toBlob(async (blob) => {
+        if (!blob) { if (labelEl) labelEl.textContent = original; return; }
+        const file = new File([blob], 'bible-bot-verse.png', { type: 'image/png' });
+        try {
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], title: 'Bible Bot', text: `${verseText} — ${refText}` });
+          } else {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'bible-bot-verse.png';
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 4000);
+          }
+        } catch {}
+        if (labelEl) { labelEl.textContent = 'Shared!'; setTimeout(() => { labelEl.textContent = original; }, 1500); }
+      }, 'image/png');
+    } catch (err) {
+      console.error(err);
+      if (labelEl) labelEl.textContent = original;
+    }
+  }
+
+  /* ---------------- Footer share ---------------- */
+  function initFooterShare() {
+    if (!els.footerShareBtn) return;
+    els.footerShareBtn.addEventListener('click', async () => {
+      const shareData = {
+        title: 'Bible Bot',
+        text: 'Bible Bot — free Bible search with audio, a weekly growth planner, and Scripture by ancient geography.',
+        url: location.origin + location.pathname,
+      };
+      try {
+        if (navigator.share) {
+          await navigator.share(shareData);
+          return;
+        }
+      } catch {}
+      try {
+        await navigator.clipboard.writeText(shareData.url);
+        const original = els.footerShareBtn.textContent;
+        els.footerShareBtn.textContent = 'Link copied!';
+        setTimeout(() => { els.footerShareBtn.textContent = original; }, 1500);
+      } catch {}
+    });
+  }
+
   /* ---------------- Nav / view switching ---------------- */
   function switchView(view) {
     state.view = view;
@@ -1045,6 +1341,7 @@
     });
     els.searchView.hidden = view !== 'search';
     els.plannerView.hidden = view !== 'planner';
+    els.geoView.hidden = view !== 'geo';
     if (speechSynthesis.speaking) {
       speechSynthesis.cancel();
       els.audioBar.hidden = true;
@@ -1100,11 +1397,13 @@
   /* ---------------- Init ---------------- */
   async function init() {
     initTheme();
+    initFontSize();
     renderQuickTags();
     initEvents();
     initTranslationToggle();
     initNav();
     initPlanner();
+    initFooterShare();
     els.statusBar.textContent = 'Loading the Bible…';
     try {
       await loadCoreData();
@@ -1115,6 +1414,7 @@
       return;
     }
     els.statusBar.textContent = '';
+    initGeo();
 
     Object.keys(TRANSLATIONS).forEach(key => {
       if (key !== state.translation) loadTranslation(key).catch(() => {});
@@ -1123,6 +1423,7 @@
     const sharedLoaded = tryLoadSharedPlan();
     if (!sharedLoaded) {
       if (location.hash === '#planner') switchView('planner');
+      else if (location.hash === '#geo') switchView('geo');
       const params = new URL(location.href).searchParams;
       const initialQ = params.get('q');
       if (initialQ) {
@@ -1132,6 +1433,10 @@
     }
 
     window.addEventListener('hashchange', () => { tryLoadSharedPlan(); });
+
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
   }
 
   document.addEventListener('DOMContentLoaded', init);

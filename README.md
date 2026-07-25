@@ -1,49 +1,67 @@
-# Bible Bot — Search Scripture, Listen, Understand
+# Bible Bot — Search Scripture, Listen, Plan
 
-A free, fast, client-side Bible search engine. Type a word, name, or short
-phrase and instantly find every matching verse in the King James Version or
-World English Bible, listen to verses read aloud, jump into full chapters
-for context, and open a short study note explaining how that word or theme
-is used across Scripture.
+A personal project by Rod Andrews. A free, fast, client-side Bible app: type
+a word, a feeling, or a goal, and find matching verses, listen to them read
+aloud, build a weekly growth plan around them, or explore Scripture by
+ancient geography.
 
 No backend, no database, no build step — it's a static site that runs
-entirely in the browser.
+entirely in the browser, and it's installable as a PWA on any phone,
+tablet, or desktop.
 
 ## Features
 
+### Search
 - **Instant word/phrase search** across all 66 books (~31,000 verses),
   with live results as you type.
-- **Two translations** — switch between the King James Version and the
-  World English Bible (both public domain) with one click; the second
-  translation loads in the background so switching feels instant.
+- **Three translations** — King James Version, World English Bible, and
+  Berean Standard Bible, all public domain. (BSB is the closest free reading
+  to the NIV; the NIV itself is copyrighted by Biblica/Zondervan and can't
+  be legally bundled.) Switch with one click; translations load in the
+  background so switching feels instant.
 - **Filters** by testament (Old/New) and by book, plus sort by Bible order
   or relevance.
-- **Listen** — verses and full chapters can be read aloud using the
-  browser's built-in Web Speech API (adjustable speed, no audio files or
-  server required).
-- **Study notes** — a curated dictionary of ~90 biblical themes (love,
-  faith, grace, forgiveness, justice, etc.) surfaces a short, non-denominational
-  explanation of how a searched word/theme is used in Scripture, plus related
-  themes found in the same verse.
-- **Read chapter** — opens the full chapter in context with the matched
-  verse highlighted.
-- **Comfort search** — type how you're feeling (anxious, afraid, discouraged,
-  lonely, overwhelmed, guilty, grieving, etc.) and a curated set of verses
-  and a short comforting note surface above the regular results.
-- **Weekly Planner** — answer one prompt ("What do you want to biblically
-  accomplish to grow with God this week?") and get a full week: a memory
-  verse, and daily verses, reflections, prayer prompts, and one small action
-  per day — dated to the actual current week, with per-day progress
-  checkboxes that persist locally.
-- **Pastor Planner** — build the same weekly plan from a sermon instead of a
-  personal goal: enter what your pastor preached on, which verses they
-  mentioned, and a few keywords, and it slots the sermon's own verses into
-  the week alongside supporting content from the same theme library.
-- Every plan can be **copied as plain text**, **printed/saved as a PDF**
-  (isolated print layout via `window.print()`), or turned into a
-  **shareable link** that regenerates the same plan — with dates recomputed
-  to whoever opens it — with no account or backend involved.
-- **Light/dark theme**, responsive layout, shareable search URLs (`?q=...`).
+- **Listen** — verses and full chapters read aloud via the browser's
+  built-in Web Speech API (adjustable speed, no audio files or server).
+- **Study notes** — a curated dictionary of ~90 biblical themes surfaces a
+  short, non-denominational explanation of how a searched word is used in
+  Scripture.
+- **Comfort search** — type how you're feeling (anxious, afraid,
+  discouraged, lonely, overwhelmed, guilty, grieving, etc.) and a curated
+  set of verses and a short comforting note surface above the regular
+  results.
+- **Share as image** — turn any verse into a branded, Instagram-ready
+  square image, shared straight to your phone's native share sheet (or
+  downloaded on desktop).
+
+### Weekly Planner & Pastor Planner
+- Answer one prompt ("What do you want to biblically accomplish to grow
+  with God this week?") and get a full week: a memory verse, and daily
+  verses, reflections, prayer prompts, and one small action per day — dated
+  to the actual current week, with per-day progress checkboxes.
+- **Pastor Planner** builds the same plan from a sermon instead: what your
+  pastor preached on, which verses they mentioned, and a few keywords — the
+  sermon's own verses get slotted into the week and badged, alongside
+  supporting content from the same theme library.
+- Every plan can be **copied as plain text**, **printed/saved as a PDF**, or
+  turned into a **shareable link** that regenerates the same plan for
+  whoever opens it — no account or backend involved.
+
+### Bible Geolocator
+- A stylized map of the ancient Near East and Mediterranean — click a
+  region (Israel & Canaan, Egypt, Sinai, Assyria & Babylon, Asia Minor,
+  Greece & Macedonia, Arabia) to see key locations within it, then click a
+  location (Jerusalem, Nineveh, Mount Sinai, Ephesus, Athens...) to see the
+  verses tied to that ground.
+
+### Everywhere
+- **Light/dark theme**, adjustable text size, responsive layout that works
+  on phone, tablet, and desktop.
+- Installable as a **PWA** — "Add to Home Screen" gives it an app icon and
+  offline access via a service worker; no App Store/Play Store account
+  needed.
+- SEO basics in place: meta description, Open Graph/Twitter card image,
+  JSON-LD, `sitemap.xml`, `robots.txt`.
 
 ## Running locally
 
@@ -63,27 +81,55 @@ This is a fully static site — deploy the repository as-is to GitHub Pages,
 Netlify, Vercel, Cloudflare Pages, or any static host. There are no
 environment variables or build steps required.
 
+**Before going live on a real domain**, update the placeholder URL
+(`https://kypher.io/`) used in `index.html` (canonical link, Open Graph/
+Twitter tags, JSON-LD) and in `sitemap.xml`/`robots.txt` to match wherever
+it's actually hosted.
+
+### About the native mobile app
+
+This build ships as a PWA rather than a native iOS/Android app: it's
+installable from the browser (Safari/Chrome → "Add to Home Screen") and
+behaves like an app — icon, full-screen, offline — with no developer
+account or app store review required. A true App Store/Play Store listing
+is a separate step that needs your own Apple Developer ($99/yr) and Google
+Play ($25 one-time) accounts, since publishing has to happen under your own
+identity. The practical path there is wrapping this same web app with a
+tool like Capacitor and submitting it yourself (or asking for help once you
+have those accounts) — the app would still just be "an optimized viewer"
+over this same code, as intended.
+
 ## Project structure
 
 ```
-index.html                  Page markup (search view + planner view)
-styles.css                   Styling (light/dark theme, responsive + print layout)
+index.html                  Page markup (search, planner, and geolocator views)
+styles.css                   Styling (light/dark theme, adjustable text size,
+                               responsive + print layout)
 app.js                        Search, audio, translation switching, study notes,
-                                chapter view, comfort search, weekly/pastor planner
+                                chapter view, comfort search, weekly/pastor planner,
+                                Bible Geolocator, shareable verse images
+manifest.json                 PWA manifest
+sw.js                          Service worker (offline caching)
+icons/                         PWA app icons
+social-card.png                Open Graph / social share image
+sitemap.xml, robots.txt        SEO
 data/bible-kjv.json            King James Version text (public domain)
 data/bible-web.json            World English Bible text (public domain)
+data/bible-bsb.json            Berean Standard Bible text (public domain)
 data/books-meta.json           Book names, abbreviations, testament, genre
 data/study-themes.json         Curated theme/keyword study notes
 data/comfort-topics.json       Emotion → curated comfort verses + framing
 data/growth-themes.json        Weekly growth tracks (memory verse + 7 days each)
+data/geo-regions.json          Bible Geolocator regions, locations, and verses
 ```
 
 ## Data & credits
 
-- Bible text: King James Version and World English Bible, both public
-  domain. (The NIV is copyrighted by Biblica/Zondervan and isn't bundled —
-  the WEB was chosen as a modern-English public-domain alternative.)
+- Bible text: King James Version, World English Bible, and Berean Standard
+  Bible — all public domain.
 - Audio is generated on-demand in your browser via the Web Speech API —
   nothing is uploaded, recorded, or stored.
-- Study notes are original, brief, non-denominational summaries meant as a
-  starting point for reflection, not authoritative theological commentary.
+- Study notes and the Weekly Planner's growth tracks are original, brief,
+  non-denominational content meant as a starting point for reflection, not
+  authoritative theological commentary.
+- Built by Rod Andrews (rod@kypher.io).

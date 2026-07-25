@@ -1,0 +1,739 @@
+[
+  {
+    "id": "israel",
+    "name": "Israel & Canaan",
+    "subtitle": "The Promised Land",
+    "cx": 490,
+    "cy": 320,
+    "rx": 55,
+    "ry": 80,
+    "blurb": "The heartland of biblical history — the land promised to Abraham's descendants, and the setting for most of the Old and New Testaments.",
+    "locations": [
+      {
+        "id": "jerusalem",
+        "name": "Jerusalem",
+        "blurb": "The City of David, site of Solomon's Temple, and where Jesus was crucified and rose again.",
+        "verses": [
+          {
+            "book": "2 Samuel",
+            "chapter": 5,
+            "verse": 7
+          },
+          {
+            "book": "Psalms",
+            "chapter": 122,
+            "verse": 6
+          },
+          {
+            "book": "Luke",
+            "chapter": 19,
+            "verse": 41
+          }
+        ]
+      },
+      {
+        "id": "bethlehem",
+        "name": "Bethlehem",
+        "blurb": "A small town south of Jerusalem — birthplace of King David, and of Jesus.",
+        "verses": [
+          {
+            "book": "Micah",
+            "chapter": 5,
+            "verse": 2
+          },
+          {
+            "book": "Luke",
+            "chapter": 2,
+            "verse": 4,
+            "verseEnd": 7
+          },
+          {
+            "book": "Matthew",
+            "chapter": 2,
+            "verse": 1
+          }
+        ]
+      },
+      {
+        "id": "nazareth",
+        "name": "Nazareth",
+        "blurb": "A small hill town in Galilee — where Jesus grew up.",
+        "verses": [
+          {
+            "book": "Luke",
+            "chapter": 1,
+            "verse": 26,
+            "verseEnd": 27
+          },
+          {
+            "book": "Luke",
+            "chapter": 2,
+            "verse": 39,
+            "verseEnd": 40
+          },
+          {
+            "book": "Matthew",
+            "chapter": 2,
+            "verse": 23
+          }
+        ]
+      },
+      {
+        "id": "galilee",
+        "name": "Galilee",
+        "blurb": "The region around the Sea of Galilee where much of Jesus's public ministry took place.",
+        "verses": [
+          {
+            "book": "Matthew",
+            "chapter": 4,
+            "verse": 23
+          },
+          {
+            "book": "John",
+            "chapter": 2,
+            "verse": 1,
+            "verseEnd": 2
+          },
+          {
+            "book": "Matthew",
+            "chapter": 8,
+            "verse": 23,
+            "verseEnd": 24
+          }
+        ]
+      },
+      {
+        "id": "jericho",
+        "name": "Jericho",
+        "blurb": "The first Canaanite city Israel conquered — later where Jesus healed a blind man and met Zacchaeus.",
+        "verses": [
+          {
+            "book": "Joshua",
+            "chapter": 6,
+            "verse": 20
+          },
+          {
+            "book": "Luke",
+            "chapter": 18,
+            "verse": 35
+          },
+          {
+            "book": "Luke",
+            "chapter": 19,
+            "verse": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "egypt",
+    "name": "Egypt",
+    "subtitle": "Land of bondage and deliverance",
+    "cx": 250,
+    "cy": 410,
+    "rx": 62,
+    "ry": 70,
+    "blurb": "Where Israel began as a nation, endured slavery, and from which God delivered them in the Exodus.",
+    "locations": [
+      {
+        "id": "goshen",
+        "name": "Goshen",
+        "blurb": "The fertile region where Jacob's family settled and grew into a nation.",
+        "verses": [
+          {
+            "book": "Genesis",
+            "chapter": 47,
+            "verse": 6
+          },
+          {
+            "book": "Genesis",
+            "chapter": 47,
+            "verse": 27
+          },
+          {
+            "book": "Exodus",
+            "chapter": 1,
+            "verse": 7
+          }
+        ]
+      },
+      {
+        "id": "nile",
+        "name": "The Nile",
+        "blurb": "Egypt's great river — where baby Moses was hidden, and later struck in the plagues.",
+        "verses": [
+          {
+            "book": "Exodus",
+            "chapter": 1,
+            "verse": 22
+          },
+          {
+            "book": "Exodus",
+            "chapter": 2,
+            "verse": 3
+          },
+          {
+            "book": "Exodus",
+            "chapter": 7,
+            "verse": 20,
+            "verseEnd": 21
+          }
+        ]
+      },
+      {
+        "id": "pharaohs-court",
+        "name": "Pharaoh's Court",
+        "blurb": "Where Moses confronted Pharaoh through the plagues, until Israel was finally let go.",
+        "verses": [
+          {
+            "book": "Exodus",
+            "chapter": 5,
+            "verse": 1
+          },
+          {
+            "book": "Exodus",
+            "chapter": 12,
+            "verse": 29,
+            "verseEnd": 30
+          },
+          {
+            "book": "Exodus",
+            "chapter": 12,
+            "verse": 31
+          }
+        ]
+      },
+      {
+        "id": "flight-to-egypt",
+        "name": "The Holy Family's Flight",
+        "blurb": "Centuries later, Joseph and Mary fled to Egypt with the infant Jesus to escape Herod.",
+        "verses": [
+          {
+            "book": "Matthew",
+            "chapter": 2,
+            "verse": 13,
+            "verseEnd": 14
+          },
+          {
+            "book": "Matthew",
+            "chapter": 2,
+            "verse": 15
+          },
+          {
+            "book": "Hosea",
+            "chapter": 11,
+            "verse": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sinai",
+    "name": "Sinai & the Wilderness",
+    "subtitle": "Between slavery and the Promised Land",
+    "cx": 420,
+    "cy": 470,
+    "rx": 52,
+    "ry": 50,
+    "blurb": "The wilderness between Egypt and Canaan — where Israel received the Law and learned to depend on God.",
+    "locations": [
+      {
+        "id": "red-sea",
+        "name": "The Red Sea",
+        "blurb": "Where God parted the waters so Israel could escape Pharaoh's army.",
+        "verses": [
+          {
+            "book": "Exodus",
+            "chapter": 14,
+            "verse": 21,
+            "verseEnd": 22
+          },
+          {
+            "book": "Exodus",
+            "chapter": 14,
+            "verse": 13
+          },
+          {
+            "book": "Exodus",
+            "chapter": 15,
+            "verse": 1
+          }
+        ]
+      },
+      {
+        "id": "mount-sinai",
+        "name": "Mount Sinai",
+        "blurb": "Where Moses received the Ten Commandments directly from God.",
+        "verses": [
+          {
+            "book": "Exodus",
+            "chapter": 19,
+            "verse": 18
+          },
+          {
+            "book": "Exodus",
+            "chapter": 20,
+            "verse": 1,
+            "verseEnd": 2
+          },
+          {
+            "book": "Exodus",
+            "chapter": 31,
+            "verse": 18
+          }
+        ]
+      },
+      {
+        "id": "wilderness-wandering",
+        "name": "The Wilderness Wandering",
+        "blurb": "Forty years of learning to trust God for daily provision.",
+        "verses": [
+          {
+            "book": "Exodus",
+            "chapter": 16,
+            "verse": 4
+          },
+          {
+            "book": "Deuteronomy",
+            "chapter": 8,
+            "verse": 2
+          },
+          {
+            "book": "Deuteronomy",
+            "chapter": 8,
+            "verse": 3
+          }
+        ]
+      },
+      {
+        "id": "kadesh-barnea",
+        "name": "Kadesh-Barnea",
+        "blurb": "Where the twelve spies scouted Canaan, and Israel's unbelief cost them a generation.",
+        "verses": [
+          {
+            "book": "Numbers",
+            "chapter": 13,
+            "verse": 1,
+            "verseEnd": 2
+          },
+          {
+            "book": "Numbers",
+            "chapter": 13,
+            "verse": 30
+          },
+          {
+            "book": "Numbers",
+            "chapter": 20,
+            "verse": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "mesopotamia",
+    "name": "Assyria & Babylon",
+    "subtitle": "The great eastern empires",
+    "cx": 700,
+    "cy": 270,
+    "rx": 75,
+    "ry": 78,
+    "blurb": "The great river-valley empires east of Canaan — where Abraham began his journey, Jonah was sent to Nineveh, and Judah was later exiled.",
+    "locations": [
+      {
+        "id": "ur",
+        "name": "Ur",
+        "blurb": "Abraham's birthplace, before God called him to leave everything familiar.",
+        "verses": [
+          {
+            "book": "Genesis",
+            "chapter": 11,
+            "verse": 31
+          },
+          {
+            "book": "Genesis",
+            "chapter": 15,
+            "verse": 7
+          },
+          {
+            "book": "Nehemiah",
+            "chapter": 9,
+            "verse": 7
+          }
+        ]
+      },
+      {
+        "id": "nineveh",
+        "name": "Nineveh",
+        "blurb": "The Assyrian capital Jonah was sent to warn — and reluctantly did.",
+        "verses": [
+          {
+            "book": "Jonah",
+            "chapter": 1,
+            "verse": 2
+          },
+          {
+            "book": "Jonah",
+            "chapter": 3,
+            "verse": 4,
+            "verseEnd": 5
+          },
+          {
+            "book": "Jonah",
+            "chapter": 3,
+            "verse": 10
+          }
+        ]
+      },
+      {
+        "id": "babylon",
+        "name": "Babylon",
+        "blurb": "Where Judah was carried into exile after Jerusalem fell.",
+        "verses": [
+          {
+            "book": "Psalms",
+            "chapter": 137,
+            "verse": 1
+          },
+          {
+            "book": "Jeremiah",
+            "chapter": 29,
+            "verse": 11
+          },
+          {
+            "book": "Daniel",
+            "chapter": 1,
+            "verse": 1,
+            "verseEnd": 2
+          }
+        ]
+      },
+      {
+        "id": "daniel-babylon",
+        "name": "Daniel in Babylon",
+        "blurb": "A young exile who stayed faithful in a foreign empire's royal court.",
+        "verses": [
+          {
+            "book": "Daniel",
+            "chapter": 3,
+            "verse": 16,
+            "verseEnd": 18
+          },
+          {
+            "book": "Daniel",
+            "chapter": 6,
+            "verse": 16
+          },
+          {
+            "book": "Daniel",
+            "chapter": 6,
+            "verse": 22
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "asia-minor",
+    "name": "Asia Minor",
+    "subtitle": "Paul's mission field",
+    "cx": 380,
+    "cy": 120,
+    "rx": 88,
+    "ry": 52,
+    "blurb": "Modern-day Turkey — the setting for Paul's missionary journeys and the seven churches John wrote to in Revelation.",
+    "locations": [
+      {
+        "id": "ephesus",
+        "name": "Ephesus",
+        "blurb": "A major city where Paul spent years teaching, and later home to one of the seven churches.",
+        "verses": [
+          {
+            "book": "Acts",
+            "chapter": 19,
+            "verse": 1
+          },
+          {
+            "book": "Ephesians",
+            "chapter": 1,
+            "verse": 1
+          },
+          {
+            "book": "Revelation",
+            "chapter": 2,
+            "verse": 4
+          }
+        ]
+      },
+      {
+        "id": "galatia",
+        "name": "Galatia",
+        "blurb": "A region Paul planted churches in, then wrote to defend the gospel of grace.",
+        "verses": [
+          {
+            "book": "Galatians",
+            "chapter": 1,
+            "verse": 1,
+            "verseEnd": 2
+          },
+          {
+            "book": "Galatians",
+            "chapter": 3,
+            "verse": 1
+          },
+          {
+            "book": "Acts",
+            "chapter": 16,
+            "verse": 6
+          }
+        ]
+      },
+      {
+        "id": "colossae",
+        "name": "Colossae",
+        "blurb": "A smaller city Paul wrote to about the supremacy of Christ.",
+        "verses": [
+          {
+            "book": "Colossians",
+            "chapter": 1,
+            "verse": 2
+          },
+          {
+            "book": "Colossians",
+            "chapter": 2,
+            "verse": 1
+          },
+          {
+            "book": "Colossians",
+            "chapter": 4,
+            "verse": 16
+          }
+        ]
+      },
+      {
+        "id": "tarsus",
+        "name": "Tarsus",
+        "blurb": "Paul's hometown — a Roman city he was proud to call his own.",
+        "verses": [
+          {
+            "book": "Acts",
+            "chapter": 9,
+            "verse": 11
+          },
+          {
+            "book": "Acts",
+            "chapter": 21,
+            "verse": 39
+          },
+          {
+            "book": "Acts",
+            "chapter": 22,
+            "verse": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "greece",
+    "name": "Greece & Macedonia",
+    "subtitle": "The gospel reaches Europe",
+    "cx": 140,
+    "cy": 160,
+    "rx": 72,
+    "ry": 68,
+    "blurb": "Where Paul brought the gospel into Europe for the first time — Philippi, Athens, Corinth, and beyond.",
+    "locations": [
+      {
+        "id": "philippi",
+        "name": "Philippi",
+        "blurb": "The first church Paul planted in Europe, beginning with Lydia's household.",
+        "verses": [
+          {
+            "book": "Acts",
+            "chapter": 16,
+            "verse": 12
+          },
+          {
+            "book": "Acts",
+            "chapter": 16,
+            "verse": 14
+          },
+          {
+            "book": "Philippians",
+            "chapter": 1,
+            "verse": 1
+          }
+        ]
+      },
+      {
+        "id": "athens",
+        "name": "Athens",
+        "blurb": "Where Paul reasoned with philosophers on Mars Hill about the 'unknown god.'",
+        "verses": [
+          {
+            "book": "Acts",
+            "chapter": 17,
+            "verse": 16
+          },
+          {
+            "book": "Acts",
+            "chapter": 17,
+            "verse": 22
+          },
+          {
+            "book": "Acts",
+            "chapter": 17,
+            "verse": 34
+          }
+        ]
+      },
+      {
+        "id": "corinth",
+        "name": "Corinth",
+        "blurb": "A busy port city where Paul planted a church he'd later write two famous letters to.",
+        "verses": [
+          {
+            "book": "Acts",
+            "chapter": 18,
+            "verse": 1
+          },
+          {
+            "book": "1 Corinthians",
+            "chapter": 1,
+            "verse": 2
+          },
+          {
+            "book": "Acts",
+            "chapter": 18,
+            "verse": 9
+          }
+        ]
+      },
+      {
+        "id": "thessalonica",
+        "name": "Thessalonica",
+        "blurb": "A city whose new believers' faith became known well beyond their own region.",
+        "verses": [
+          {
+            "book": "Acts",
+            "chapter": 17,
+            "verse": 1
+          },
+          {
+            "book": "1 Thessalonians",
+            "chapter": 1,
+            "verse": 1
+          },
+          {
+            "book": "Acts",
+            "chapter": 17,
+            "verse": 6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "arabia",
+    "name": "Arabia & the East",
+    "subtitle": "Deserts, exile, and unlikely visitors",
+    "cx": 630,
+    "cy": 460,
+    "rx": 62,
+    "ry": 58,
+    "blurb": "The lands east and south of Canaan — Job's homeland, Moses's years in exile, and the Queen of Sheba's journey.",
+    "locations": [
+      {
+        "id": "uz",
+        "name": "The Land of Uz",
+        "blurb": "Job's homeland — the setting for the Bible's most searching book on suffering.",
+        "verses": [
+          {
+            "book": "Job",
+            "chapter": 1,
+            "verse": 1
+          },
+          {
+            "book": "Job",
+            "chapter": 1,
+            "verse": 3
+          },
+          {
+            "book": "Job",
+            "chapter": 42,
+            "verse": 12
+          }
+        ]
+      },
+      {
+        "id": "midian",
+        "name": "Midian",
+        "blurb": "Where Moses fled after killing an Egyptian, and spent decades as a shepherd before God called him.",
+        "verses": [
+          {
+            "book": "Exodus",
+            "chapter": 2,
+            "verse": 15
+          },
+          {
+            "book": "Exodus",
+            "chapter": 3,
+            "verse": 1
+          },
+          {
+            "book": "Exodus",
+            "chapter": 18,
+            "verse": 1
+          }
+        ]
+      },
+      {
+        "id": "sheba",
+        "name": "Sheba",
+        "blurb": "Home of the queen who traveled far to test Solomon's famous wisdom.",
+        "verses": [
+          {
+            "book": "1 Kings",
+            "chapter": 10,
+            "verse": 1
+          },
+          {
+            "book": "1 Kings",
+            "chapter": 10,
+            "verse": 2
+          },
+          {
+            "book": "1 Kings",
+            "chapter": 10,
+            "verse": 13
+          }
+        ]
+      },
+      {
+        "id": "moab",
+        "name": "Moab",
+        "blurb": "A neighboring land — Ruth's homeland, and where Israel camped before entering Canaan.",
+        "verses": [
+          {
+            "book": "Ruth",
+            "chapter": 1,
+            "verse": 1
+          },
+          {
+            "book": "Ruth",
+            "chapter": 1,
+            "verse": 4
+          },
+          {
+            "book": "Numbers",
+            "chapter": 20,
+            "verse": 14
+          }
+        ]
+      }
+    ]
+  }
+]
