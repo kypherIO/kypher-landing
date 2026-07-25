@@ -1,13 +1,21 @@
 (() => {
   'use strict';
 
+  /* ---------------- Translations ---------------- */
+  const TRANSLATIONS = {
+    kjv: { label: 'KJV', name: 'King James Version', file: 'data/bible-kjv.json' },
+    web: { label: 'WEB', name: 'World English Bible', file: 'data/bible-web.json' },
+  };
+
   /* ---------------- State ---------------- */
   const state = {
-    verses: [],          // flat verse index
-    booksMeta: [],        // book metadata
+    booksMeta: [],
     booksByName: new Map(),
-    themes: {},            // study-themes dictionary
-    themeKeys: [],          // sorted longest-first for phrase matching
+    themes: {},
+    themeKeys: [],
+    translation: 'kjv',
+    bibles: {},          // translation key -> flat verse array (lazily loaded/parsed)
+    bibleRaw: {},         // translation key -> raw parsed book/chapter JSON (for chapter lookups)
     query: '',
     testament: 'ALL',
     book: '',
@@ -16,7 +24,7 @@
     shown: 0,
     pageSize: 25,
     rate: 1,
-    lastUtteranceBuilder: null, // fn() => {text, label} to rebuild on rate change
+    lastUtteranceBuilder: null,
   };
 
   const QUICK_TAGS = ['love', 'faith', 'hope', 'peace', 'grace', 'forgiveness', 'fear not', 'wisdom', 'joy', 'strength', 'prayer', 'salvation'];
@@ -38,9 +46,9 @@
     loadMoreWrap: $('#loadMoreWrap'),
     loadMoreBtn: $('#loadMoreBtn'),
     emptyState: $('#emptyState'),
-    introState: $('#introState'),
     cardTemplate: $('#verseCardTemplate'),
     themeToggle: $('#themeToggle'),
+    translationToggle: $('#translationToggle'),
     modal: $('#chapterModal'),
     modalTitle: $('#chapterModalTitle'),
     modalBody: $('#chapterModalBody'),
@@ -55,40 +63,26 @@
   function escapeHtml(s) {
     return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   }
-
   function escapeRegExp(s) {
     return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
-
   function debounce(fn, ms) {
     let t;
     return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
   }
-
   function normalizeQuery(q) {
     return q.trim().replace(/\s+/g, ' ');
   }
 
   /* ---------------- Data loading ---------------- */
-  async function loadData() {
-    const [bibleRes, metaRes, themesRes] = await Promise.all([
-      fetch('data/bible-kjv.json'),
-      fetch('data/books-meta.json'),
-      fetch('data/study-themes.json'),
-    ]);
-    const [bible, meta, themes] = await Promise.all([bibleRes.json(), metaRes.json(), themesRes.json()]);
-
-    state.booksMeta = meta;
-    meta.forEach(m => state.booksByName.set(m.name, m));
-    state.themes = themes;
-    state.themeKeys = Object.keys(themes).sort((a, b) => b.length - a.length);
-
+  function flattenBible(bookObjs) {
     const flat = [];
-    bible.forEach((bookObj) => {
+    bookObjs.forEach((bookObj) => {
       const bmeta = state.booksByName.get(bookObj.b) || {};
       bookObj.c.forEach((versesArr, chIdx) => {
         const chapterNum = chIdx + 1;
         versesArr.forEach((text, vIdx) => {
+          if (!text) return; // a handful of verses are absent in some translations (manuscript variants)
           flat.push({
             book: bookObj.b,
             abbr: bmeta.abbr || bookObj.b,
@@ -102,8 +96,29 @@
         });
       });
     });
-    state.verses = flat;
+    return flat;
+  }
 
+  async function loadTranslation(key) {
+    if (state.bibles[key]) return state.bibles[key];
+    const res = await fetch(TRANSLATIONS[key].file);
+    const bookObjs = await res.json();
+    state.bibleRaw[key] = bookObjs;
+    const flat = flattenBible(bookObjs);
+    state.bibles[key] = flat;
+    return flat;
+  }
+
+  async function loadCoreData() {
+    const [metaRes, themesRes] = await Promise.all([
+      fetch('data/books-meta.json'),
+      fetch('data/study-themes.json'),
+    ]);
+    const [meta, themes] = await Promise.all([metaRes.json(), themesRes.json()]);
+    state.booksMeta = meta;
+    meta.forEach(m => state.booksByName.set(m.name, m));
+    state.themes = themes;
+    state.themeKeys = Object.keys(themes).sort((a, b) => b.length - a.length);
     populateBookFilter();
   }
 
@@ -141,12 +156,16 @@
   }
 
   /* ---------------- Search ---------------- */
+  function activeVerses() {
+    return state.bibles[state.translation] || [];
+  }
+
   function computeResults(query) {
     const q = query.toLowerCase();
     if (!q) return [];
     const qWordBoundary = new RegExp(`\\b${escapeRegExp(q)}\\b`);
     const out = [];
-    for (const v of state.verses) {
+    for (const v of activeVerses()) {
       if (state.testament !== 'ALL' && v.testament !== state.testament) continue;
       if (state.book && v.book !== state.book) continue;
       const idx = v.textLower.indexOf(q);
@@ -180,12 +199,10 @@
       els.results.innerHTML = '';
       els.loadMoreWrap.hidden = true;
       els.emptyState.hidden = true;
-      els.introState.hidden = false;
       els.statusBar.textContent = '';
       return;
     }
 
-    els.introState.hidden = true;
     state.results = computeResults(q);
     state.shown = 0;
     els.results.innerHTML = '';
@@ -202,10 +219,11 @@
     els.emptyState.hidden = total !== 0;
     els.loadMoreWrap.hidden = state.shown >= total;
 
+    const transLabel = TRANSLATIONS[state.translation].label;
     if (total === 0) {
-      els.statusBar.textContent = `No results for “${q}”.`;
+      els.statusBar.textContent = `No results for “${q}” in the ${transLabel}.`;
     } else {
-      els.statusBar.textContent = `${total.toLocaleString()} verse${total === 1 ? '' : 's'} found for “${q}” — showing ${state.shown.toLocaleString()}.`;
+      els.statusBar.textContent = `${total.toLocaleString()} verse${total === 1 ? '' : 's'} found for “${q}” (${transLabel}) — showing ${state.shown.toLocaleString()}.`;
     }
   }
 
@@ -227,8 +245,8 @@
 
     const listenBtn = $('.listen-btn', node);
     listenBtn.addEventListener('click', () => {
-      const label = `${v.book} ${v.chapter}:${v.verse}`;
-      toggleSpeak(listenBtn, () => ({ text: `${label}. ${v.text}`, label }));
+      const label = `${v.book} ${v.chapter}:${v.verse}, ${TRANSLATIONS[state.translation].label}`;
+      toggleSpeak(listenBtn, () => ({ text: `${v.book} ${v.chapter}:${v.verse}. ${v.text}`, label }));
     });
 
     const noteBtn = $('.note-btn', node);
@@ -258,14 +276,15 @@
     const copyBtn = $('.copy-btn', node);
     copyBtn.addEventListener('click', async () => {
       const label = `${v.book} ${v.chapter}:${v.verse}`;
-      const original = copyBtn.innerHTML;
+      const labelEl = $('.label', copyBtn);
+      const original = labelEl.textContent;
       try {
-        await navigator.clipboard.writeText(`"${v.text}" — ${label} (KJV)`);
-        copyBtn.innerHTML = '<span class="action-icon">✓</span> Copied';
+        await navigator.clipboard.writeText(`"${v.text}" — ${label} (${TRANSLATIONS[state.translation].label})`);
+        labelEl.textContent = 'Copied';
       } catch {
-        copyBtn.innerHTML = '<span class="action-icon">⚠</span> Failed';
+        labelEl.textContent = 'Failed';
       }
-      setTimeout(() => { copyBtn.innerHTML = original; }, 1500);
+      setTimeout(() => { labelEl.textContent = original; }, 1500);
     });
 
     return node;
@@ -319,8 +338,7 @@
 
   /* ---------------- Chapter modal ---------------- */
   function openChapterModal(bookName, chapter, targetVerse) {
-    const bmeta = state.booksByName.get(bookName);
-    const chapterVerses = state.verses.filter(v => v.book === bookName && v.chapter === chapter);
+    const chapterVerses = activeVerses().filter(v => v.book === bookName && v.chapter === chapter);
     els.modalTitle.textContent = `${bookName} ${chapter}`;
     els.modalBody.innerHTML = chapterVerses.map(v => {
       const isTarget = v.verse === targetVerse;
@@ -338,7 +356,7 @@
 
     els.chapterListenBtn.onclick = () => {
       const fullText = chapterVerses.map(v => v.text).join(' ');
-      toggleSpeak(els.chapterListenBtn, () => ({ text: fullText, label: `${bookName} ${chapter}` }), '🔊 Read chapter', '⏸ Stop reading');
+      toggleSpeak(els.chapterListenBtn, () => ({ text: fullText, label: `${bookName} ${chapter}, ${TRANSLATIONS[state.translation].label}` }));
     };
   }
 
@@ -349,9 +367,7 @@
   }
 
   /* ---------------- Speech / audio ---------------- */
-  let currentUtterance = null;
   let currentSpeakBtn = null;
-  let currentLabels = null;
 
   function pickVoice() {
     const voices = speechSynthesis.getVoices();
@@ -380,20 +396,23 @@
       els.audioBar.hidden = true;
       resetSpeakButton();
     };
-    currentUtterance = utter;
     speechSynthesis.speak(utter);
   }
 
+  function setButtonLabel(btn, text) {
+    const labelEl = $('.label', btn);
+    if (labelEl) labelEl.textContent = text;
+  }
+
   function resetSpeakButton() {
-    if (currentSpeakBtn && currentLabels) {
-      currentSpeakBtn.innerHTML = currentLabels.idle;
+    if (currentSpeakBtn) {
+      setButtonLabel(currentSpeakBtn, currentSpeakBtn.dataset.idleLabel || 'Listen');
       currentSpeakBtn.classList.remove('is-active');
     }
     currentSpeakBtn = null;
-    currentLabels = null;
   }
 
-  function toggleSpeak(btn, buildFn, idleLabel, activeLabel) {
+  function toggleSpeak(btn, buildFn) {
     const isThisSpeaking = currentSpeakBtn === btn && speechSynthesis.speaking;
     if (isThisSpeaking) {
       speechSynthesis.cancel();
@@ -406,11 +425,8 @@
     const { text, label } = buildFn();
     state.lastUtteranceBuilder = buildFn;
     currentSpeakBtn = btn;
-    currentLabels = {
-      idle: idleLabel || '<span class="action-icon">🔊</span> Listen',
-      active: activeLabel || '<span class="action-icon">⏸</span> Stop',
-    };
-    btn.innerHTML = currentLabels.active;
+    btn.dataset.idleLabel = $('.label', btn) ? $('.label', btn).textContent : 'Listen';
+    setButtonLabel(btn, 'Stop');
     btn.classList.add('is-active');
     speak(text, label);
   }
@@ -435,14 +451,43 @@
 
   /* ---------------- Theme (light/dark) ---------------- */
   function initTheme() {
-    const saved = localStorage.getItem('kypher-theme');
+    const saved = localStorage.getItem('biblebot-theme');
     if (saved) document.documentElement.setAttribute('data-theme', saved);
     els.themeToggle.addEventListener('click', () => {
       const current = document.documentElement.getAttribute('data-theme')
         || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
       const next = current === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
-      localStorage.setItem('kypher-theme', next);
+      localStorage.setItem('biblebot-theme', next);
+    });
+  }
+
+  /* ---------------- Translation switching ---------------- */
+  async function setTranslation(key) {
+    if (key === state.translation) return;
+    $$('.tt-btn', els.translationToggle).forEach(b => b.classList.toggle('is-active', b.dataset.translation === key));
+    state.translation = key;
+
+    if (!state.bibles[key]) {
+      els.statusBar.textContent = `Loading the ${TRANSLATIONS[key].name}…`;
+      try {
+        await loadTranslation(key);
+      } catch (err) {
+        els.statusBar.textContent = `Could not load the ${TRANSLATIONS[key].name}. Please try again.`;
+        console.error(err);
+        return;
+      }
+    }
+    if (state.query) {
+      runSearch();
+    } else {
+      els.statusBar.textContent = '';
+    }
+  }
+
+  function initTranslationToggle() {
+    $$('.tt-btn', els.translationToggle).forEach(btn => {
+      btn.addEventListener('click', () => setTranslation(btn.dataset.translation));
     });
   }
 
@@ -489,15 +534,22 @@
     initTheme();
     renderQuickTags();
     initEvents();
+    initTranslationToggle();
     els.statusBar.textContent = 'Loading the Bible…';
     try {
-      await loadData();
+      await loadCoreData();
+      await loadTranslation('kjv');
     } catch (err) {
       els.statusBar.textContent = 'Could not load Bible data. Please refresh the page.';
       console.error(err);
       return;
     }
     els.statusBar.textContent = '';
+
+    // Warm the second translation in the background so switching feels instant.
+    Object.keys(TRANSLATIONS).forEach(key => {
+      if (key !== state.translation) loadTranslation(key).catch(() => {});
+    });
 
     const params = new URL(location.href).searchParams;
     const initialQ = params.get('q');

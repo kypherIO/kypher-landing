@@ -1,9 +1,10 @@
-# Kypher — Bible Search, Read & Study
+# Bible Bot — Search Scripture, Listen, Understand
 
 A free, fast, client-side Bible search engine. Type a word, name, or short
-phrase and instantly find every matching verse in the King James Version,
-listen to verses read aloud, jump into full chapters for context, and open a
-short study note explaining how that word or theme is used across Scripture.
+phrase and instantly find every matching verse in the King James Version or
+World English Bible, listen to verses read aloud, jump into full chapters
+for context, and open a short study note explaining how that word or theme
+is used across Scripture.
 
 No backend, no database, no build step — it's a static site that runs
 entirely in the browser.
@@ -12,6 +13,9 @@ entirely in the browser.
 
 - **Instant word/phrase search** across all 66 books (~31,000 verses),
   with live results as you type.
+- **Two translations** — switch between the King James Version and the
+  World English Bible (both public domain) with one click; the second
+  translation loads in the background so switching feels instant.
 - **Filters** by testament (Old/New) and by book, plus sort by Bible order
   or relevance.
 - **Listen** — verses and full chapters can be read aloud using the
@@ -46,17 +50,20 @@ environment variables or build steps required.
 ## Project structure
 
 ```
-index.html          Page markup
-styles.css           Styling (light/dark theme, responsive layout)
-app.js                Search, audio, study notes, chapter view logic
-data/bible-kjv.json    Full King James Bible text (public domain)
-data/books-meta.json   Book names, abbreviations, testament, genre
-data/study-themes.json Curated theme/keyword study notes
+index.html               Page markup
+styles.css                Styling (light/dark theme, responsive layout)
+app.js                     Search, audio, translation switching, study notes, chapter view
+data/bible-kjv.json         King James Version text (public domain)
+data/bible-web.json         World English Bible text (public domain)
+data/books-meta.json        Book names, abbreviations, testament, genre
+data/study-themes.json      Curated theme/keyword study notes
 ```
 
 ## Data & credits
 
-- Bible text: King James Version (public domain).
+- Bible text: King James Version and World English Bible, both public
+  domain. (The NIV is copyrighted by Biblica/Zondervan and isn't bundled —
+  the WEB was chosen as a modern-English public-domain alternative.)
 - Audio is generated on-demand in your browser via the Web Speech API —
   nothing is uploaded, recorded, or stored.
 - Study notes are original, brief, non-denominational summaries meant as a
