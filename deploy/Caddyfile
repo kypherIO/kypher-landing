@@ -1,0 +1,49 @@
+# Bible Bot — Caddy config for kypher.cc
+# Caddy obtains and renews Let's Encrypt certificates automatically.
+
+# Redirect the bare-www host to the canonical apex domain.
+www.kypher.cc {
+	redir https://kypher.cc{uri} permanent
+}
+
+kypher.cc {
+	root * /var/www/biblebot
+
+	encode zstd gzip
+
+	header {
+		# Security
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options    "nosniff"
+		X-Frame-Options           "SAMEORIGIN"
+		Referrer-Policy           "strict-origin-when-cross-origin"
+		Permissions-Policy        "geolocation=(), camera=(), microphone=()"
+		-Server
+	}
+
+	# Bible text and map data never change without a filename change —
+	# cache them hard. Everything else revalidates.
+	@immutable path /data/* /icons/* /social-card.png
+	header @immutable Cache-Control "public, max-age=31536000, immutable"
+
+	@html path *.html /
+	header @html Cache-Control "public, max-age=0, must-revalidate"
+
+	# The service worker must never be served stale, or clients get
+	# pinned to an old build.
+	@sw path /sw.js /manifest.json
+	header @sw Cache-Control "no-cache"
+
+	file_server
+
+	# Single-page app: unknown paths fall back to the shell.
+	try_files {path} {path}/ /index.html
+
+	log {
+		output file /var/log/caddy/kypher.cc.log {
+			roll_size 10MiB
+			roll_keep 5
+		}
+		format console
+	}
+}

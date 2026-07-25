@@ -1,0 +1,189 @@
+[
+  {
+    "id": "peace",
+    "title": "Peace Over Anxiety",
+    "description": "Trade racing thoughts for a steady mind.",
+    "keywords": ["anxiety", "anxious", "worry", "worried", "peace", "calm", "stress", "overwhelmed", "fear", "restless", "panic"],
+    "weekIntro": "This week is about practicing a specific move: naming what's stealing your peace, and handing it to God on purpose instead of carrying it by default. Small, repeated surrender — not one big breakthrough — is what builds calm.",
+    "memoryVerse": { "book": "Philippians", "chapter": 4, "verse": 6, "verseEnd": 7 },
+    "days": [
+      { "focus": "Name it", "book": "Philippians", "chapter": 4, "verse": 6, "verseEnd": 7, "reflection": "Anxiety loses some of its grip the moment you say exactly what it is, instead of letting it stay a vague cloud.", "prayer": "God, here's what's actually on my mind today — help me hand it to you instead of replaying it.", "action": "Write down the one thing you're most anxious about right now, in one sentence." },
+      { "focus": "Today only", "book": "Matthew", "chapter": 6, "verse": 34, "reflection": "Most anxiety is next week's problem, borrowed early. You only have today's portion to carry.", "prayer": "Help me stay in today, God, instead of pre-living tomorrow's worst case.", "action": "When a future worry pops up today, say \"not today\" and return to the task in front of you." },
+      { "focus": "Cast it", "book": "1 Peter", "chapter": 5, "verse": 7, "reflection": "\"Casting\" is an active throw, not a polite mention — you're meant to actually let go of it, not just acknowledge it.", "prayer": "I'm throwing this care to you, God, on purpose, not just thinking about throwing it.", "action": "Write your worry on paper and either tear it up or put it somewhere out of sight." },
+      { "focus": "He's near", "book": "Psalms", "chapter": 34, "verse": 18, "reflection": "You don't have to get calm first to earn God's closeness — he's already close, especially when you're not okay.", "prayer": "Thank you for staying near when I'm struggling, not just when I have it together.", "action": "Take five slow breaths and notice: you're not actually alone in this room." },
+      { "focus": "Strength, not size", "book": "Isaiah", "chapter": 41, "verse": 10, "reflection": "The promise isn't that the problem shrinks — it's that you're not the one holding it up by yourself.", "prayer": "Steady me, God — I don't need the situation to change yet, just help to face it.", "action": "Ask one person to check in with you this week — don't carry it solo." },
+      { "focus": "Peace, not the world's kind", "book": "John", "chapter": 14, "verse": 27, "reflection": "This peace isn't the absence of a problem; it's steadiness in the middle of one — which is why the world can't hand it to you.", "prayer": "Give me the kind of peace that doesn't depend on my circumstances changing.", "action": "Notice one moment today you feel a flicker of calm — say thanks for it, however small." },
+      { "focus": "Rest the mind", "book": "Psalms", "chapter": 94, "verse": 19, "reflection": "Anxious thoughts multiply on their own; comfort has to be let in on purpose, especially at the end of a full week.", "prayer": "Quiet my mind tonight, God — replace the replaying with rest.", "action": "Before bed, write down one good thing from this week, even a small one." }
+    ]
+  },
+  {
+    "id": "faith",
+    "title": "Growing in Faith & Trust",
+    "description": "Move from knowing about God to actually leaning on him.",
+    "keywords": ["faith", "trust", "believe", "belief", "doubt", "trusting god"],
+    "weekIntro": "Faith grows the same way trust grows with a person — through small moments of choosing to rely on someone, repeated over time. This week isn't about eliminating doubt; it's about practicing trust in the middle of it.",
+    "memoryVerse": { "book": "Hebrews", "chapter": 11, "verse": 1 },
+    "days": [
+      { "focus": "What faith actually is", "book": "Hebrews", "chapter": 11, "verse": 1, "reflection": "Faith isn't pretending you're certain — it's staying confident in God's character while the outcome is still unclear.", "prayer": "Grow my confidence in who you are, even where I can't see how things resolve.", "action": "Write one thing you're trusting God with right now, even without proof yet." },
+      { "focus": "Trust over understanding", "book": "Proverbs", "chapter": 3, "verse": 5, "verseEnd": 6, "reflection": "You're not asked to have it all figured out — just to not lean entirely on your own read of the situation.", "prayer": "Where I'm relying only on my own judgment, help me lean on you instead.", "action": "Before one decision today, pause and ask God for direction first." },
+      { "focus": "Small starts count", "book": "Matthew", "chapter": 17, "verse": 20, "reflection": "Faith doesn't need to be impressive to work — it needs to be real, even if it's small.", "prayer": "I don't need bigger faith today, just faith I actually use.", "action": "Take one small step today that requires trusting God, even a little." },
+      { "focus": "Faith with feet", "book": "James", "chapter": 2, "verse": 17, "reflection": "Real trust in someone shows up in how you act, not just what you say you believe.", "prayer": "Let my faith show up in what I do today, not just what I say I believe.", "action": "Do one thing today that only makes sense if you actually trust God's promises." },
+      { "focus": "Honest doubt", "book": "Mark", "chapter": 9, "verse": 24, "reflection": "You're allowed to believe and still have questions — bringing both to God honestly is itself an act of faith.", "prayer": "I believe — help the doubting part of me too.", "action": "Name one doubt honestly, either in prayer or to someone you trust." },
+      { "focus": "He's been faithful before", "book": "Lamentations", "chapter": 3, "verse": 22, "verseEnd": 23, "reflection": "Trusting God for today gets easier when you actually look back at how he's shown up before.", "prayer": "Thank you for the ways you've already been faithful — help me remember them today.", "action": "List three past moments where things worked out better than you expected." },
+      { "focus": "Not by sight", "book": "2 Corinthians", "chapter": 5, "verse": 7, "reflection": "Faith means acting on what you know to be true even when you can't yet see the evidence of it.", "prayer": "Help me walk forward this week even in the parts I can't fully see.", "action": "Choose one area to keep trusting God on this week without needing proof first." }
+    ]
+  },
+  {
+    "id": "prayer",
+    "title": "A Deeper Prayer Life",
+    "description": "Build a real, honest conversation with God — not a performance.",
+    "keywords": ["prayer", "praying", "pray", "prayer life", "talk to god", "communicate with god"],
+    "weekIntro": "Prayer gets easier the less it's treated like a formal speech and the more it's treated like an honest conversation with someone who already knows you. This week is about practicing that honesty in small, regular moments.",
+    "memoryVerse": { "book": "1 Thessalonians", "chapter": 5, "verse": 16, "verseEnd": 18 },
+    "days": [
+      { "focus": "Just start talking", "book": "Philippians", "chapter": 4, "verse": 6, "reflection": "You don't need the right words to start — you need to actually start.", "prayer": "God, here's what's actually going on today, plainly.", "action": "Say one honest sentence to God out loud this morning or before bed." },
+      { "focus": "Ask boldly", "book": "Matthew", "chapter": 7, "verse": 7, "reflection": "You're invited to actually ask for things, not just hint at needs you hope God notices.", "prayer": "Here's what I actually need right now, God — I'm asking directly.", "action": "Write down one specific thing to ask God for this week, and ask for it plainly." },
+      { "focus": "Give thanks first", "book": "Philippians", "chapter": 4, "verse": 6, "reflection": "Starting a prayer with thanks — even for something small — tends to reset the whole tone of it.", "prayer": "Before I ask for anything else, thank you for what's already good today.", "action": "Start today's prayer with three specific things you're thankful for." },
+      { "focus": "Quiet and alone", "book": "Matthew", "chapter": 6, "verse": 6, "reflection": "Some of the most honest prayer happens away from an audience, even an imagined one.", "prayer": "Meet me here, in private, without me performing for anyone.", "action": "Spend two minutes praying somewhere with no phone and no one else around." },
+      { "focus": "Pray without ceasing", "book": "1 Thessalonians", "chapter": 5, "verse": 16, "verseEnd": 18, "reflection": "This isn't about nonstop formal prayer — it's about staying in ongoing conversation with God through the day's small moments.", "prayer": "Keep me aware of you through today's ordinary moments, not just at set prayer times.", "action": "Send up a one-line prayer at three points today — commute, lunch, before bed." },
+      { "focus": "Pray for others", "book": "James", "chapter": 5, "verse": 16, "reflection": "Praying for someone else is one of the most concrete ways to actually love them.", "prayer": "Bring to mind someone who needs prayer today, and I'll pray for them specifically.", "action": "Text someone \"praying for you today\" — and actually do it." },
+      { "focus": "Rest in his presence", "book": "Psalms", "chapter": 46, "verse": 10, "reflection": "Not every prayer needs words — sometimes it's just staying still long enough to notice you're not alone.", "prayer": "Let me be still, God, without needing to fill the silence.", "action": "Sit quietly for two full minutes with no requests — just presence." }
+    ]
+  },
+  {
+    "id": "gratitude",
+    "title": "Practicing Gratitude",
+    "description": "Retrain your attention toward what's good and true.",
+    "keywords": ["gratitude", "thankful", "thankfulness", "grateful", "thanks", "appreciation"],
+    "weekIntro": "Gratitude isn't a feeling you wait for — it's a habit you build by noticing on purpose, especially on the days it doesn't come naturally. This week, you'll practice looking for what's good, even in ordinary or hard days.",
+    "memoryVerse": { "book": "1 Thessalonians", "chapter": 5, "verse": 18 },
+    "days": [
+      { "focus": "In everything", "book": "1 Thessalonians", "chapter": 5, "verse": 18, "reflection": "This doesn't mean being thankful for everything bad that happens — it means staying thankful even while things are hard.", "prayer": "Help me find something to be thankful for today, even in a hard week.", "action": "Name one good thing about today before you check your phone this morning." },
+      { "focus": "Small things count", "book": "Psalms", "chapter": 118, "verse": 24, "reflection": "Gratitude grows faster from noticing small, ordinary gifts than from waiting for big ones.", "prayer": "Open my eyes to the small good things I usually scroll past.", "action": "Notice and name three small good things today — a meal, a text, good weather." },
+      { "focus": "Say it out loud", "book": "Psalms", "chapter": 100, "verse": 4, "reflection": "Thankfulness said out loud, to God or to someone else, tends to land deeper than thankfulness only thought.", "prayer": "Let my thanks be spoken, not just thought.", "action": "Thank one person directly today for something specific they did." },
+      { "focus": "Remember", "book": "Psalms", "chapter": 103, "verse": 2, "reflection": "It's easy to forget past kindness once the moment passes — gratitude means choosing to remember it.", "prayer": "Bring to mind something you've done for me that I've since forgotten to thank you for.", "action": "Write down one answered prayer or good turn from the past year." },
+      { "focus": "In the waiting", "book": "Psalms", "chapter": 27, "verse": 13, "verseEnd": 14, "reflection": "You can be thankful for what's good now, even while still waiting on what isn't resolved yet.", "prayer": "Thank you for the good that's already here, even while I wait on the rest.", "action": "Name one good thing that's already true, even in a situation you're still waiting on." },
+      { "focus": "Contentment", "book": "Philippians", "chapter": 4, "verse": 11, "verseEnd": 12, "reflection": "Gratitude and contentment feed each other — the more you notice what you have, the less you need to feel okay.", "prayer": "Teach me to be content with what's actually in front of me today.", "action": "Go without buying or wanting something today — just notice what you already have." },
+      { "focus": "A thankful offering", "book": "Psalms", "chapter": 50, "verse": 14, "reflection": "Ending the week in thanks is a way of handing the whole week — good and hard parts both — back to God.", "prayer": "Here's my week, God — thank you for walking through all of it with me.", "action": "Write a short list of everything you're thankful for from this week." }
+    ]
+  },
+  {
+    "id": "forgiveness",
+    "title": "Forgiveness & Letting Go",
+    "description": "Release what's weighing you down toward someone else.",
+    "keywords": ["forgiveness", "forgive", "letting go", "resentment", "bitterness", "hurt by someone", "grudge"],
+    "weekIntro": "Forgiveness isn't saying what happened was okay — it's choosing to stop letting it control you. This week works through what that actually looks like in practice, one honest step at a time.",
+    "memoryVerse": { "book": "Ephesians", "chapter": 4, "verse": 32 },
+    "days": [
+      { "focus": "Forgiven first", "book": "Ephesians", "chapter": 4, "verse": 32, "reflection": "It's easier to extend forgiveness once you remember how much you've already been forgiven yourself.", "prayer": "Remind me how much grace I've received, so I can extend it too.", "action": "Write down one way you've experienced forgiveness — from God or someone else." },
+      { "focus": "Name the hurt", "book": "Psalms", "chapter": 34, "verse": 18, "reflection": "You can't actually forgive something you haven't honestly named — vague hurt is hard to release.", "prayer": "Here's what actually happened, and here's how it hurt.", "action": "Write down, plainly, what happened and how it affected you. No one else has to read it." },
+      { "focus": "Seventy times seven", "book": "Matthew", "chapter": 18, "verse": 21, "verseEnd": 22, "reflection": "Forgiveness is rarely a one-time event — it's often a decision you make again each time the hurt resurfaces.", "prayer": "Help me forgive again today, even if I already forgave this yesterday.", "action": "When the memory resurfaces today, say quietly: \"I already chose to let this go.\"" },
+      { "focus": "It's for you too", "book": "Hebrews", "chapter": 12, "verse": 15, "reflection": "Unforgiveness often costs the person holding it more than the person it's aimed at.", "prayer": "Free me from carrying this — I don't want it shaping how I see everything else.", "action": "Notice one way this grudge has been affecting you, not just them." },
+      { "focus": "Not the same as reconciliation", "book": "Romans", "chapter": 12, "verse": 18, "reflection": "Forgiving someone and rebuilding trust with them aren't the same thing — you can release the debt without reopening the relationship the same way.", "prayer": "Show me the difference between forgiving and being unwise about boundaries.", "action": "If needed, name one healthy boundary you can keep while still choosing to forgive." },
+      { "focus": "Bless, don't curse", "book": "Romans", "chapter": 12, "verse": 14, "reflection": "Praying for someone who hurt you is one of the fastest ways to loosen their grip on your mood.", "prayer": "I'm praying for them today, even though it's hard.", "action": "Say one genuine, small prayer for the person you're working to forgive." },
+      { "focus": "Let it go, for real", "book": "Colossians", "chapter": 3, "verse": 13, "reflection": "Letting go isn't forgetting it happened — it's deciding it no longer gets to run your week.", "prayer": "Help me close this chapter today and walk forward lighter.", "action": "Do something symbolic to mark letting go — write it down and set it aside, or say it out loud and mean it." }
+    ]
+  },
+  {
+    "id": "patience",
+    "title": "Patience in the Everyday",
+    "description": "Practice steadiness in traffic, texts, and the wait itself.",
+    "keywords": ["patience", "patient", "impatient", "impatience", "waiting", "slow down"],
+    "weekIntro": "Patience isn't built in dramatic moments — it's built in ordinary, annoying ones: slow lines, unanswered texts, people who talk too much. This week trains patience in exactly those small, real situations.",
+    "memoryVerse": { "book": "Romans", "chapter": 12, "verse": 12 },
+    "days": [
+      { "focus": "Joyful in hope", "book": "Romans", "chapter": 12, "verse": 12, "reflection": "Patience gets easier when it's paired with genuine hope, not gritted-teeth endurance.", "prayer": "Give me hope underneath the waiting today, not just gritted teeth.", "action": "Name one thing you're hopeful about while you wait on something else." },
+      { "focus": "Slow to anger", "book": "James", "chapter": 1, "verse": 19, "reflection": "Most impatience shows up as speed — speaking fast, reacting fast. Practicing a pause is practicing patience.", "prayer": "Slow my reactions today, especially with people.", "action": "Practice a three-second pause before responding to something frustrating today." },
+      { "focus": "Wait on the Lord", "book": "Psalms", "chapter": 27, "verse": 14, "reflection": "Waiting well isn't passive — it's an active choice to stay steady while nothing visibly changes yet.", "prayer": "Strengthen me while I wait, instead of letting the waiting wear me down.", "action": "Notice one thing you're currently waiting on, and consciously choose to wait well today." },
+      { "focus": "Produces character", "book": "Romans", "chapter": 5, "verse": 3, "verseEnd": 4, "reflection": "The delay itself is often doing something useful in you, even when it doesn't feel like it.", "prayer": "Show me what this waiting season might be building in me.", "action": "Write down one way a past hard wait actually changed you for the better." },
+      { "focus": "In the small annoyances", "book": "Proverbs", "chapter": 14, "verse": 29, "reflection": "Real patience is tested less in crises and more in traffic, slow wifi, and people who talk too long.", "prayer": "Give me patience for today's small, ordinary irritations.", "action": "Pick one recurring small annoyance today and respond to it slower than usual, on purpose." },
+      { "focus": "Bear with one another", "book": "Ephesians", "chapter": 4, "verse": 2, "reflection": "Patience with people usually means tolerating something that genuinely does bug you — that's the actual practice of it.", "prayer": "Help me extend patience to someone who's genuinely testing it today.", "action": "Choose one person you find difficult and extend extra patience to them today." },
+      { "focus": "Run with endurance", "book": "Hebrews", "chapter": 12, "verse": 1, "reflection": "Patience is really endurance applied to daily life — steady pace over a long distance, not a single sprint.", "prayer": "Give me endurance for the long stretch, not just today.", "action": "Reflect on one long-term goal that requires patience, and recommit to it this week." }
+    ]
+  },
+  {
+    "id": "purpose",
+    "title": "Discovering Purpose & Identity",
+    "description": "Root who you are in something steadier than performance.",
+    "keywords": ["purpose", "identity", "who am i", "calling", "worth", "self worth", "meaning", "direction"],
+    "weekIntro": "A lot of exhaustion comes from building identity on things that can change overnight — a job, a relationship, a good week. This week is about practicing identity built on something that doesn't move.",
+    "memoryVerse": { "book": "Ephesians", "chapter": 2, "verse": 10 },
+    "days": [
+      { "focus": "Made on purpose", "book": "Ephesians", "chapter": 2, "verse": 10, "reflection": "You're not a background character or an accident — you were made with intention, for real work in the world.", "prayer": "Remind me I'm made on purpose, not just filling space.", "action": "Write down one thing you believe you were made to do or offer." },
+      { "focus": "Known before born", "book": "Jeremiah", "chapter": 1, "verse": 5, "reflection": "Your worth isn't something you have to build from scratch — it was established before you did anything to earn it.", "prayer": "Help me believe my worth isn't something I have to prove today.", "action": "Notice one moment today you feel pressure to \"prove\" your worth, and let it go." },
+      { "focus": "Chosen", "book": "1 Peter", "chapter": 2, "verse": 9, "reflection": "Identity rooted in being chosen is sturdier than identity rooted in being impressive.", "prayer": "Thank you for choosing me before I did anything to deserve it.", "action": "Say out loud: \"I don't have to earn my place here.\"" },
+      { "focus": "New creation", "book": "2 Corinthians", "chapter": 5, "verse": 17, "reflection": "Your past doesn't get the final word on who you are now — you're allowed an honest fresh start.", "prayer": "Help me let go of an old label I'm still carrying that isn't true anymore.", "action": "Name one old label about yourself you're ready to stop believing." },
+      { "focus": "Fearfully and wonderfully made", "book": "Psalms", "chapter": 139, "verse": 14, "reflection": "Comparison is one of the fastest ways to lose sight of your own actual worth.", "prayer": "Quiet the comparison today — help me see myself the way you do.", "action": "Take a break from comparing yourself to anyone on social media today." },
+      { "focus": "Good works prepared", "book": "Ephesians", "chapter": 2, "verse": 10, "reflection": "Purpose often shows up less as one big calling and more as the specific good in front of you today.", "prayer": "Show me the good work that's actually in front of me today, not someday.", "action": "Do one specific, concrete good thing today — no need for it to be big." },
+      { "focus": "A living hope", "book": "1 Peter", "chapter": 1, "verse": 3, "reflection": "Your identity holds even when your circumstances are uncertain, because it's not built on them.", "prayer": "Anchor my sense of self in you today, not in how this week went.", "action": "Write one sentence describing who you are, independent of your accomplishments this week." }
+    ]
+  },
+  {
+    "id": "discipline",
+    "title": "Building Godly Discipline & Habits",
+    "description": "Build small, repeatable rhythms that actually stick.",
+    "keywords": ["discipline", "habit", "habits", "consistency", "self control", "routine", "structure"],
+    "weekIntro": "Spiritual growth rarely comes from one big effort — it comes from small, repeated choices that eventually become who you are. This week is about picking one small rhythm and actually sticking to it.",
+    "memoryVerse": { "book": "Galatians", "chapter": 6, "verse": 9 },
+    "days": [
+      { "focus": "Don't grow weary", "book": "Galatians", "chapter": 6, "verse": 9, "reflection": "Most habits fail not from one bad day but from quitting after several — the goal is just to keep showing up.", "prayer": "Give me the will to keep showing up, even on the days it feels pointless.", "action": "Pick one small spiritual habit to practice all seven days of this plan." },
+      { "focus": "Train, don't just try", "book": "1 Timothy", "chapter": 4, "verse": 7, "verseEnd": 8, "reflection": "Discipline is training, not willpower in the moment — it's built through repetition, like a muscle.", "prayer": "Help me train for this, not just white-knuckle through it once.", "action": "Do your chosen habit again today, even if yesterday didn't go perfectly." },
+      { "focus": "Self-control", "book": "Galatians", "chapter": 5, "verse": 22, "verseEnd": 23, "reflection": "Self-control is listed as fruit — something that grows over time with the right conditions, not something you force overnight.", "prayer": "Grow self-control in me gradually, in the small choices today.", "action": "Notice one small moment of self-control today and acknowledge it, however minor." },
+      { "focus": "A little at a time", "book": "Zechariah", "chapter": 4, "verse": 10, "reflection": "Small, consistent progress is not a lesser version of change — it's usually how real change actually happens.", "prayer": "Help me not despise the small size of today's effort.", "action": "Do the smallest possible version of your habit today if you're low on time — just don't skip it." },
+      { "focus": "Renew the mind", "book": "Romans", "chapter": 12, "verse": 2, "reflection": "Habits change slower at the surface level and faster when you actually change what you're feeding your mind.", "prayer": "Renew my thinking today, not just my to-do list.", "action": "Replace 5 minutes of a default habit (scrolling, TV) with your chosen practice." },
+      { "focus": "Discipline yields peace", "book": "Hebrews", "chapter": 12, "verse": 11, "reflection": "Discipline rarely feels good in the moment — the payoff usually shows up later, quietly.", "prayer": "Help me trust that today's effort is building something, even if I can't feel it yet.", "action": "Keep the habit today even if it feels like it isn't \"working\" yet." },
+      { "focus": "Well done", "book": "Matthew", "chapter": 25, "verse": 21, "reflection": "Faithfulness in something small is still faithfulness — it doesn't need to be dramatic to count.", "prayer": "Thank you for the small faithfulness this week, even the imperfect parts.", "action": "Reflect on how many days you kept the habit this week — celebrate it, don't just critique the misses." }
+    ]
+  },
+  {
+    "id": "love",
+    "title": "Loving Others Well",
+    "description": "Turn love from a feeling into a practiced habit.",
+    "keywords": ["love others", "relationships", "love", "marriage", "friendship", "kindness"],
+    "weekIntro": "Love in Scripture is described mostly as action, not just emotion — patient, kind, not easily angered. This week takes 1 Corinthians 13 out of the wedding speech and puts it into an ordinary week.",
+    "memoryVerse": { "book": "1 Corinthians", "chapter": 13, "verse": 4, "verseEnd": 7 },
+    "days": [
+      { "focus": "Patient and kind", "book": "1 Corinthians", "chapter": 13, "verse": 4, "reflection": "Patience and kindness are the two most repeatable, ordinary forms love takes on a normal day.", "prayer": "Let love show up today as patience and kindness, especially with people close to me.", "action": "Choose one person and be extra patient with them today, on purpose." },
+      { "focus": "Not self-seeking", "book": "1 Corinthians", "chapter": 13, "verse": 5, "reflection": "A useful daily check: did today's choices serve me first, or did they make room for someone else too?", "prayer": "Show me one place today I'm defaulting to my own convenience over someone else's need.", "action": "Do one small thing today that costs you convenience but serves someone else." },
+      { "focus": "Love your neighbor", "book": "Mark", "chapter": 12, "verse": 31, "reflection": "\"Neighbor\" usually means whoever's actually near you today — not an abstract group.", "prayer": "Show me who my actual neighbor is today, not just in theory.", "action": "Do something kind for someone nearby — literally, physically near you today." },
+      { "focus": "Bear with one another", "book": "Colossians", "chapter": 3, "verse": 13, "reflection": "Real relationships require ongoing tolerance of each other's flaws — love isn't proof no one annoys you.", "prayer": "Help me bear with someone's flaws today the way you bear with mine.", "action": "Let go of one small annoyance with someone close to you instead of bringing it up." },
+      { "focus": "Greater love", "book": "John", "chapter": 15, "verse": 13, "reflection": "Most days won't ask for a dramatic sacrifice — but they will ask for small ones, repeatedly.", "prayer": "Show me a small sacrifice I can make for someone today.", "action": "Give up something small today — time, comfort, being right — for someone else's benefit." },
+      { "focus": "Speak the truth in love", "book": "Ephesians", "chapter": 4, "verse": 15, "reflection": "Real love sometimes means an honest conversation, delivered gently, not just comfortable silence.", "prayer": "Give me courage to be honest with someone today, and grace to do it kindly.", "action": "Have one honest, kind conversation you've been avoiding — or plan when you will." },
+      { "focus": "Love never fails", "book": "1 Corinthians", "chapter": 13, "verse": 8, "reflection": "Love outlasts almost everything else you could invest your energy in this week.", "prayer": "Thank you for the people I got to love this week, even imperfectly.", "action": "Tell one person directly that you love or appreciate them, in plain words." }
+    ]
+  },
+  {
+    "id": "hope",
+    "title": "Hope Through Hard Seasons",
+    "description": "Hold on to something steady while things are still unresolved.",
+    "keywords": ["hope", "hard season", "hardship", "suffering", "struggling", "difficult time", "trial", "going through it"],
+    "weekIntro": "Hope isn't pretending things are fine — it's trusting there's more ahead than what you can currently see. This week practices holding on to that, one day at a time, in the middle of an actual hard season.",
+    "memoryVerse": { "book": "Romans", "chapter": 15, "verse": 13 },
+    "days": [
+      { "focus": "God of hope", "book": "Romans", "chapter": 15, "verse": 13, "reflection": "Hope isn't something you have to manufacture alone — it's something you're offered, and can ask for.", "prayer": "Fill me with hope today, especially in the part of this that feels stuck.", "action": "Name one thing you're hoping for, specifically, and say it in prayer." },
+      { "focus": "Weeping endures, joy comes", "book": "Psalms", "chapter": 30, "verse": 5, "reflection": "Hard seasons are real, but Scripture keeps insisting they're not the final chapter.", "prayer": "Remind me this season isn't the whole story.", "action": "Write down one hard season from your past that eventually did shift." },
+      { "focus": "Suffering produces", "book": "Romans", "chapter": 5, "verse": 3, "verseEnd": 5, "reflection": "Hardship doesn't automatically build character — but it can, when you let it, instead of just enduring it numbly.", "prayer": "Don't let this hard season go to waste — grow something in me through it.", "action": "Name one way you've already grown, even slightly, through what you're facing." },
+      { "focus": "Near the brokenhearted", "book": "Psalms", "chapter": 34, "verse": 18, "reflection": "You don't have to fake being fine for God to stay close — he's closest exactly where it hurts.", "prayer": "Thank you for staying close in the part of this I haven't figured out yet.", "action": "Let yourself be honest today about how hard this actually is, with God or someone safe." },
+      { "focus": "Renewed strength", "book": "Isaiah", "chapter": 40, "verse": 31, "reflection": "This isn't about hustling harder — it's about waiting on God to renew you, which is a different kind of strength.", "prayer": "Renew my strength today — I'm tired of pushing through on my own.", "action": "Rest intentionally today, even for a short while, without guilt." },
+      { "focus": "Light momentary troubles", "book": "2 Corinthians", "chapter": 4, "verse": 17, "verseEnd": 18, "reflection": "This doesn't minimize real pain — it puts it inside a much bigger, longer story than this one season.", "prayer": "Help me hold this season loosely, inside the bigger story you're writing.", "action": "Write one sentence about the bigger picture you're trusting God with beyond this season." },
+      { "focus": "Anchor for the soul", "book": "Hebrews", "chapter": 6, "verse": 19, "reflection": "Hope functions like an anchor — not something that moves you forward immediately, but something that keeps you steady while you wait.", "prayer": "Be my anchor this week, even while things stay unresolved.", "action": "Identify one thing that's kept you steady this week, and thank God for it specifically." }
+    ]
+  },
+  {
+    "id": "general",
+    "title": "General Growth With God",
+    "description": "A well-rounded week of drawing closer to God.",
+    "keywords": [],
+    "weekIntro": "Wherever you're starting from, this week offers a simple rhythm: one verse, one honest prayer, one small action each day. Growth doesn't require a dramatic week — just a consistent one.",
+    "memoryVerse": { "book": "Psalms", "chapter": 46, "verse": 10 },
+    "days": [
+      { "focus": "Be still", "book": "Psalms", "chapter": 46, "verse": 10, "reflection": "Growth starts with slowing down enough to actually notice God is present.", "prayer": "Help me be still today, even briefly, and know you're here.", "action": "Spend two quiet minutes today with no phone, just noticing." },
+      { "focus": "Seek first", "book": "Matthew", "chapter": 6, "verse": 33, "reflection": "Putting God first isn't about ignoring everything else — it's about letting it shape how you approach everything else.", "prayer": "Help me put you first in how I start today, not last.", "action": "Do something God-focused (prayer, a verse, quiet reflection) before checking your phone." },
+      { "focus": "Renew your mind", "book": "Romans", "chapter": 12, "verse": 2, "reflection": "What you feed your mind shapes who you become — today's a chance to feed it something good.", "prayer": "Renew my thinking today, especially the thought patterns that aren't helping me.", "action": "Replace one piece of mindless scrolling today with a short reading of Scripture." },
+      { "focus": "Love God, love people", "book": "Mark", "chapter": 12, "verse": 30, "verseEnd": 31, "reflection": "Nearly everything in the Christian life comes back to these two moves — loving God, and loving the people around you.", "prayer": "Grow my love for you and for the people around me today.", "action": "Do one specific, small act of love for someone today." },
+      { "focus": "Walk by faith", "book": "2 Corinthians", "chapter": 5, "verse": 7, "reflection": "Growth means acting on what you believe, even in the parts you can't fully see yet.", "prayer": "Help me act on what I believe today, even without full clarity.", "action": "Take one step today that requires trusting God rather than waiting for certainty." },
+      { "focus": "Bear fruit", "book": "Galatians", "chapter": 5, "verse": 22, "verseEnd": 23, "reflection": "The fruit of the Spirit is a good weekly checklist — pick one and practice it deliberately today.", "prayer": "Grow one specific fruit of the Spirit in me today.", "action": "Choose one fruit of the Spirit and look for one chance to practice it today." },
+      { "focus": "Finish the week well", "book": "Philippians", "chapter": 1, "verse": 6, "reflection": "God isn't done with this week's work in you just because the week is ending — growth continues past today.", "prayer": "Thank you for what you started in me this week — keep going.", "action": "Reflect on one specific way you grew this week, even a small one." }
+    ]
+  }
+]

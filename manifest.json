@@ -1,0 +1,18 @@
+{
+  "name": "Bible Bot — Search Scripture, Listen, Plan",
+  "short_name": "Bible Bot",
+  "description": "Free Bible search with audio, a weekly growth planner built from a goal or a sermon, and verses explored by ancient geography.",
+  "id": "/",
+  "start_url": "./?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#12131c",
+  "theme_color": "#12131c",
+  "orientation": "portrait-primary",
+  "categories": ["lifestyle", "education", "books"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
