@@ -82,6 +82,7 @@
   <div class="wrap app-nav-inner">
     <button class="nav-tab is-active" type="button" data-view="search" aria-selected="true">Search Scripture</button>
     <button class="nav-tab" type="button" data-view="planner" aria-selected="false">Weekly Planner</button>
+    <button class="nav-tab" type="button" data-view="pastor" aria-selected="false">Pastor Planner</button>
     <button class="nav-tab" type="button" data-view="geo" aria-selected="false">Bible Geolocator</button>
     <button class="nav-tab" type="button" data-view="timeline" aria-selected="false">History Timeline</button>
   </div>
@@ -122,6 +123,17 @@
           <option value="relevance">Relevance</option>
         </select>
       </div>
+
+      <div class="feeling-prompt">
+        <p class="feeling-eyebrow">Or — how are you feeling?</p>
+        <form id="feelingForm" class="feeling-form" autocomplete="off">
+          <input id="feelingInput" type="text" placeholder="anxious, grateful, overwhelmed, hopeful…" aria-label="How are you feeling?" />
+          <button type="submit" class="feeling-submit">Find verses</button>
+        </form>
+        <div class="quick-tags feeling-quick-tags" id="feelingQuickTags" aria-label="Common feelings">
+          <span class="quick-label">Try</span>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -148,14 +160,9 @@
 <div id="plannerView" hidden>
   <section class="planner-hero">
     <div class="wrap">
-      <p class="eyebrow">Weekly growth plan</p>
+      <p class="eyebrow">Weekly Growth Plan</p>
       <h1>Build a week grounded in Scripture.</h1>
-      <p class="hero-sub">Pick a starting point below. Either way you'll get daily verses, short prayers, a memory verse, and one small action a day — synced to this week's actual dates.</p>
-
-      <div class="planner-mode-toggle" id="plannerModeToggle" role="group" aria-label="Choose planner mode">
-        <button class="tt-btn is-active" data-mode="goal" type="button">My Goal</button>
-        <button class="tt-btn" data-mode="sermon" type="button">Pastor Planner</button>
-      </div>
+      <p class="hero-sub">Tell us what you want to grow in, and get daily verses, short prayers, a memory verse, and one small action a day — synced to this week's actual dates.</p>
 
       <form id="goalForm" class="planner-form">
         <label class="planner-label" for="goalInput">What do you want to biblically accomplish to grow with God this week?</label>
@@ -163,16 +170,6 @@
         <div class="quick-tags planner-quick-tags" id="goalQuickTags" aria-label="Suggested goals">
           <span class="quick-label">Try</span>
         </div>
-        <button type="submit" class="search-btn planner-submit">Build my week</button>
-      </form>
-
-      <form id="sermonForm" class="planner-form" hidden>
-        <label class="planner-label" for="sermonTopicInput">What did your pastor preach on?</label>
-        <input id="sermonTopicInput" class="planner-input" type="text" placeholder="e.g. Walking by faith, not by sight" />
-        <label class="planner-label" for="sermonVersesInput">What Bible verses did they mention?</label>
-        <input id="sermonVersesInput" class="planner-input" type="text" placeholder="e.g. 2 Corinthians 5:7, Hebrews 11:1" />
-        <label class="planner-label" for="sermonKeywordsInput">What were some keywords they mentioned?</label>
-        <input id="sermonKeywordsInput" class="planner-input" type="text" placeholder="e.g. trust, obedience, uncertainty" />
         <button type="submit" class="search-btn planner-submit">Build my week</button>
       </form>
     </div>
@@ -185,6 +182,36 @@
         <p class="empty-sub">Answer the prompt above and Bible Bot will lay out the week for you.</p>
       </div>
       <div id="planRoot" class="plan-root" hidden></div>
+    </div>
+  </section>
+</div>
+
+<div id="pastorView" hidden>
+  <section class="planner-hero">
+    <div class="wrap">
+      <p class="eyebrow">Pastor Planner</p>
+      <h1>Turn Sunday's message into your week.</h1>
+      <p class="hero-sub">Give us the theme, the verses, and a few keywords from the sermon — Bible Bot builds a daily plan that carries the message into your week, with the sermon's own verses front and center.</p>
+
+      <form id="sermonForm" class="planner-form">
+        <label class="planner-label" for="sermonTopicInput">Sermon theme — what did your pastor preach on?</label>
+        <input id="sermonTopicInput" class="planner-input" type="text" placeholder="e.g. Walking by faith, not by sight" />
+        <label class="planner-label" for="sermonVersesInput">What Bible verses did they mention?</label>
+        <input id="sermonVersesInput" class="planner-input" type="text" placeholder="e.g. 2 Corinthians 5:7, Hebrews 11:1" />
+        <label class="planner-label" for="sermonKeywordsInput">A few keywords from the message</label>
+        <input id="sermonKeywordsInput" class="planner-input" type="text" placeholder="e.g. trust, obedience, uncertainty" />
+        <button type="submit" class="search-btn planner-submit">Build my week from this sermon</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="plan-section">
+    <div class="wrap">
+      <div id="pastorPlanEmptyState" class="empty-state">
+        <p>Your sermon-based plan will show up here.</p>
+        <p class="empty-sub">Fill in the sermon theme above and Bible Bot will build the week around it.</p>
+      </div>
+      <div id="pastorPlanRoot" class="plan-root" hidden></div>
     </div>
   </section>
 </div>

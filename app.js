@@ -17,6 +17,7 @@
     comfortTopics: [],
     growthThemes: [],
     geoRegions: [],
+    worldOutline: [],
     timelineEras: [],
     fontScale: 1,
     bookAliases: new Map(),
@@ -32,13 +33,13 @@
     pageSize: 25,
     rate: 1,
     lastUtteranceBuilder: null,
-    currentPlan: null,
-    currentPlanDates: null,
+    plans: { goal: null, sermon: null },
     view: 'search',
   };
 
   const QUICK_TAGS = ['love', 'faith', 'hope', 'peace', 'grace', 'forgiveness', 'fear not', 'wisdom', 'joy', 'strength', 'prayer', 'salvation'];
   const GOAL_QUICK_TAGS = ['Peace over anxiety', 'Grow my faith', 'A deeper prayer life', 'Practice gratitude', 'Forgive someone', 'Be more patient', 'Find my purpose', 'Build a habit', 'Love people better', 'Hope in a hard season'];
+  const FEELING_QUICK_TAGS = ['anxious', 'afraid', 'grateful', 'hopeful', 'lonely', 'angry', 'overwhelmed', 'joyful', 'grieving', 'discouraged'];
 
   /* ---------------- DOM refs ---------------- */
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -75,16 +76,18 @@
     navTabs: $$('.nav-tab'),
     searchView: $('#searchView'),
     plannerView: $('#plannerView'),
-    plannerModeToggle: $('#plannerModeToggle'),
     goalForm: $('#goalForm'),
     goalInput: $('#goalInput'),
     goalQuickTags: $('#goalQuickTags'),
+    planEmptyState: $('#planEmptyState'),
+    planRoot: $('#planRoot'),
+    pastorView: $('#pastorView'),
     sermonForm: $('#sermonForm'),
     sermonTopicInput: $('#sermonTopicInput'),
     sermonVersesInput: $('#sermonVersesInput'),
     sermonKeywordsInput: $('#sermonKeywordsInput'),
-    planEmptyState: $('#planEmptyState'),
-    planRoot: $('#planRoot'),
+    pastorPlanEmptyState: $('#pastorPlanEmptyState'),
+    pastorPlanRoot: $('#pastorPlanRoot'),
     geoView: $('#geoView'),
     geoBreadcrumb: $('#geoBreadcrumb'),
     geoMap: $('#geoMap'),
@@ -100,6 +103,9 @@
     fontSmallerBtn: $('#fontSmallerBtn'),
     fontLargerBtn: $('#fontLargerBtn'),
     footerShareBtn: $('#footerShareBtn'),
+    feelingForm: $('#feelingForm'),
+    feelingInput: $('#feelingInput'),
+    feelingQuickTags: $('#feelingQuickTags'),
   };
 
   /* ---------------- Utilities ---------------- */
@@ -161,16 +167,17 @@
   }
 
   async function loadCoreData() {
-    const [metaRes, themesRes, comfortRes, growthRes, geoRes, timelineRes] = await Promise.all([
+    const [metaRes, themesRes, comfortRes, growthRes, geoRes, timelineRes, outlineRes] = await Promise.all([
       fetch('data/books-meta.json'),
       fetch('data/study-themes.json'),
       fetch('data/comfort-topics.json'),
       fetch('data/growth-themes.json'),
       fetch('data/geo-regions.json'),
       fetch('data/timeline-eras.json'),
+      fetch('data/world-outline.json'),
     ]);
-    const [meta, themes, comfort, growth, geo, timeline] = await Promise.all([
-      metaRes.json(), themesRes.json(), comfortRes.json(), growthRes.json(), geoRes.json(), timelineRes.json(),
+    const [meta, themes, comfort, growth, geo, timeline, outline] = await Promise.all([
+      metaRes.json(), themesRes.json(), comfortRes.json(), growthRes.json(), geoRes.json(), timelineRes.json(), outlineRes.json(),
     ]);
     state.booksMeta = meta;
     meta.forEach(m => state.booksByName.set(m.name, m));
@@ -180,6 +187,7 @@
     state.growthThemes = growth;
     state.geoRegions = geo;
     state.timelineEras = timeline;
+    state.worldOutline = outline;
     buildBookAliases();
     populateBookFilter();
   }
@@ -305,15 +313,30 @@
   }
 
   function findComfortTopic(query) {
-    const q = query.toLowerCase().trim();
+    const q = (query || '').toLowerCase().trim();
     if (!q) return null;
+    let best = null, bestScore = 0;
     for (const topic of state.comfortTopics) {
+      let score = 0;
       for (const kw of topic.keywords) {
-        if (q === kw) return topic;
-        if (kw.includes(' ') && q.includes(kw)) return topic;
+        const re = new RegExp(`\\b${escapeRegExp(kw)}\\b`, 'i');
+        if (re.test(q)) score += kw.length;
       }
+      if (score > bestScore) { bestScore = score; best = topic; }
     }
-    return null;
+    return best;
+  }
+
+  function renderComfortPanel(topic, labelText) {
+    els.comfortLabel.textContent = labelText;
+    els.comfortIntro.textContent = topic.intro;
+    els.comfortVerses.innerHTML = '';
+    topic.verses.forEach(ref => {
+      const v = resolveVerseRef(ref);
+      if (!v) return;
+      els.comfortVerses.appendChild(buildVerseCard(v, topic.label.toLowerCase()));
+    });
+    els.comfortPanel.hidden = false;
   }
 
   function updateComfortPanel(query) {
@@ -323,16 +346,47 @@
       els.comfortVerses.innerHTML = '';
       return;
     }
-    els.comfortLabel.textContent = `You searched “${query}” — here's some comfort`;
-    els.comfortIntro.textContent = topic.intro;
-    els.comfortVerses.innerHTML = '';
-    topic.verses.forEach(ref => {
-      const v = resolveVerseRef(ref);
-      if (!v) return;
-      const node = buildVerseCard(v, topic.label.toLowerCase());
-      els.comfortVerses.appendChild(node);
+    renderComfortPanel(topic, `You searched “${query}” — here's some comfort`);
+  }
+
+  function runFeelingSearch(text) {
+    const clean = normalizeQuery(text);
+    if (!clean) return;
+
+    els.input.value = '';
+    state.query = '';
+    els.clearBtn.hidden = true;
+    els.results.innerHTML = '';
+    els.loadMoreWrap.hidden = true;
+    els.emptyState.hidden = true;
+    els.statusBar.textContent = '';
+    syncUrl();
+
+    const topic = findComfortTopic(clean) || state.comfortTopics.find(t => t.id === 'general-encouragement');
+    renderComfortPanel(topic, `Feeling “${clean}” — here are some verses`);
+    window.scrollTo({ top: els.comfortPanel.offsetTop - 90, behavior: 'smooth' });
+  }
+
+  function renderFeelingQuickTags() {
+    FEELING_QUICK_TAGS.forEach(tag => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'tag-btn';
+      btn.textContent = tag;
+      btn.addEventListener('click', () => {
+        els.feelingInput.value = tag;
+        runFeelingSearch(tag);
+      });
+      els.feelingQuickTags.appendChild(btn);
     });
-    els.comfortPanel.hidden = false;
+  }
+
+  function initFeelingSearch() {
+    renderFeelingQuickTags();
+    els.feelingForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      runFeelingSearch(els.feelingInput.value);
+    });
   }
 
   function runSearch() {
@@ -642,9 +696,10 @@
     } else {
       els.statusBar.textContent = '';
     }
-    if (state.currentPlan) {
-      renderPlan(state.currentPlan, state.currentPlanDates);
-    }
+    Object.keys(state.plans).forEach(ctxKey => {
+      const saved = state.plans[ctxKey];
+      if (saved) renderPlan(ctxKey, saved.plan, saved.weekDates);
+    });
   }
 
   function initTranslationToggle() {
@@ -795,15 +850,21 @@
   }
 
   /* ---------------- Plan rendering ---------------- */
-  function renderPlan(plan, weekDates) {
+  function planContext(ctxKey) {
+    return ctxKey === 'sermon'
+      ? { root: els.pastorPlanRoot, empty: els.pastorPlanEmptyState }
+      : { root: els.planRoot, empty: els.planEmptyState };
+  }
+
+  function renderPlan(ctxKey, plan, weekDates) {
     weekDates = weekDates || getWeekDates();
-    state.currentPlan = plan;
-    state.currentPlanDates = weekDates;
+    state.plans[ctxKey] = { plan, weekDates };
+    const { root, empty } = planContext(ctxKey);
     const today = new Date();
     const progress = loadPlanProgress(plan);
 
-    els.planEmptyState.hidden = true;
-    els.planRoot.hidden = false;
+    empty.hidden = true;
+    root.hidden = false;
 
     const mv = resolveVerseRef(plan.memoryVerse);
     const doneCount = progress.filter(Boolean).length;
@@ -841,8 +902,8 @@
         </li>`;
     }).join('');
 
-    els.planRoot.innerHTML = `
-      <div class="plan-card" id="printArea">
+    root.innerHTML = `
+      <div class="plan-card plan-print-root">
         <div class="plan-card-head">
           <p class="plan-source">${escapeHtml(plan.sourceLabel)}</p>
           <h2 class="plan-title">${escapeHtml(plan.title)}</h2>
@@ -864,22 +925,22 @@
         </div>
         <div class="plan-progress">
           <div class="plan-progress-bar"><div class="plan-progress-fill" style="width:${pct}%"></div></div>
-          <span class="plan-progress-label" id="planProgressLabel">${doneCount}/${plan.days.length} days complete</span>
+          <span class="plan-progress-label" data-role="progress-label">${doneCount}/${plan.days.length} days complete</span>
         </div>
         <div class="plan-toolbar">
-          <button id="planCopyBtn" class="btn-small" type="button">Copy as text</button>
-          <button id="planPrintBtn" class="btn-small" type="button">Print / Save PDF</button>
-          <button id="planShareBtn" class="btn-small" type="button">Copy shareable link</button>
-          <button id="planResetBtn" class="btn-small" type="button">Start over</button>
+          <button data-action="copy" class="btn-small" type="button">Copy as text</button>
+          <button data-action="print" class="btn-small" type="button">Print / Save PDF</button>
+          <button data-action="share" class="btn-small" type="button">Copy shareable link</button>
+          <button data-action="reset" class="btn-small" type="button">Start over</button>
         </div>
         <ol class="plan-days">${daysHtml}</ol>
       </div>`;
 
-    wirePlanEvents(plan, weekDates, progress);
+    wirePlanEvents(ctxKey, root, plan, weekDates, progress);
   }
 
-  function wirePlanEvents(plan, weekDates, progress) {
-    $$('.plan-day-head', els.planRoot).forEach(head => {
+  function wirePlanEvents(ctxKey, root, plan, weekDates, progress) {
+    $$('.plan-day-head', root).forEach(head => {
       head.addEventListener('click', () => {
         const body = head.nextElementSibling;
         const expanded = head.getAttribute('aria-expanded') === 'true';
@@ -888,7 +949,7 @@
       });
     });
 
-    $$('.plan-day-listen', els.planRoot).forEach(btn => {
+    $$('.plan-day-listen', root).forEach(btn => {
       const li = btn.closest('.plan-day');
       const i = parseInt(li.dataset.dayIndex, 10);
       const day = plan.days[i];
@@ -899,7 +960,7 @@
       });
     });
 
-    const mvShareBtn = $('.mv-share-btn', els.planRoot);
+    const mvShareBtn = $('.mv-share-btn', root);
     if (mvShareBtn) {
       mvShareBtn.addEventListener('click', () => {
         const mv = resolveVerseRef(plan.memoryVerse);
@@ -908,7 +969,7 @@
       });
     }
 
-    const mvListenBtn = $('.mv-listen-btn', els.planRoot);
+    const mvListenBtn = $('.mv-listen-btn', root);
     if (mvListenBtn) {
       mvListenBtn.addEventListener('click', () => {
         const mv = resolveVerseRef(plan.memoryVerse);
@@ -917,7 +978,7 @@
       });
     }
 
-    $$('.plan-day-checkbox', els.planRoot).forEach(cb => {
+    $$('.plan-day-checkbox', root).forEach(cb => {
       cb.addEventListener('change', () => {
         const i = parseInt(cb.dataset.dayIndex, 10);
         progress[i] = cb.checked;
@@ -925,12 +986,12 @@
         cb.closest('.plan-day').classList.toggle('is-done', cb.checked);
         const doneCount = progress.filter(Boolean).length;
         const pct = Math.round((doneCount / plan.days.length) * 100);
-        $('.plan-progress-fill', els.planRoot).style.width = pct + '%';
-        $('#planProgressLabel', els.planRoot).textContent = `${doneCount}/${plan.days.length} days complete`;
+        $('.plan-progress-fill', root).style.width = pct + '%';
+        $('[data-role="progress-label"]', root).textContent = `${doneCount}/${plan.days.length} days complete`;
       });
     });
 
-    $('#planCopyBtn', els.planRoot).addEventListener('click', async (e) => {
+    $('[data-action="copy"]', root).addEventListener('click', async (e) => {
       const text = planToText(plan, weekDates);
       const btn = e.currentTarget;
       const original = btn.textContent;
@@ -943,10 +1004,10 @@
       setTimeout(() => { btn.textContent = original; }, 1500);
     });
 
-    $('#planPrintBtn', els.planRoot).addEventListener('click', () => window.print());
+    $('[data-action="print"]', root).addEventListener('click', () => window.print());
 
-    $('#planShareBtn', els.planRoot).addEventListener('click', async (e) => {
-      const url = buildShareUrl(plan);
+    $('[data-action="share"]', root).addEventListener('click', async (e) => {
+      const url = buildShareUrl(ctxKey, plan);
       const btn = e.currentTarget;
       const original = btn.textContent;
       try {
@@ -958,16 +1019,19 @@
       setTimeout(() => { btn.textContent = original; }, 1500);
     });
 
-    $('#planResetBtn', els.planRoot).addEventListener('click', () => {
-      state.currentPlan = null;
-      state.currentPlanDates = null;
-      els.planRoot.hidden = true;
-      els.planRoot.innerHTML = '';
-      els.planEmptyState.hidden = false;
-      els.goalInput.value = '';
-      els.sermonTopicInput.value = '';
-      els.sermonVersesInput.value = '';
-      els.sermonKeywordsInput.value = '';
+    $('[data-action="reset"]', root).addEventListener('click', () => {
+      const { empty } = planContext(ctxKey);
+      state.plans[ctxKey] = null;
+      root.hidden = true;
+      root.innerHTML = '';
+      empty.hidden = false;
+      if (ctxKey === 'goal') {
+        els.goalInput.value = '';
+      } else {
+        els.sermonTopicInput.value = '';
+        els.sermonVersesInput.value = '';
+        els.sermonKeywordsInput.value = '';
+      }
       history.replaceState(null, '', location.pathname + location.search);
     });
   }
@@ -1011,8 +1075,8 @@
     return JSON.parse(json);
   }
 
-  function buildShareUrl(plan) {
-    const seed = plan.mode === 'goal'
+  function buildShareUrl(ctxKey, plan) {
+    const seed = ctxKey === 'goal'
       ? { m: 'g', g: els.goalInput.value || plan.sourceKey }
       : { m: 's', t: els.sermonTopicInput.value, v: els.sermonVersesInput.value, k: els.sermonKeywordsInput.value };
     return `${location.origin}${location.pathname}#plan=${toBase64Url(seed)}`;
@@ -1021,14 +1085,14 @@
   function buildAndRenderGoalPlan(goalText) {
     if (!goalText || !goalText.trim()) return;
     const plan = buildPlanFromGoal(goalText);
-    renderPlan(plan);
+    renderPlan('goal', plan);
     window.scrollTo({ top: els.planRoot.offsetTop - 90, behavior: 'smooth' });
   }
   function buildAndRenderSermonPlan(topic, verses, keywords) {
     if (!topic.trim() && !verses.trim() && !keywords.trim()) return;
     const plan = buildPlanFromSermon(topic, verses, keywords);
-    renderPlan(plan);
-    window.scrollTo({ top: els.planRoot.offsetTop - 90, behavior: 'smooth' });
+    renderPlan('sermon', plan);
+    window.scrollTo({ top: els.pastorPlanRoot.offsetTop - 90, behavior: 'smooth' });
   }
 
   function tryLoadSharedPlan() {
@@ -1036,13 +1100,12 @@
     if (!hash.startsWith('#plan=')) return false;
     try {
       const seed = fromBase64Url(hash.slice('#plan='.length));
-      switchView('planner');
       if (seed.m === 'g') {
-        setPlannerMode('goal');
+        switchView('planner');
         els.goalInput.value = seed.g || '';
         buildAndRenderGoalPlan(seed.g || '');
       } else if (seed.m === 's') {
-        setPlannerMode('sermon');
+        switchView('pastor');
         els.sermonTopicInput.value = seed.t || '';
         els.sermonVersesInput.value = seed.v || '';
         els.sermonKeywordsInput.value = seed.k || '';
@@ -1056,17 +1119,8 @@
   }
 
   /* ---------------- Planner form wiring ---------------- */
-  function setPlannerMode(mode) {
-    $$('.tt-btn', els.plannerModeToggle).forEach(b => b.classList.toggle('is-active', b.dataset.mode === mode));
-    els.goalForm.hidden = mode !== 'goal';
-    els.sermonForm.hidden = mode !== 'sermon';
-  }
-
   function initPlanner() {
     renderGoalQuickTags();
-    $$('.tt-btn', els.plannerModeToggle).forEach(btn => {
-      btn.addEventListener('click', () => setPlannerMode(btn.dataset.mode));
-    });
     els.goalForm.addEventListener('submit', (e) => {
       e.preventDefault();
       buildAndRenderGoalPlan(els.goalInput.value);
@@ -1078,29 +1132,37 @@
   }
 
   /* =========================================================
-     Bible Geolocator
+     Bible Geolocator — real coastline basemap (Natural Earth
+     110m country outlines, public domain), equirectangular
+     projection into the 800x560 map viewBox.
      ========================================================= */
-  const SEA_SHAPE = 'M0,120 C120,90 180,150 260,120 C320,98 340,140 380,150 C300,220 200,260 60,260 C20,220 0,170 0,120 Z';
-  const NILE_PATH = 'M270,540 C280,470 300,420 320,380 C335,352 320,320 300,290';
-  const EUPHRATES_PATH = 'M600,150 C640,220 660,280 680,340 C695,382 720,420 760,450';
+  const GEO_LON_MIN = -12, GEO_LON_MAX = 63, GEO_LAT_MIN = 10, GEO_LAT_MAX = 43;
+  const GEO_MAP_W = 800, GEO_MAP_H = 560;
+  function projectLatLon(lon, lat) {
+    const x = (lon - GEO_LON_MIN) / (GEO_LON_MAX - GEO_LON_MIN) * GEO_MAP_W;
+    const y = (GEO_LAT_MAX - lat) / (GEO_LAT_MAX - GEO_LAT_MIN) * GEO_MAP_H;
+    return { x, y };
+  }
 
   function renderGeoMap() {
     const svgNS = 'http://www.w3.org/2000/svg';
     els.geoMap.innerHTML = '';
 
-    const sea = document.createElementNS(svgNS, 'path');
-    sea.setAttribute('d', SEA_SHAPE);
-    sea.setAttribute('class', 'geo-sea');
-    els.geoMap.appendChild(sea);
-
-    [NILE_PATH, EUPHRATES_PATH].forEach(d => {
-      const river = document.createElementNS(svgNS, 'path');
-      river.setAttribute('d', d);
-      river.setAttribute('class', 'geo-river');
-      els.geoMap.appendChild(river);
+    const landGroup = document.createElementNS(svgNS, 'g');
+    landGroup.setAttribute('class', 'geo-land-group');
+    state.worldOutline.forEach(country => {
+      const path = document.createElementNS(svgNS, 'path');
+      path.setAttribute('d', country.d);
+      path.setAttribute('class', 'geo-land');
+      const title = document.createElementNS(svgNS, 'title');
+      title.textContent = country.name;
+      path.appendChild(title);
+      landGroup.appendChild(path);
     });
+    els.geoMap.appendChild(landGroup);
 
     state.geoRegions.forEach(region => {
+      const { x, y } = projectLatLon(region.lon, region.lat);
       const g = document.createElementNS(svgNS, 'g');
       g.setAttribute('class', 'geo-region');
       g.setAttribute('tabindex', '0');
@@ -1108,23 +1170,32 @@
       g.setAttribute('aria-label', `${region.name} — ${region.subtitle}`);
 
       const ellipse = document.createElementNS(svgNS, 'ellipse');
-      ellipse.setAttribute('cx', region.cx);
-      ellipse.setAttribute('cy', region.cy);
+      ellipse.setAttribute('cx', x);
+      ellipse.setAttribute('cy', y);
       ellipse.setAttribute('rx', region.rx);
       ellipse.setAttribute('ry', region.ry);
       g.appendChild(ellipse);
 
+      const pos = region.labelPos || 'top';
+      let labelX = x, labelY, anchor = 'middle';
+      if (pos === 'top') { labelY = y - region.ry - 18; }
+      else if (pos === 'bottom') { labelY = y + region.ry + 16; }
+      else if (pos === 'right') { labelX = x + region.rx + 10; labelY = y - 2; anchor = 'start'; }
+      else if (pos === 'left') { labelX = x - region.rx - 10; labelY = y - 2; anchor = 'end'; }
+
       const label = document.createElementNS(svgNS, 'text');
-      label.setAttribute('x', region.cx);
-      label.setAttribute('y', region.cy - 4);
+      label.setAttribute('x', labelX);
+      label.setAttribute('y', labelY);
       label.setAttribute('class', 'geo-region-label');
+      label.setAttribute('text-anchor', anchor);
       label.textContent = region.name;
       g.appendChild(label);
 
       const sub = document.createElementNS(svgNS, 'text');
-      sub.setAttribute('x', region.cx);
-      sub.setAttribute('y', region.cy + 16);
+      sub.setAttribute('x', labelX);
+      sub.setAttribute('y', labelY + 15);
       sub.setAttribute('class', 'geo-region-sublabel');
+      sub.setAttribute('text-anchor', anchor);
       sub.textContent = region.subtitle;
       g.appendChild(sub);
 
@@ -1451,6 +1522,7 @@
     });
     els.searchView.hidden = view !== 'search';
     els.plannerView.hidden = view !== 'planner';
+    els.pastorView.hidden = view !== 'pastor';
     els.geoView.hidden = view !== 'geo';
     els.timelineView.hidden = view !== 'timeline';
     if (speechSynthesis.speaking) {
@@ -1514,6 +1586,7 @@
     initTranslationToggle();
     initNav();
     initPlanner();
+    initFeelingSearch();
     initFooterShare();
     els.statusBar.textContent = 'Loading the Bible…';
     try {
@@ -1535,6 +1608,7 @@
     const sharedLoaded = tryLoadSharedPlan();
     if (!sharedLoaded) {
       if (location.hash === '#planner') switchView('planner');
+      else if (location.hash === '#pastor') switchView('pastor');
       else if (location.hash === '#geo') switchView('geo');
       else if (location.hash === '#timeline') switchView('timeline');
       const params = new URL(location.href).searchParams;

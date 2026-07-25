@@ -71,6 +71,10 @@
 }
 
 *, *::before, *::after{ box-sizing: border-box; }
+/* The [hidden] attribute must always win over component display rules
+   (display:flex/grid on the same element would otherwise silently
+   override the UA default and make hidden elements render anyway). */
+[hidden]{ display: none !important; }
 html{ color-scheme: dark light; font-size: calc(16px * var(--font-scale, 1)); }
 body{
   margin: 0;
@@ -98,9 +102,9 @@ select, input{ font-family: inherit; font-size: inherit; color: inherit; }
   border-bottom: 1px solid var(--border);
 }
 .header-inner{ display:flex; align-items:center; justify-content:space-between; height: 64px; gap: 1rem; }
-.brand{ display:flex; align-items:center; gap:.55rem; text-decoration:none; color:var(--text); }
-.brand-mark{ color: var(--gold); display:flex; }
-.brand-name{ font-family: var(--font-display); font-weight: 600; font-size: 1.25rem; letter-spacing: -0.01em; }
+.brand{ display:flex; align-items:center; gap:.55rem; text-decoration:none; color:var(--text); flex-shrink:0; }
+.brand-mark{ color: var(--gold); display:flex; flex-shrink:0; }
+.brand-name{ font-family: var(--font-display); font-weight: 600; font-size: 1.25rem; letter-spacing: -0.01em; white-space: nowrap; }
 .header-actions{ display:flex; align-items:center; gap:.7rem; }
 
 .translation-toggle{ display:flex; background: var(--bg-soft); border:1px solid var(--border); border-radius: 999px; padding: 3px; gap: 2px; }
@@ -197,6 +201,31 @@ select, input{ font-family: inherit; font-size: inherit; color: inherit; }
   border:1px solid var(--border); background:var(--bg-elevated); color:var(--text); font-family: var(--font-ui);
   font-size: .82rem; padding:.48rem .7rem; border-radius: var(--radius-sm); cursor:pointer;
 }
+
+/* ---------- Feeling prompt ---------- */
+.feeling-prompt{
+  margin: 2rem auto 0; max-width: 600px; text-align:center;
+  background: color-mix(in srgb, var(--signal) 7%, transparent);
+  border: 1px solid color-mix(in srgb, var(--signal) 28%, var(--border));
+  border-radius: var(--radius-lg); padding: 1.3rem 1.4rem 1.5rem;
+}
+.feeling-eyebrow{ font-family: var(--font-ui); font-weight:700; font-size:.85rem; color: var(--signal); margin: 0 0 .8rem; }
+.feeling-form{ display:flex; align-items:center; gap:.5rem; }
+.feeling-form input{
+  flex:1; border: 1.5px solid var(--border); background: var(--bg-elevated); color: var(--text);
+  font-family: var(--font-body); font-size: 1rem; padding: .6rem .9rem; border-radius: var(--radius-md);
+  transition: border-color .15s, box-shadow .15s;
+}
+.feeling-form input:focus{
+  outline:none; border-color: var(--signal); box-shadow: 0 0 0 4px color-mix(in srgb, var(--signal) 16%, transparent);
+}
+.feeling-form input::placeholder{ color: var(--text-muted); font-style: italic; }
+.feeling-submit{
+  border:none; background: var(--signal); color: #06211d; font-family: var(--font-ui); font-weight:700;
+  font-size:.92rem; padding: .62rem 1.15rem; border-radius: var(--radius-md); cursor:pointer; flex-shrink:0;
+}
+.feeling-submit:hover{ background: var(--signal-strong); }
+.feeling-quick-tags{ justify-content:center; margin-top: .9rem; }
 
 /* ---------- Results ---------- */
 .results-section{ padding: 1.75rem 0 5rem; min-height: 40vh; }
@@ -317,10 +346,14 @@ select, input{ font-family: inherit; font-size: inherit; color: inherit; }
   position: sticky; top: 64px; z-index: 30;
   background: var(--bg); border-bottom: 1px solid var(--border);
 }
-.app-nav-inner{ display:flex; gap: 1.6rem; }
+.app-nav-inner{
+  display:flex; gap: 1.6rem; overflow-x: auto; scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.app-nav-inner::-webkit-scrollbar{ display:none; }
 .nav-tab{
   border:none; background:none; color: var(--text-muted); font-family: var(--font-ui);
-  font-weight:600; font-size:.88rem; padding: .8rem .1rem; cursor:pointer;
+  font-weight:600; font-size:.88rem; padding: .8rem .1rem; cursor:pointer; white-space: nowrap; flex-shrink:0;
   border-bottom: 2px solid transparent; margin-bottom:-1px;
 }
 .nav-tab:hover{ color: var(--text); }
@@ -342,7 +375,6 @@ select, input{ font-family: inherit; font-size: inherit; color: inherit; }
 
 /* ---------- Planner ---------- */
 .planner-hero{ padding: 3.6rem 0 1.8rem; text-align:center; }
-.planner-mode-toggle{ display:inline-flex; background: var(--bg-soft); border:1px solid var(--border); border-radius: 999px; padding: 3px; gap: 2px; margin-bottom: 1.6rem; }
 .planner-form{ max-width: 560px; margin: 0 auto; display:flex; flex-direction:column; gap: .7rem; text-align:left; }
 .planner-label{ font-family: var(--font-ui); font-size:.85rem; font-weight:600; color: var(--text); }
 .planner-textarea, .planner-input{
@@ -430,19 +462,30 @@ select, input{ font-family: inherit; font-size: inherit; color: inherit; }
 .geo-crumb-sep{ color: var(--text-muted); }
 
 .geo-panel{ background: var(--bg-elevated); border:1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; }
-.geo-map{ width:100%; height:auto; display:block; }
+.geo-map{
+  width:100%; height:auto; display:block; border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--signal) 9%, var(--bg-soft));
+}
 .geo-map-caption{ text-align:center; font-family: var(--font-ui); font-size:.78rem; color: var(--text-muted); margin: .8rem 0 0; }
-.geo-sea{ fill: color-mix(in srgb, var(--signal) 12%, transparent); stroke:none; }
-.geo-river{ fill:none; stroke: color-mix(in srgb, var(--signal) 35%, transparent); stroke-width:3; stroke-linecap:round; }
+.geo-land{
+  fill: color-mix(in srgb, var(--gold) 20%, var(--bg-elevated));
+  stroke: color-mix(in srgb, var(--gold) 50%, var(--border)); stroke-width:1;
+}
 .geo-region{ cursor:pointer; }
 .geo-region ellipse{
-  fill: color-mix(in srgb, var(--gold) 16%, var(--bg-soft)); stroke: var(--gold); stroke-width:1.5; opacity:.85;
+  fill: color-mix(in srgb, var(--signal) 30%, var(--bg-elevated)); stroke: var(--signal); stroke-width:1.5; opacity:.8;
   transition: opacity .15s, stroke-width .15s;
 }
 .geo-region:hover ellipse, .geo-region:focus-visible ellipse{ opacity:1; stroke-width:2.5; }
 .geo-region:focus-visible{ outline:none; }
-.geo-region-label{ font-family: var(--font-display); font-weight:600; font-size:19px; fill: var(--text); text-anchor:middle; pointer-events:none; }
-.geo-region-sublabel{ font-family: var(--font-ui); font-size:11px; fill: var(--text-muted); text-anchor:middle; pointer-events:none; }
+.geo-region-label{
+  font-family: var(--font-display); font-weight:600; font-size:16px; fill: var(--text); pointer-events:none;
+  paint-order: stroke; stroke: var(--bg); stroke-width: 3px;
+}
+.geo-region-sublabel{
+  font-family: var(--font-ui); font-size:10px; fill: var(--text-muted); pointer-events:none;
+  paint-order: stroke; stroke: var(--bg); stroke-width: 3px;
+}
 
 .geo-region-title{ font-family: var(--font-display); font-weight:600; font-size: clamp(1.4rem, 3vw, 1.8rem); margin: 0 0 .5rem; }
 .geo-region-blurb{ font-family: var(--font-body); font-size: 1.05rem; line-height:1.6; color: var(--text); margin: 0 0 1.4rem; max-width: 60ch; }
@@ -482,8 +525,8 @@ select, input{ font-family: inherit; font-size: inherit; color: inherit; }
 /* ---------- Print (weekly plan → PDF) ---------- */
 @media print{
   body *{ visibility: hidden; }
-  #printArea, #printArea *{ visibility: visible; }
-  #printArea{ position: absolute; top: 0; left: 0; width: 100%; border:none; box-shadow:none; padding: 0; }
+  .plan-print-root, .plan-print-root *{ visibility: visible; }
+  .plan-print-root{ position: absolute; top: 0; left: 0; width: 100%; border:none; box-shadow:none; padding: 0; }
   .plan-day-body{ display:block !important; }
   .plan-day{ break-inside: avoid; page-break-inside: avoid; border-color:#999; }
   .plan-day-head{ cursor:default; }
@@ -497,8 +540,10 @@ select, input{ font-family: inherit; font-size: inherit; color: inherit; }
   .search-btn{ padding:.62rem 1.05rem; }
   .verse-actions{ gap:0; }
   .action-btn{ padding:.32rem .5rem; font-size:.76rem; }
-  .header-inner{ height: 58px; }
+  .header-inner{ flex-wrap: wrap; height: auto; padding: .6rem 0; row-gap: .5rem; }
   .brand-name{ font-size: 1.08rem; }
+  .header-actions{ width: 100%; justify-content: space-between; }
+  .app-nav{ top: 0; position: static; }
   .plan-day-date{ min-width: 0; }
   .plan-day-head{ flex-wrap: wrap; }
 }

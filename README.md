@@ -26,32 +26,42 @@ tablet, or desktop.
 - **Study notes** — a curated dictionary of ~90 biblical themes surfaces a
   short, non-denominational explanation of how a searched word is used in
   Scripture.
-- **Comfort search** — type how you're feeling (anxious, afraid,
-  discouraged, lonely, overwhelmed, guilty, grieving, etc.) and a curated
-  set of verses and a short comforting note surface above the regular
-  results.
+- **"How are you feeling?"** — a dedicated prompt on the landing page,
+  separate from literal word search, for describing how you're feeling in
+  your own words (a full sentence works, not just a single word) and getting
+  matching verses back. Covers 25 categories spanning hard emotions
+  (anxious, afraid, discouraged, lonely, overwhelmed, guilty, grieving...),
+  good ones worth building on (joyful, grateful, hopeful, confident,
+  at peace...), and specific situations (job loss, health, relationship
+  conflict, financial stress, grief, temptation, big decisions...), with a
+  graceful general-encouragement fallback so it never dead-ends.
 - **Share as image** — turn any verse into a branded, Instagram-ready
   square image, shared straight to your phone's native share sheet (or
   downloaded on desktop).
 
-### Weekly Planner & Pastor Planner
-- Answer one prompt ("What do you want to biblically accomplish to grow
-  with God this week?") and get a full week: a memory verse, and daily
-  verses, reflections, prayer prompts, and one small action per day — dated
-  to the actual current week, with per-day progress checkboxes.
-- **Pastor Planner** builds the same plan from a sermon instead: what your
-  pastor preached on, which verses they mentioned, and a few keywords — the
-  sermon's own verses get slotted into the week and badged, alongside
-  supporting content from the same theme library.
+### Weekly Planner & Pastor Planner (separate tabs)
+- **Weekly Planner**: answer one prompt ("What do you want to biblically
+  accomplish to grow with God this week?") and get a full week: a memory
+  verse, and daily verses, reflections, prayer prompts, and one small action
+  per day — dated to the actual current week, with per-day progress
+  checkboxes.
+- **Pastor Planner**: its own tab, built the same way but from a sermon —
+  the sermon's theme, the verses your pastor mentioned, and a few keywords.
+  The sermon's own verses are slotted into the week and badged "From the
+  sermon," with supporting days drawn from the same theme library. Each
+  planner keeps its own plan independently, so switching tabs doesn't lose
+  either one.
 - Every plan can be **copied as plain text**, **printed/saved as a PDF**, or
   turned into a **shareable link** that regenerates the same plan for
   whoever opens it — no account or backend involved.
 
 ### Bible Geolocator
-- A stylized map of the ancient Near East and Mediterranean — click a
-  region (Israel & Canaan, Egypt, Sinai, Assyria & Babylon, Asia Minor,
-  Greece & Macedonia, Arabia) to see key locations within it, then click a
-  location (Jerusalem, Nineveh, Mount Sinai, Ephesus, Athens...) to see the
+- A real map — coastlines and country borders from Natural Earth (public
+  domain), covering the Mediterranean, Middle East, North Africa, and Asia
+  Minor — with 7 clickable regions (Israel & Canaan, Egypt, Sinai, Assyria
+  & Babylon, Asia Minor, Greece & Macedonia, Arabia) positioned by their
+  real coordinates. Click a region to see key locations within it, then a
+  location (Jerusalem, Nineveh, Mount Sinai, Ephesus, Athens...) for the
   verses tied to that ground.
 
 ### History Timeline
@@ -129,6 +139,7 @@ data/study-themes.json         Curated theme/keyword study notes
 data/comfort-topics.json       Emotion → curated comfort verses + framing
 data/growth-themes.json        Weekly growth tracks (memory verse + 7 days each)
 data/geo-regions.json          Bible Geolocator regions, locations, and verses
+data/world-outline.json        Real coastline/border paths (Natural Earth, public domain)
 data/timeline-eras.json        History Timeline eras, events, and verses
 ```
 
