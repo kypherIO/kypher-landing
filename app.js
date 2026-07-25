@@ -13,9 +13,12 @@
     booksByName: new Map(),
     themes: {},
     themeKeys: [],
+    comfortTopics: [],
+    growthThemes: [],
+    bookAliases: new Map(),
     translation: 'kjv',
-    bibles: {},          // translation key -> flat verse array (lazily loaded/parsed)
-    bibleRaw: {},         // translation key -> raw parsed book/chapter JSON (for chapter lookups)
+    bibles: {},
+    bibleRaw: {},
     query: '',
     testament: 'ALL',
     book: '',
@@ -25,9 +28,13 @@
     pageSize: 25,
     rate: 1,
     lastUtteranceBuilder: null,
+    currentPlan: null,
+    currentPlanDates: null,
+    view: 'search',
   };
 
   const QUICK_TAGS = ['love', 'faith', 'hope', 'peace', 'grace', 'forgiveness', 'fear not', 'wisdom', 'joy', 'strength', 'prayer', 'salvation'];
+  const GOAL_QUICK_TAGS = ['Peace over anxiety', 'Grow my faith', 'A deeper prayer life', 'Practice gratitude', 'Forgive someone', 'Be more patient', 'Find my purpose', 'Build a habit', 'Love people better', 'Hope in a hard season'];
 
   /* ---------------- DOM refs ---------------- */
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -57,6 +64,23 @@
     audioBarLabel: $('#audioBarLabel'),
     audioStopBtn: $('#audioStopBtn'),
     rateSelect: $('#rateSelect'),
+    comfortPanel: $('#comfortPanel'),
+    comfortLabel: $('#comfortLabel'),
+    comfortIntro: $('#comfortIntro'),
+    comfortVerses: $('#comfortVerses'),
+    navTabs: $$('.nav-tab'),
+    searchView: $('#searchView'),
+    plannerView: $('#plannerView'),
+    plannerModeToggle: $('#plannerModeToggle'),
+    goalForm: $('#goalForm'),
+    goalInput: $('#goalInput'),
+    goalQuickTags: $('#goalQuickTags'),
+    sermonForm: $('#sermonForm'),
+    sermonTopicInput: $('#sermonTopicInput'),
+    sermonVersesInput: $('#sermonVersesInput'),
+    sermonKeywordsInput: $('#sermonKeywordsInput'),
+    planEmptyState: $('#planEmptyState'),
+    planRoot: $('#planRoot'),
   };
 
   /* ---------------- Utilities ---------------- */
@@ -73,6 +97,14 @@
   function normalizeQuery(q) {
     return q.trim().replace(/\s+/g, ' ');
   }
+  function squash(s) {
+    return (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  }
+  function hashStr(s) {
+    let h = 0;
+    for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+    return (h >>> 0).toString(36);
+  }
 
   /* ---------------- Data loading ---------------- */
   function flattenBible(bookObjs) {
@@ -82,7 +114,7 @@
       bookObj.c.forEach((versesArr, chIdx) => {
         const chapterNum = chIdx + 1;
         versesArr.forEach((text, vIdx) => {
-          if (!text) return; // a handful of verses are absent in some translations (manuscript variants)
+          if (!text) return;
           flat.push({
             book: bookObj.b,
             abbr: bmeta.abbr || bookObj.b,
@@ -110,16 +142,35 @@
   }
 
   async function loadCoreData() {
-    const [metaRes, themesRes] = await Promise.all([
+    const [metaRes, themesRes, comfortRes, growthRes] = await Promise.all([
       fetch('data/books-meta.json'),
       fetch('data/study-themes.json'),
+      fetch('data/comfort-topics.json'),
+      fetch('data/growth-themes.json'),
     ]);
-    const [meta, themes] = await Promise.all([metaRes.json(), themesRes.json()]);
+    const [meta, themes, comfort, growth] = await Promise.all([
+      metaRes.json(), themesRes.json(), comfortRes.json(), growthRes.json(),
+    ]);
     state.booksMeta = meta;
     meta.forEach(m => state.booksByName.set(m.name, m));
     state.themes = themes;
     state.themeKeys = Object.keys(themes).sort((a, b) => b.length - a.length);
+    state.comfortTopics = comfort;
+    state.growthThemes = growth;
+    buildBookAliases();
     populateBookFilter();
+  }
+
+  function buildBookAliases() {
+    const extra = {
+      psalm: 'Psalms', proverb: 'Proverbs', revelations: 'Revelation',
+      songofsongs: 'Song of Solomon', canticles: 'Song of Solomon', song: 'Song of Solomon',
+    };
+    Object.entries(extra).forEach(([k, v]) => state.bookAliases.set(k, v));
+    state.booksMeta.forEach(b => {
+      state.bookAliases.set(squash(b.name), b.name);
+      state.bookAliases.set(squash(b.abbr), b.name);
+    });
   }
 
   function populateBookFilter() {
@@ -155,6 +206,49 @@
     });
   }
 
+  function renderGoalQuickTags() {
+    GOAL_QUICK_TAGS.forEach(tag => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'tag-btn';
+      btn.textContent = tag;
+      btn.addEventListener('click', () => {
+        els.goalInput.value = tag;
+        buildAndRenderGoalPlan(tag);
+      });
+      els.goalQuickTags.appendChild(btn);
+    });
+  }
+
+  /* ---------------- Verse reference resolution ---------------- */
+  function resolveVerseRef(ref) {
+    const raw = state.bibleRaw[state.translation];
+    if (!raw) return null;
+    const bookObj = raw.find(b => b.b === ref.book);
+    if (!bookObj) return null;
+    const chapterVerses = bookObj.c[ref.chapter - 1] || [];
+    const vEnd = ref.verseEnd || ref.verse;
+    const parts = [];
+    for (let v = ref.verse; v <= vEnd; v++) {
+      const t = chapterVerses[v - 1];
+      if (t) parts.push(t);
+    }
+    if (!parts.length) return null;
+    const text = parts.join(' ');
+    const bmeta = state.booksByName.get(ref.book) || {};
+    return {
+      book: ref.book, abbr: bmeta.abbr || ref.book, testament: bmeta.testament || 'OT', genre: bmeta.genre || '',
+      chapter: ref.chapter, verse: ref.verse, verseEnd: vEnd, text, textLower: text.toLowerCase(),
+    };
+  }
+
+  function refLabel(ref) {
+    const bmeta = state.booksByName.get(ref.book) || {};
+    const abbr = bmeta.abbr || ref.book;
+    const vEnd = ref.verseEnd || ref.verse;
+    return `${abbr} ${ref.chapter}:${ref.verse}${vEnd !== ref.verse ? '-' + vEnd : ''}`;
+  }
+
   /* ---------------- Search ---------------- */
   function activeVerses() {
     return state.bibles[state.translation] || [];
@@ -187,6 +281,37 @@
     return out.map(o => o.v);
   }
 
+  function findComfortTopic(query) {
+    const q = query.toLowerCase().trim();
+    if (!q) return null;
+    for (const topic of state.comfortTopics) {
+      for (const kw of topic.keywords) {
+        if (q === kw) return topic;
+        if (kw.includes(' ') && q.includes(kw)) return topic;
+      }
+    }
+    return null;
+  }
+
+  function updateComfortPanel(query) {
+    const topic = findComfortTopic(query);
+    if (!topic) {
+      els.comfortPanel.hidden = true;
+      els.comfortVerses.innerHTML = '';
+      return;
+    }
+    els.comfortLabel.textContent = `You searched “${query}” — here's some comfort`;
+    els.comfortIntro.textContent = topic.intro;
+    els.comfortVerses.innerHTML = '';
+    topic.verses.forEach(ref => {
+      const v = resolveVerseRef(ref);
+      if (!v) return;
+      const node = buildVerseCard(v, topic.label.toLowerCase());
+      els.comfortVerses.appendChild(node);
+    });
+    els.comfortPanel.hidden = false;
+  }
+
   function runSearch() {
     const q = normalizeQuery(els.input.value);
     state.query = q;
@@ -200,9 +325,11 @@
       els.loadMoreWrap.hidden = true;
       els.emptyState.hidden = true;
       els.statusBar.textContent = '';
+      els.comfortPanel.hidden = true;
       return;
     }
 
+    updateComfortPanel(q);
     state.results = computeResults(q);
     state.shown = 0;
     els.results.innerHTML = '';
@@ -228,6 +355,7 @@
   }
 
   function highlightText(text, query) {
+    if (!query) return escapeHtml(text);
     const pattern = new RegExp(`(${escapeRegExp(escapeHtml(query))})`, 'ig');
     return escapeHtml(text).replace(pattern, '<mark>$1</mark>');
   }
@@ -235,13 +363,14 @@
   function buildVerseCard(v, query) {
     const node = els.cardTemplate.content.firstElementChild.cloneNode(true);
     const refBtn = $('.verse-ref', node);
-    refBtn.textContent = `${v.abbr} ${v.chapter}:${v.verse}`;
+    const vEnd = v.verseEnd || v.verse;
+    refBtn.textContent = `${v.abbr} ${v.chapter}:${v.verse}${vEnd !== v.verse ? '-' + vEnd : ''}`;
     refBtn.setAttribute('aria-label', `Open ${v.book} chapter ${v.chapter}`);
     $('.verse-genre', node).textContent = v.genre;
     $('.verse-text', node).innerHTML = highlightText(v.text, query);
 
-    refBtn.addEventListener('click', () => openChapterModal(v.book, v.chapter, v.verse));
-    $('.context-btn', node).addEventListener('click', () => openChapterModal(v.book, v.chapter, v.verse));
+    refBtn.addEventListener('click', () => openChapterModal(v.book, v.chapter, v.verse, vEnd));
+    $('.context-btn', node).addEventListener('click', () => openChapterModal(v.book, v.chapter, v.verse, vEnd));
 
     const listenBtn = $('.listen-btn', node);
     listenBtn.addEventListener('click', () => {
@@ -275,7 +404,7 @@
 
     const copyBtn = $('.copy-btn', node);
     copyBtn.addEventListener('click', async () => {
-      const label = `${v.book} ${v.chapter}:${v.verse}`;
+      const label = `${v.book} ${v.chapter}:${v.verse}${vEnd !== v.verse ? '-' + vEnd : ''}`;
       const labelEl = $('.label', copyBtn);
       const original = labelEl.textContent;
       try {
@@ -295,7 +424,7 @@
     const q = query.toLowerCase();
     if (state.themes[q]) return { key: q, ...state.themes[q] };
     for (const key of state.themeKeys) {
-      if (q.includes(key) || key.includes(q)) {
+      if (q && (q.includes(key) || key.includes(q))) {
         return { key, ...state.themes[key] };
       }
     }
@@ -337,11 +466,12 @@
   }
 
   /* ---------------- Chapter modal ---------------- */
-  function openChapterModal(bookName, chapter, targetVerse) {
+  function openChapterModal(bookName, chapter, targetVerse, targetVerseEnd) {
     const chapterVerses = activeVerses().filter(v => v.book === bookName && v.chapter === chapter);
+    const vEnd = targetVerseEnd || targetVerse;
     els.modalTitle.textContent = `${bookName} ${chapter}`;
     els.modalBody.innerHTML = chapterVerses.map(v => {
-      const isTarget = v.verse === targetVerse;
+      const isTarget = v.verse >= targetVerse && v.verse <= vEnd;
       return `<span class="cv${isTarget ? ' is-target' : ''}" data-verse="${v.verse}"><sup>${v.verse}</sup>${isTarget ? `<mark>${escapeHtml(v.text)}</mark>` : escapeHtml(v.text)}</span> `;
     }).join('');
 
@@ -483,6 +613,9 @@
     } else {
       els.statusBar.textContent = '';
     }
+    if (state.currentPlan) {
+      renderPlan(state.currentPlan, state.currentPlanDates);
+    }
   }
 
   function initTranslationToggle() {
@@ -491,8 +624,443 @@
     });
   }
 
+  /* =========================================================
+     Weekly Planner + Pastor Planner
+     ========================================================= */
+
+  function getMonday(d) {
+    const date = new Date(d);
+    date.setHours(0, 0, 0, 0);
+    const day = date.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    date.setDate(date.getDate() + diff);
+    return date;
+  }
+  function addDays(d, n) {
+    const r = new Date(d);
+    r.setDate(r.getDate() + n);
+    return r;
+  }
+  function sameYMD(a, b) {
+    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  }
+  function getWeekDates() {
+    const monday = getMonday(new Date());
+    return Array.from({ length: 7 }, (_, i) => addDays(monday, i));
+  }
+  function formatDayLabel(d) {
+    return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+  }
+  function formatWeekRange(monday) {
+    const sunday = addDays(monday, 6);
+    const startOpts = { month: 'short', day: 'numeric' };
+    const endOpts = { month: 'short', day: 'numeric', year: 'numeric' };
+    return `${monday.toLocaleDateString(undefined, startOpts)} – ${sunday.toLocaleDateString(undefined, endOpts)}`;
+  }
+
+  function matchTheme(text) {
+    const q = (text || '').toLowerCase();
+    let best = null, bestScore = 0;
+    for (const theme of state.growthThemes) {
+      if (!theme.keywords || !theme.keywords.length) continue;
+      let score = 0;
+      for (const kw of theme.keywords) {
+        if (q.includes(kw)) score += kw.length;
+      }
+      if (score > bestScore) { bestScore = score; best = theme; }
+    }
+    return best || state.growthThemes.find(t => t.id === 'general');
+  }
+
+  function cloneDays(theme) {
+    return theme.days.map(d => ({ ...d }));
+  }
+
+  function buildPlanFromGoal(goalText) {
+    const theme = matchTheme(goalText);
+    const goal = goalText.trim();
+    return {
+      mode: 'goal',
+      themeId: theme.id,
+      sourceKey: goal.toLowerCase(),
+      sourceLabel: goal ? `Your goal: “${goal}”` : 'A week of growth',
+      title: theme.title,
+      intro: theme.weekIntro + (goal ? ` This week is shaped around your goal to ${goal.replace(/\.$/, '')}.` : ''),
+      memoryVerse: theme.memoryVerse,
+      days: cloneDays(theme),
+    };
+  }
+
+  function parseVerseRefs(text) {
+    if (!text) return [];
+    const chunks = text.split(/[,;\n]/).map(s => s.trim()).filter(Boolean);
+    const refs = [];
+    for (const chunkRaw of chunks) {
+      let chunk = chunkRaw.replace(/^(1st|first)\b/i, '1').replace(/^(2nd|second)\b/i, '2').replace(/^(3rd|third)\b/i, '3');
+      const m = chunk.match(/^([1-3]?\s*[A-Za-z][A-Za-z\s]*?)\.?\s+(\d{1,3})(?:\s*:\s*(\d{1,3})(?:\s*[-–—]\s*(\d{1,3}))?)?\.?$/);
+      if (!m) continue;
+      const canonical = state.bookAliases.get(squash(m[1]));
+      if (!canonical) continue;
+      const chapter = parseInt(m[2], 10);
+      const raw = state.bibleRaw[state.translation];
+      const bookObj = raw && raw.find(b => b.b === canonical);
+      if (!bookObj || chapter < 1 || chapter > bookObj.c.length) continue;
+      const chapterLen = bookObj.c[chapter - 1].length;
+      let vStart = m[3] ? parseInt(m[3], 10) : 1;
+      let vEnd = m[4] ? parseInt(m[4], 10) : (m[3] ? vStart : Math.min(chapterLen, 8));
+      vStart = Math.max(1, Math.min(vStart, chapterLen));
+      vEnd = Math.max(vStart, Math.min(vEnd, chapterLen));
+      refs.push({ book: canonical, chapter, verse: vStart, verseEnd: vEnd });
+      if (refs.length >= 7) break;
+    }
+    return refs;
+  }
+
+  function buildPlanFromSermon(topic, versesText, keywordsText) {
+    const parsedVerses = parseVerseRefs(versesText);
+    const combined = `${topic || ''} ${keywordsText || ''}`;
+    const theme = matchTheme(combined);
+    const days = cloneDays(theme);
+    const usedCount = Math.min(parsedVerses.length, days.length);
+    for (let i = 0; i < usedCount; i++) {
+      const ref = parsedVerses[i];
+      days[i] = {
+        ...days[i],
+        book: ref.book, chapter: ref.chapter, verse: ref.verse, verseEnd: ref.verseEnd,
+        focus: i === 0 ? 'From Sunday’s message' : days[i].focus,
+        reflection: i === 0
+          ? 'This is one of the verses your pastor centered the message on — sit with it again today, away from the sermon setting.'
+          : `${days[i].reflection} (A verse your pastor also referenced.)`,
+        fromSermon: true,
+      };
+    }
+    const topicClean = (topic || '').trim();
+    const memoryVerse = parsedVerses[0] || theme.memoryVerse;
+    return {
+      mode: 'sermon',
+      themeId: theme.id,
+      sourceKey: `${topicClean.toLowerCase()}|${(versesText || '').toLowerCase()}|${(keywordsText || '').toLowerCase()}`,
+      sourceLabel: topicClean ? `From Sunday’s message: “${topicClean}”` : 'From Sunday’s message',
+      title: theme.title,
+      intro: (topicClean
+        ? `Building on what your pastor preached about “${topicClean}”, this week turns it into daily practice. `
+        : 'This week turns Sunday’s message into daily practice. ') + theme.weekIntro,
+      memoryVerse,
+      days,
+    };
+  }
+
+  /* ---------------- Plan progress persistence ---------------- */
+  function planStorageKey(plan) {
+    return `biblebot-plan-progress-${hashStr(plan.mode + '|' + plan.themeId + '|' + plan.sourceKey)}`;
+  }
+  function loadPlanProgress(plan) {
+    try {
+      const raw = localStorage.getItem(planStorageKey(plan));
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return new Array(plan.days.length).fill(false);
+  }
+  function savePlanProgress(plan, progress) {
+    try { localStorage.setItem(planStorageKey(plan), JSON.stringify(progress)); } catch {}
+  }
+
+  /* ---------------- Plan rendering ---------------- */
+  function renderPlan(plan, weekDates) {
+    weekDates = weekDates || getWeekDates();
+    state.currentPlan = plan;
+    state.currentPlanDates = weekDates;
+    const today = new Date();
+    const progress = loadPlanProgress(plan);
+
+    els.planEmptyState.hidden = true;
+    els.planRoot.hidden = false;
+
+    const mv = resolveVerseRef(plan.memoryVerse);
+    const doneCount = progress.filter(Boolean).length;
+    const pct = Math.round((doneCount / plan.days.length) * 100);
+
+    const daysHtml = plan.days.map((day, i) => {
+      const d = weekDates[i];
+      const isToday = sameYMD(d, today);
+      const isPast = d < today && !isToday;
+      const isDone = !!progress[i];
+      const v = resolveVerseRef(day);
+      return `
+        <li class="plan-day${isToday ? ' is-today' : ''}${isPast ? ' is-past' : ''}${isDone ? ' is-done' : ''}" data-day-index="${i}">
+          <button class="plan-day-head" type="button" aria-expanded="${isToday}">
+            <span class="plan-day-date">${escapeHtml(formatDayLabel(d))}</span>
+            <span class="plan-day-focus">${escapeHtml(day.focus)}</span>
+            ${isToday ? '<span class="today-badge">Today</span>' : ''}
+            ${day.fromSermon ? '<span class="sermon-badge">From the sermon</span>' : ''}
+            <svg class="plan-chev" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>
+          </button>
+          <div class="plan-day-body"${isToday ? '' : ' hidden'}>
+            <p class="plan-day-ref">${escapeHtml(refLabel(day))}</p>
+            <p class="plan-day-verse">${v ? escapeHtml(v.text) : ''}</p>
+            <button class="action-btn plan-day-listen" type="button">
+              <svg class="action-icon" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M3 10v4h4l5 5V5L7 10H3Zm13.5 2a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4Z"/></svg>
+              <span class="label">Listen</span>
+            </button>
+            <p class="plan-day-reflection">${escapeHtml(day.reflection)}</p>
+            <p class="plan-day-prayer"><strong>Prayer:</strong> ${escapeHtml(day.prayer)}</p>
+            <label class="plan-day-action">
+              <input type="checkbox" class="plan-day-checkbox" data-day-index="${i}" ${isDone ? 'checked' : ''} />
+              <span><strong>Try today:</strong> ${escapeHtml(day.action)}</span>
+            </label>
+          </div>
+        </li>`;
+    }).join('');
+
+    els.planRoot.innerHTML = `
+      <div class="plan-card" id="printArea">
+        <div class="plan-card-head">
+          <p class="plan-source">${escapeHtml(plan.sourceLabel)}</p>
+          <h2 class="plan-title">${escapeHtml(plan.title)}</h2>
+          <p class="plan-range">${escapeHtml(formatWeekRange(weekDates[0]))}</p>
+        </div>
+        <p class="plan-intro">${escapeHtml(plan.intro)}</p>
+        <div class="memory-verse-box">
+          <p class="mv-label">Memory verse for the week</p>
+          <p class="mv-ref">${escapeHtml(refLabel(plan.memoryVerse))}</p>
+          <p class="mv-text">${mv ? escapeHtml(mv.text) : ''}</p>
+          <button class="action-btn mv-listen-btn" type="button">
+            <svg class="action-icon" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M3 10v4h4l5 5V5L7 10H3Zm13.5 2a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4Z"/></svg>
+            <span class="label">Listen</span>
+          </button>
+        </div>
+        <div class="plan-progress">
+          <div class="plan-progress-bar"><div class="plan-progress-fill" style="width:${pct}%"></div></div>
+          <span class="plan-progress-label" id="planProgressLabel">${doneCount}/${plan.days.length} days complete</span>
+        </div>
+        <div class="plan-toolbar">
+          <button id="planCopyBtn" class="btn-small" type="button">Copy as text</button>
+          <button id="planPrintBtn" class="btn-small" type="button">Print / Save PDF</button>
+          <button id="planShareBtn" class="btn-small" type="button">Copy shareable link</button>
+          <button id="planResetBtn" class="btn-small" type="button">Start over</button>
+        </div>
+        <ol class="plan-days">${daysHtml}</ol>
+      </div>`;
+
+    wirePlanEvents(plan, weekDates, progress);
+  }
+
+  function wirePlanEvents(plan, weekDates, progress) {
+    $$('.plan-day-head', els.planRoot).forEach(head => {
+      head.addEventListener('click', () => {
+        const body = head.nextElementSibling;
+        const expanded = head.getAttribute('aria-expanded') === 'true';
+        head.setAttribute('aria-expanded', String(!expanded));
+        body.hidden = expanded;
+      });
+    });
+
+    $$('.plan-day-listen', els.planRoot).forEach(btn => {
+      const li = btn.closest('.plan-day');
+      const i = parseInt(li.dataset.dayIndex, 10);
+      const day = plan.days[i];
+      btn.addEventListener('click', () => {
+        const v = resolveVerseRef(day);
+        if (!v) return;
+        toggleSpeak(btn, () => ({ text: `${refLabel(day)}. ${v.text}`, label: `${refLabel(day)}, ${TRANSLATIONS[state.translation].label}` }));
+      });
+    });
+
+    const mvListenBtn = $('.mv-listen-btn', els.planRoot);
+    if (mvListenBtn) {
+      mvListenBtn.addEventListener('click', () => {
+        const mv = resolveVerseRef(plan.memoryVerse);
+        if (!mv) return;
+        toggleSpeak(mvListenBtn, () => ({ text: `${refLabel(plan.memoryVerse)}. ${mv.text}`, label: `Memory verse, ${refLabel(plan.memoryVerse)}` }));
+      });
+    }
+
+    $$('.plan-day-checkbox', els.planRoot).forEach(cb => {
+      cb.addEventListener('change', () => {
+        const i = parseInt(cb.dataset.dayIndex, 10);
+        progress[i] = cb.checked;
+        savePlanProgress(plan, progress);
+        cb.closest('.plan-day').classList.toggle('is-done', cb.checked);
+        const doneCount = progress.filter(Boolean).length;
+        const pct = Math.round((doneCount / plan.days.length) * 100);
+        $('.plan-progress-fill', els.planRoot).style.width = pct + '%';
+        $('#planProgressLabel', els.planRoot).textContent = `${doneCount}/${plan.days.length} days complete`;
+      });
+    });
+
+    $('#planCopyBtn', els.planRoot).addEventListener('click', async (e) => {
+      const text = planToText(plan, weekDates);
+      const btn = e.currentTarget;
+      const original = btn.textContent;
+      try {
+        await navigator.clipboard.writeText(text);
+        btn.textContent = 'Copied!';
+      } catch {
+        btn.textContent = 'Copy failed';
+      }
+      setTimeout(() => { btn.textContent = original; }, 1500);
+    });
+
+    $('#planPrintBtn', els.planRoot).addEventListener('click', () => window.print());
+
+    $('#planShareBtn', els.planRoot).addEventListener('click', async (e) => {
+      const url = buildShareUrl(plan);
+      const btn = e.currentTarget;
+      const original = btn.textContent;
+      try {
+        await navigator.clipboard.writeText(url);
+        btn.textContent = 'Link copied!';
+      } catch {
+        btn.textContent = 'Copy failed';
+      }
+      setTimeout(() => { btn.textContent = original; }, 1500);
+    });
+
+    $('#planResetBtn', els.planRoot).addEventListener('click', () => {
+      state.currentPlan = null;
+      state.currentPlanDates = null;
+      els.planRoot.hidden = true;
+      els.planRoot.innerHTML = '';
+      els.planEmptyState.hidden = false;
+      els.goalInput.value = '';
+      els.sermonTopicInput.value = '';
+      els.sermonVersesInput.value = '';
+      els.sermonKeywordsInput.value = '';
+      history.replaceState(null, '', location.pathname + location.search);
+    });
+  }
+
+  function planToText(plan, weekDates) {
+    const lines = [];
+    lines.push(plan.title);
+    lines.push(plan.sourceLabel);
+    lines.push(formatWeekRange(weekDates[0]));
+    lines.push('');
+    lines.push(plan.intro);
+    lines.push('');
+    const mv = resolveVerseRef(plan.memoryVerse);
+    lines.push(`MEMORY VERSE — ${refLabel(plan.memoryVerse)}`);
+    if (mv) lines.push(mv.text);
+    lines.push('');
+    plan.days.forEach((day, i) => {
+      const v = resolveVerseRef(day);
+      lines.push(`${formatDayLabel(weekDates[i])} — ${day.focus}`);
+      lines.push(refLabel(day));
+      if (v) lines.push(v.text);
+      lines.push(`Reflection: ${day.reflection}`);
+      lines.push(`Prayer: ${day.prayer}`);
+      lines.push(`Try today: ${day.action}`);
+      lines.push('');
+    });
+    lines.push(`— Built with Bible Bot (${TRANSLATIONS[state.translation].label})`);
+    return lines.join('\n');
+  }
+
+  /* ---------------- Shareable links ---------------- */
+  function toBase64Url(obj) {
+    const json = JSON.stringify(obj);
+    const b64 = btoa(unescape(encodeURIComponent(json)));
+    return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  function fromBase64Url(str) {
+    let b64 = str.replace(/-/g, '+').replace(/_/g, '/');
+    while (b64.length % 4) b64 += '=';
+    const json = decodeURIComponent(escape(atob(b64)));
+    return JSON.parse(json);
+  }
+
+  function buildShareUrl(plan) {
+    const seed = plan.mode === 'goal'
+      ? { m: 'g', g: els.goalInput.value || plan.sourceKey }
+      : { m: 's', t: els.sermonTopicInput.value, v: els.sermonVersesInput.value, k: els.sermonKeywordsInput.value };
+    return `${location.origin}${location.pathname}#plan=${toBase64Url(seed)}`;
+  }
+
+  function buildAndRenderGoalPlan(goalText) {
+    if (!goalText || !goalText.trim()) return;
+    const plan = buildPlanFromGoal(goalText);
+    renderPlan(plan);
+    window.scrollTo({ top: els.planRoot.offsetTop - 90, behavior: 'smooth' });
+  }
+  function buildAndRenderSermonPlan(topic, verses, keywords) {
+    if (!topic.trim() && !verses.trim() && !keywords.trim()) return;
+    const plan = buildPlanFromSermon(topic, verses, keywords);
+    renderPlan(plan);
+    window.scrollTo({ top: els.planRoot.offsetTop - 90, behavior: 'smooth' });
+  }
+
+  function tryLoadSharedPlan() {
+    const hash = location.hash;
+    if (!hash.startsWith('#plan=')) return false;
+    try {
+      const seed = fromBase64Url(hash.slice('#plan='.length));
+      switchView('planner');
+      if (seed.m === 'g') {
+        setPlannerMode('goal');
+        els.goalInput.value = seed.g || '';
+        buildAndRenderGoalPlan(seed.g || '');
+      } else if (seed.m === 's') {
+        setPlannerMode('sermon');
+        els.sermonTopicInput.value = seed.t || '';
+        els.sermonVersesInput.value = seed.v || '';
+        els.sermonKeywordsInput.value = seed.k || '';
+        buildAndRenderSermonPlan(seed.t || '', seed.v || '', seed.k || '');
+      }
+      return true;
+    } catch (err) {
+      console.error('Could not load shared plan', err);
+      return false;
+    }
+  }
+
+  /* ---------------- Planner form wiring ---------------- */
+  function setPlannerMode(mode) {
+    $$('.tt-btn', els.plannerModeToggle).forEach(b => b.classList.toggle('is-active', b.dataset.mode === mode));
+    els.goalForm.hidden = mode !== 'goal';
+    els.sermonForm.hidden = mode !== 'sermon';
+  }
+
+  function initPlanner() {
+    renderGoalQuickTags();
+    $$('.tt-btn', els.plannerModeToggle).forEach(btn => {
+      btn.addEventListener('click', () => setPlannerMode(btn.dataset.mode));
+    });
+    els.goalForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      buildAndRenderGoalPlan(els.goalInput.value);
+    });
+    els.sermonForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      buildAndRenderSermonPlan(els.sermonTopicInput.value, els.sermonVersesInput.value, els.sermonKeywordsInput.value);
+    });
+  }
+
+  /* ---------------- Nav / view switching ---------------- */
+  function switchView(view) {
+    state.view = view;
+    els.navTabs.forEach(tab => {
+      const active = tab.dataset.view === view;
+      tab.classList.toggle('is-active', active);
+      tab.setAttribute('aria-selected', String(active));
+    });
+    els.searchView.hidden = view !== 'search';
+    els.plannerView.hidden = view !== 'planner';
+    if (speechSynthesis.speaking) {
+      speechSynthesis.cancel();
+      els.audioBar.hidden = true;
+      resetSpeakButton();
+    }
+  }
+
+  function initNav() {
+    els.navTabs.forEach(tab => {
+      tab.addEventListener('click', () => switchView(tab.dataset.view));
+    });
+  }
+
   /* ---------------- URL sync ---------------- */
   function syncUrl() {
+    if (state.view !== 'search') return;
     const url = new URL(location.href);
     if (state.query) url.searchParams.set('q', state.query); else url.searchParams.delete('q');
     history.replaceState(null, '', url);
@@ -535,6 +1103,8 @@
     renderQuickTags();
     initEvents();
     initTranslationToggle();
+    initNav();
+    initPlanner();
     els.statusBar.textContent = 'Loading the Bible…';
     try {
       await loadCoreData();
@@ -546,17 +1116,22 @@
     }
     els.statusBar.textContent = '';
 
-    // Warm the second translation in the background so switching feels instant.
     Object.keys(TRANSLATIONS).forEach(key => {
       if (key !== state.translation) loadTranslation(key).catch(() => {});
     });
 
-    const params = new URL(location.href).searchParams;
-    const initialQ = params.get('q');
-    if (initialQ) {
-      els.input.value = initialQ;
-      runSearch();
+    const sharedLoaded = tryLoadSharedPlan();
+    if (!sharedLoaded) {
+      if (location.hash === '#planner') switchView('planner');
+      const params = new URL(location.href).searchParams;
+      const initialQ = params.get('q');
+      if (initialQ) {
+        els.input.value = initialQ;
+        runSearch();
+      }
     }
+
+    window.addEventListener('hashchange', () => { tryLoadSharedPlan(); });
   }
 
   document.addEventListener('DOMContentLoaded', init);

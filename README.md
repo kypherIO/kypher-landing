@@ -27,6 +27,22 @@ entirely in the browser.
   themes found in the same verse.
 - **Read chapter** — opens the full chapter in context with the matched
   verse highlighted.
+- **Comfort search** — type how you're feeling (anxious, afraid, discouraged,
+  lonely, overwhelmed, guilty, grieving, etc.) and a curated set of verses
+  and a short comforting note surface above the regular results.
+- **Weekly Planner** — answer one prompt ("What do you want to biblically
+  accomplish to grow with God this week?") and get a full week: a memory
+  verse, and daily verses, reflections, prayer prompts, and one small action
+  per day — dated to the actual current week, with per-day progress
+  checkboxes that persist locally.
+- **Pastor Planner** — build the same weekly plan from a sermon instead of a
+  personal goal: enter what your pastor preached on, which verses they
+  mentioned, and a few keywords, and it slots the sermon's own verses into
+  the week alongside supporting content from the same theme library.
+- Every plan can be **copied as plain text**, **printed/saved as a PDF**
+  (isolated print layout via `window.print()`), or turned into a
+  **shareable link** that regenerates the same plan — with dates recomputed
+  to whoever opens it — with no account or backend involved.
 - **Light/dark theme**, responsive layout, shareable search URLs (`?q=...`).
 
 ## Running locally
@@ -50,13 +66,16 @@ environment variables or build steps required.
 ## Project structure
 
 ```
-index.html               Page markup
-styles.css                Styling (light/dark theme, responsive layout)
-app.js                     Search, audio, translation switching, study notes, chapter view
-data/bible-kjv.json         King James Version text (public domain)
-data/bible-web.json         World English Bible text (public domain)
-data/books-meta.json        Book names, abbreviations, testament, genre
-data/study-themes.json      Curated theme/keyword study notes
+index.html                  Page markup (search view + planner view)
+styles.css                   Styling (light/dark theme, responsive + print layout)
+app.js                        Search, audio, translation switching, study notes,
+                                chapter view, comfort search, weekly/pastor planner
+data/bible-kjv.json            King James Version text (public domain)
+data/bible-web.json            World English Bible text (public domain)
+data/books-meta.json           Book names, abbreviations, testament, genre
+data/study-themes.json         Curated theme/keyword study notes
+data/comfort-topics.json       Emotion → curated comfort verses + framing
+data/growth-themes.json        Weekly growth tracks (memory verse + 7 days each)
 ```
 
 ## Data & credits

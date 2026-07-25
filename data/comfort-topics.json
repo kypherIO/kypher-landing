@@ -1,0 +1,142 @@
+[
+  {
+    "id": "anxiety",
+    "label": "Anxiety & Worry",
+    "keywords": ["anxious", "anxiety", "worried", "worry", "worrying", "nervous", "panic", "panicking", "overthinking", "stressed", "stress"],
+    "intro": "It's okay to feel this way — and you don't have to carry it alone. Scripture doesn't tell you to pretend the worry isn't there; it invites you to hand it over.",
+    "verses": [
+      { "book": "Philippians", "chapter": 4, "verse": 6, "verseEnd": 7 },
+      { "book": "Matthew", "chapter": 6, "verse": 34 },
+      { "book": "1 Peter", "chapter": 5, "verse": 7 },
+      { "book": "Psalms", "chapter": 94, "verse": 19 },
+      { "book": "Isaiah", "chapter": 41, "verse": 10 },
+      { "book": "John", "chapter": 14, "verse": 27 }
+    ]
+  },
+  {
+    "id": "fear",
+    "label": "Fear",
+    "keywords": ["afraid", "fear", "scared", "terrified", "frightened", "fearful"],
+    "intro": "Fear shows up when something feels bigger than you. Scripture keeps repeating one phrase for a reason: fear not — because you're not facing it alone.",
+    "verses": [
+      { "book": "Joshua", "chapter": 1, "verse": 9 },
+      { "book": "Psalms", "chapter": 27, "verse": 1 },
+      { "book": "Isaiah", "chapter": 41, "verse": 10 },
+      { "book": "2 Timothy", "chapter": 1, "verse": 7 },
+      { "book": "Psalms", "chapter": 34, "verse": 4 },
+      { "book": "Deuteronomy", "chapter": 31, "verse": 6 }
+    ]
+  },
+  {
+    "id": "grief",
+    "label": "Sadness & Grief",
+    "keywords": ["sad", "sadness", "grieving", "grief", "heartbroken", "depressed", "down", "hurting", "mourning"],
+    "intro": "Grief is love with nowhere to go. God doesn't rush you through it — he stays close in it.",
+    "verses": [
+      { "book": "Psalms", "chapter": 34, "verse": 18 },
+      { "book": "Matthew", "chapter": 5, "verse": 4 },
+      { "book": "Psalms", "chapter": 147, "verse": 3 },
+      { "book": "Revelation", "chapter": 21, "verse": 4 },
+      { "book": "Psalms", "chapter": 30, "verse": 5 },
+      { "book": "2 Corinthians", "chapter": 1, "verse": 3, "verseEnd": 4 }
+    ]
+  },
+  {
+    "id": "loneliness",
+    "label": "Loneliness",
+    "keywords": ["lonely", "loneliness", "alone", "isolated", "abandoned", "forgotten"],
+    "intro": "Feeling unseen is one of the hardest kinds of pain. You are known, even in the room where no one else seems to notice.",
+    "verses": [
+      { "book": "Deuteronomy", "chapter": 31, "verse": 6 },
+      { "book": "Psalms", "chapter": 68, "verse": 6 },
+      { "book": "Hebrews", "chapter": 13, "verse": 5 },
+      { "book": "Psalms", "chapter": 25, "verse": 16, "verseEnd": 17 },
+      { "book": "Isaiah", "chapter": 41, "verse": 10 },
+      { "book": "Matthew", "chapter": 28, "verse": 20 }
+    ]
+  },
+  {
+    "id": "anger",
+    "label": "Anger & Frustration",
+    "keywords": ["angry", "anger", "frustrated", "frustration", "furious", "irritated", "mad", "resentful"],
+    "intro": "Anger isn't the problem — what you do with it can be. Scripture gives you room to feel it honestly, and a way to not let it run you.",
+    "verses": [
+      { "book": "Ephesians", "chapter": 4, "verse": 26, "verseEnd": 27 },
+      { "book": "James", "chapter": 1, "verse": 19, "verseEnd": 20 },
+      { "book": "Proverbs", "chapter": 15, "verse": 1 },
+      { "book": "Proverbs", "chapter": 29, "verse": 11 },
+      { "book": "Psalms", "chapter": 37, "verse": 8 },
+      { "book": "Colossians", "chapter": 3, "verse": 8 }
+    ]
+  },
+  {
+    "id": "doubt",
+    "label": "Doubt & Uncertainty",
+    "keywords": ["doubt", "doubting", "uncertain", "uncertainty", "confused", "questioning", "unsure"],
+    "intro": "Doubt isn't the opposite of faith — it's often a sign you're actually wrestling with it, instead of ignoring it.",
+    "verses": [
+      { "book": "Mark", "chapter": 9, "verse": 24 },
+      { "book": "James", "chapter": 1, "verse": 5, "verseEnd": 6 },
+      { "book": "Proverbs", "chapter": 3, "verse": 5, "verseEnd": 6 },
+      { "book": "Matthew", "chapter": 14, "verse": 31 },
+      { "book": "John", "chapter": 20, "verse": 27 },
+      { "book": "Isaiah", "chapter": 55, "verse": 8, "verseEnd": 9 }
+    ]
+  },
+  {
+    "id": "guilt",
+    "label": "Guilt & Shame",
+    "keywords": ["guilty", "guilt", "shame", "ashamed", "worthless", "failure", "embarrassed"],
+    "intro": "Guilt says 'I did something wrong.' Shame says 'I am something wrong.' Scripture answers both with the same word: forgiven.",
+    "verses": [
+      { "book": "Romans", "chapter": 8, "verse": 1 },
+      { "book": "1 John", "chapter": 1, "verse": 9 },
+      { "book": "Psalms", "chapter": 103, "verse": 12 },
+      { "book": "Isaiah", "chapter": 1, "verse": 18 },
+      { "book": "Romans", "chapter": 10, "verse": 11 },
+      { "book": "Psalms", "chapter": 34, "verse": 5 }
+    ]
+  },
+  {
+    "id": "overwhelm",
+    "label": "Overwhelm & Stress",
+    "keywords": ["overwhelmed", "overwhelm", "exhausted", "burned out", "burnout", "too much", "cant cope", "can't cope", "drowning"],
+    "intro": "When everything feels like too much at once, you don't need a bigger plan — you need somewhere to set it down for a minute.",
+    "verses": [
+      { "book": "Matthew", "chapter": 11, "verse": 28, "verseEnd": 30 },
+      { "book": "Psalms", "chapter": 55, "verse": 22 },
+      { "book": "Philippians", "chapter": 4, "verse": 13 },
+      { "book": "Psalms", "chapter": 46, "verse": 1 },
+      { "book": "2 Corinthians", "chapter": 12, "verse": 9 },
+      { "book": "Isaiah", "chapter": 40, "verse": 29, "verseEnd": 31 }
+    ]
+  },
+  {
+    "id": "discouragement",
+    "label": "Discouragement",
+    "keywords": ["discouraged", "discouragement", "giving up", "hopeless", "defeated", "disheartened", "deflated"],
+    "intro": "Discouragement makes the road feel longer than it is. You're allowed to feel tired without believing it's over.",
+    "verses": [
+      { "book": "Galatians", "chapter": 6, "verse": 9 },
+      { "book": "Joshua", "chapter": 1, "verse": 9 },
+      { "book": "Isaiah", "chapter": 40, "verse": 31 },
+      { "book": "Psalms", "chapter": 42, "verse": 11 },
+      { "book": "2 Corinthians", "chapter": 4, "verse": 16, "verseEnd": 18 },
+      { "book": "Philippians", "chapter": 1, "verse": 6 }
+    ]
+  },
+  {
+    "id": "weariness",
+    "label": "Weariness & Burnout",
+    "keywords": ["tired", "weary", "weariness", "drained", "worn out", "fatigued", "running on empty", "burnt out"],
+    "intro": "Rest isn't a reward you earn after everything is finished. It's an invitation, offered right in the middle of the mess.",
+    "verses": [
+      { "book": "Matthew", "chapter": 11, "verse": 28 },
+      { "book": "Isaiah", "chapter": 40, "verse": 31 },
+      { "book": "Exodus", "chapter": 33, "verse": 14 },
+      { "book": "Psalms", "chapter": 23, "verse": 1, "verseEnd": 3 },
+      { "book": "Psalms", "chapter": 62, "verse": 1 },
+      { "book": "Jeremiah", "chapter": 31, "verse": 25 }
+    ]
+  }
+]

@@ -34,7 +34,15 @@
   </div>
 </header>
 
+<nav class="app-nav" aria-label="Main">
+  <div class="wrap app-nav-inner">
+    <button class="nav-tab is-active" type="button" data-view="search" aria-selected="true">Search Scripture</button>
+    <button class="nav-tab" type="button" data-view="planner" aria-selected="false">Weekly Planner</button>
+  </div>
+</nav>
+
 <main id="top">
+<div id="searchView">
   <section class="hero">
     <div class="wrap">
       <p class="eyebrow">A scripture companion</p>
@@ -73,6 +81,11 @@
 
   <section class="results-section">
     <div class="wrap">
+      <div id="comfortPanel" class="comfort-panel" hidden>
+        <p class="comfort-eyebrow" id="comfortLabel">Comfort</p>
+        <p class="comfort-intro" id="comfortIntro"></p>
+        <ol id="comfortVerses" class="comfort-verse-list results-list"></ol>
+      </div>
       <div id="statusBar" class="status-bar" aria-live="polite"></div>
       <ol id="results" class="results-list"></ol>
       <div id="loadMoreWrap" class="load-more-wrap" hidden>
@@ -84,6 +97,51 @@
       </div>
     </div>
   </section>
+</div>
+
+<div id="plannerView" hidden>
+  <section class="planner-hero">
+    <div class="wrap">
+      <p class="eyebrow">Weekly growth plan</p>
+      <h1>Build a week grounded in Scripture.</h1>
+      <p class="hero-sub">Pick a starting point below. Either way you'll get daily verses, short prayers, a memory verse, and one small action a day — synced to this week's actual dates.</p>
+
+      <div class="planner-mode-toggle" id="plannerModeToggle" role="group" aria-label="Choose planner mode">
+        <button class="tt-btn is-active" data-mode="goal" type="button">My Goal</button>
+        <button class="tt-btn" data-mode="sermon" type="button">Pastor Planner</button>
+      </div>
+
+      <form id="goalForm" class="planner-form">
+        <label class="planner-label" for="goalInput">What do you want to biblically accomplish to grow with God this week?</label>
+        <textarea id="goalInput" class="planner-textarea" rows="2" placeholder="e.g. I want to worry less and trust God more…"></textarea>
+        <div class="quick-tags planner-quick-tags" id="goalQuickTags" aria-label="Suggested goals">
+          <span class="quick-label">Try</span>
+        </div>
+        <button type="submit" class="search-btn planner-submit">Build my week</button>
+      </form>
+
+      <form id="sermonForm" class="planner-form" hidden>
+        <label class="planner-label" for="sermonTopicInput">What did your pastor preach on?</label>
+        <input id="sermonTopicInput" class="planner-input" type="text" placeholder="e.g. Walking by faith, not by sight" />
+        <label class="planner-label" for="sermonVersesInput">What Bible verses did they mention?</label>
+        <input id="sermonVersesInput" class="planner-input" type="text" placeholder="e.g. 2 Corinthians 5:7, Hebrews 11:1" />
+        <label class="planner-label" for="sermonKeywordsInput">What were some keywords they mentioned?</label>
+        <input id="sermonKeywordsInput" class="planner-input" type="text" placeholder="e.g. trust, obedience, uncertainty" />
+        <button type="submit" class="search-btn planner-submit">Build my week</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="plan-section">
+    <div class="wrap">
+      <div id="planEmptyState" class="empty-state">
+        <p>Your plan will show up here.</p>
+        <p class="empty-sub">Answer the prompt above and Bible Bot will lay out the week for you.</p>
+      </div>
+      <div id="planRoot" class="plan-root" hidden></div>
+    </div>
+  </section>
+</div>
 </main>
 
 <div id="chapterModal" class="modal" hidden aria-hidden="true">
