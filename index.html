@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kypher — Bible Search, Read & Study</title>
+<meta name="description" content="Search the King James Bible by word or phrase. Read verses in context, listen to them read aloud, and explore themes and study notes." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📖%3C/text%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="#top" aria-label="Kypher home">
+      <span class="brand-mark" aria-hidden="true">📖</span>
+      <span class="brand-name">Kypher</span>
+    </a>
+    <div class="header-actions">
+      <span class="kjv-badge" title="King James Version, public domain">KJV</span>
+      <button id="themeToggle" class="icon-btn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
+        <svg class="icon-sun" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 4.5a1 1 0 0 1-1-1V2a1 1 0 1 1 2 0v1.5a1 1 0 0 1-1 1Zm0 15a1 1 0 0 1 1 1V22a1 1 0 1 1-2 0v-1.5a1 1 0 0 1 1-1ZM4.5 12a1 1 0 0 1-1 1H2a1 1 0 1 1 0-2h1.5a1 1 0 0 1 1 1Zm18 0a1 1 0 0 1-1 1h-1.5a1 1 0 1 1 0-2H21a1 1 0 0 1 1 1ZM6.34 6.34a1 1 0 0 1-1.41 0L3.87 5.28a1 1 0 0 1 1.41-1.41l1.06 1.06a1 1 0 0 1 0 1.41Zm12.73 12.73a1 1 0 0 1-1.41 0l-1.06-1.06a1 1 0 0 1 1.41-1.41l1.06 1.06a1 1 0 0 1 0 1.41ZM6.34 17.66a1 1 0 0 1 0 1.41l-1.06 1.06a1 1 0 1 1-1.41-1.41l1.06-1.06a1 1 0 0 1 1.41 0ZM19.07 4.87a1 1 0 0 1 0 1.41l-1.06 1.06a1 1 0 1 1-1.41-1.41l1.06-1.06a1 1 0 0 1 1.41 0ZM12 7a5 5 0 1 1 0 10A5 5 0 0 1 12 7Z"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M20.7 14.9a8.6 8.6 0 0 1-10.6-10.6 1 1 0 0 0-1.3-1.2A10.6 10.6 0 1 0 21.9 16.2a1 1 0 0 0-1.2-1.3Z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <h1>Search Scripture by word, theme, or phrase</h1>
+      <p class="hero-sub">Find every verse containing your word, hear it read aloud, and get a short study note on how it's used in the Bible.</p>
+
+      <form id="searchForm" class="search-bar" role="search" autocomplete="off">
+        <svg class="search-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="m21.71 20.29-3.4-3.39A8 8 0 1 0 16.9 18.3l3.39 3.4a1 1 0 0 0 1.42-1.41ZM4 10a6 6 0 1 1 6 6 6 6 0 0 1-6-6Z"/></svg>
+        <input id="searchInput" type="text" inputmode="search" placeholder="Try “love”, “fear not”, or “faith”…" aria-label="Search the Bible" />
+        <button type="button" id="clearBtn" class="clear-btn" aria-label="Clear search" hidden>✕</button>
+        <button type="submit" class="search-btn">Search</button>
+      </form>
+
+      <div class="quick-tags" id="quickTags" aria-label="Popular searches">
+        <span class="quick-label">Try:</span>
+      </div>
+
+      <div class="filters" id="filters">
+        <div class="filter-group" role="group" aria-label="Filter by testament">
+          <button class="chip is-active" data-testament="ALL" type="button">All</button>
+          <button class="chip" data-testament="OT" type="button">Old Testament</button>
+          <button class="chip" data-testament="NT" type="button">New Testament</button>
+        </div>
+        <select id="bookFilter" aria-label="Filter by book">
+          <option value="">Any book</option>
+        </select>
+        <select id="sortOrder" aria-label="Sort results">
+          <option value="canon">Sort: Bible order</option>
+          <option value="relevance">Sort: Relevance</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <section class="results-section">
+    <div class="wrap">
+      <div id="statusBar" class="status-bar" aria-live="polite"></div>
+      <ol id="results" class="results-list"></ol>
+      <div id="loadMoreWrap" class="load-more-wrap" hidden>
+        <button id="loadMoreBtn" class="btn-outline" type="button">Load more results</button>
+      </div>
+      <div id="emptyState" class="empty-state" hidden>
+        <p>Nothing found for that search yet.</p>
+        <p class="empty-sub">Try a shorter word, check spelling, or pick one of the suggestions above.</p>
+      </div>
+      <div id="introState" class="intro-state">
+        <div class="intro-grid">
+          <div class="intro-card">
+            <span class="intro-icon" aria-hidden="true">🔎</span>
+            <h3>Search anything</h3>
+            <p>Type a word, name, or short phrase to find every matching verse in the King James Bible.</p>
+          </div>
+          <div class="intro-card">
+            <span class="intro-icon" aria-hidden="true">🔊</span>
+            <h3>Listen to verses</h3>
+            <p>Press Listen on any verse or read a full chapter aloud using your browser's built-in voice.</p>
+          </div>
+          <div class="intro-card">
+            <span class="intro-icon" aria-hidden="true">💡</span>
+            <h3>Study notes</h3>
+            <p>Open Study Note on a result for a short explanation of the theme and how it's used across Scripture.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="chapterModal" class="modal" hidden aria-hidden="true">
+  <div class="modal-backdrop" data-close-modal></div>
+  <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="chapterModalTitle">
+    <div class="modal-header">
+      <h2 id="chapterModalTitle">Chapter</h2>
+      <div class="modal-header-actions">
+        <button id="chapterListenBtn" class="btn-small" type="button">🔊 Read chapter</button>
+        <button class="icon-btn" type="button" data-close-modal aria-label="Close">✕</button>
+      </div>
+    </div>
+    <div id="chapterModalBody" class="modal-body"></div>
+  </div>
+</div>
+
+<div id="audioBar" class="audio-bar" hidden>
+  <div class="wrap audio-bar-inner">
+    <span class="audio-eq" aria-hidden="true"><i></i><i></i><i></i></span>
+    <span id="audioBarLabel" class="audio-bar-label">Reading…</span>
+    <div class="audio-bar-controls">
+      <label class="rate-label">Speed
+        <select id="rateSelect">
+          <option value="0.8">0.8×</option>
+          <option value="1" selected>1×</option>
+          <option value="1.25">1.25×</option>
+          <option value="1.5">1.5×</option>
+        </select>
+      </label>
+      <button id="audioStopBtn" class="btn-small" type="button">Stop</button>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>Kypher is a free, client-side Bible search tool. Text: King James Version (public domain). Audio is generated locally in your browser via the Web Speech API — no verse audio is uploaded or stored.</p>
+    <p class="footer-note">Study notes are brief, non-denominational starting points for reflection, not authoritative theological commentary — please study alongside your own church, pastor, or trusted resources.</p>
+  </div>
+</footer>
+
+<template id="verseCardTemplate">
+  <li class="verse-card">
+    <div class="verse-card-head">
+      <button class="verse-ref" type="button"></button>
+      <span class="verse-genre"></span>
+    </div>
+    <p class="verse-text"></p>
+    <div class="verse-actions">
+      <button class="action-btn listen-btn" type="button">
+        <span class="action-icon">🔊</span> Listen
+      </button>
+      <button class="action-btn note-btn" type="button">
+        <span class="action-icon">💡</span> Study note
+      </button>
+      <button class="action-btn context-btn" type="button">
+        <span class="action-icon">📖</span> Read chapter
+      </button>
+      <button class="action-btn copy-btn" type="button">
+        <span class="action-icon">⧉</span> Copy
+      </button>
+    </div>
+    <div class="verse-note" hidden></div>
+  </li>
+</template>
+
+<script src="app.js"></script>
+</body>
+</html>

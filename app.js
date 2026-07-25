@@ -1,0 +1,511 @@
+(() => {
+  'use strict';
+
+  /* ---------------- State ---------------- */
+  const state = {
+    verses: [],          // flat verse index
+    booksMeta: [],        // book metadata
+    booksByName: new Map(),
+    themes: {},            // study-themes dictionary
+    themeKeys: [],          // sorted longest-first for phrase matching
+    query: '',
+    testament: 'ALL',
+    book: '',
+    sort: 'canon',
+    results: [],
+    shown: 0,
+    pageSize: 25,
+    rate: 1,
+    lastUtteranceBuilder: null, // fn() => {text, label} to rebuild on rate change
+  };
+
+  const QUICK_TAGS = ['love', 'faith', 'hope', 'peace', 'grace', 'forgiveness', 'fear not', 'wisdom', 'joy', 'strength', 'prayer', 'salvation'];
+
+  /* ---------------- DOM refs ---------------- */
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+  const els = {
+    form: $('#searchForm'),
+    input: $('#searchInput'),
+    clearBtn: $('#clearBtn'),
+    quickTags: $('#quickTags'),
+    filters: $('#filters'),
+    bookFilter: $('#bookFilter'),
+    sortOrder: $('#sortOrder'),
+    statusBar: $('#statusBar'),
+    results: $('#results'),
+    loadMoreWrap: $('#loadMoreWrap'),
+    loadMoreBtn: $('#loadMoreBtn'),
+    emptyState: $('#emptyState'),
+    introState: $('#introState'),
+    cardTemplate: $('#verseCardTemplate'),
+    themeToggle: $('#themeToggle'),
+    modal: $('#chapterModal'),
+    modalTitle: $('#chapterModalTitle'),
+    modalBody: $('#chapterModalBody'),
+    chapterListenBtn: $('#chapterListenBtn'),
+    audioBar: $('#audioBar'),
+    audioBarLabel: $('#audioBarLabel'),
+    audioStopBtn: $('#audioStopBtn'),
+    rateSelect: $('#rateSelect'),
+  };
+
+  /* ---------------- Utilities ---------------- */
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  function escapeRegExp(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function debounce(fn, ms) {
+    let t;
+    return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+  }
+
+  function normalizeQuery(q) {
+    return q.trim().replace(/\s+/g, ' ');
+  }
+
+  /* ---------------- Data loading ---------------- */
+  async function loadData() {
+    const [bibleRes, metaRes, themesRes] = await Promise.all([
+      fetch('data/bible-kjv.json'),
+      fetch('data/books-meta.json'),
+      fetch('data/study-themes.json'),
+    ]);
+    const [bible, meta, themes] = await Promise.all([bibleRes.json(), metaRes.json(), themesRes.json()]);
+
+    state.booksMeta = meta;
+    meta.forEach(m => state.booksByName.set(m.name, m));
+    state.themes = themes;
+    state.themeKeys = Object.keys(themes).sort((a, b) => b.length - a.length);
+
+    const flat = [];
+    bible.forEach((bookObj) => {
+      const bmeta = state.booksByName.get(bookObj.b) || {};
+      bookObj.c.forEach((versesArr, chIdx) => {
+        const chapterNum = chIdx + 1;
+        versesArr.forEach((text, vIdx) => {
+          flat.push({
+            book: bookObj.b,
+            abbr: bmeta.abbr || bookObj.b,
+            testament: bmeta.testament || 'OT',
+            genre: bmeta.genre || '',
+            chapter: chapterNum,
+            verse: vIdx + 1,
+            text,
+            textLower: text.toLowerCase(),
+          });
+        });
+      });
+    });
+    state.verses = flat;
+
+    populateBookFilter();
+  }
+
+  function populateBookFilter() {
+    const frag = document.createDocumentFragment();
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Any book';
+    frag.appendChild(placeholder);
+    state.booksMeta.forEach(b => {
+      if (state.testament !== 'ALL' && b.testament !== state.testament) return;
+      const opt = document.createElement('option');
+      opt.value = b.name;
+      opt.textContent = b.name;
+      frag.appendChild(opt);
+    });
+    els.bookFilter.innerHTML = '';
+    els.bookFilter.appendChild(frag);
+  }
+
+  /* ---------------- Quick tags ---------------- */
+  function renderQuickTags() {
+    QUICK_TAGS.forEach(tag => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'tag-btn';
+      btn.textContent = tag;
+      btn.addEventListener('click', () => {
+        els.input.value = tag;
+        runSearch();
+        els.input.focus();
+      });
+      els.quickTags.appendChild(btn);
+    });
+  }
+
+  /* ---------------- Search ---------------- */
+  function computeResults(query) {
+    const q = query.toLowerCase();
+    if (!q) return [];
+    const qWordBoundary = new RegExp(`\\b${escapeRegExp(q)}\\b`);
+    const out = [];
+    for (const v of state.verses) {
+      if (state.testament !== 'ALL' && v.testament !== state.testament) continue;
+      if (state.book && v.book !== state.book) continue;
+      const idx = v.textLower.indexOf(q);
+      if (idx === -1) continue;
+      let count = 0;
+      let pos = 0;
+      while (true) {
+        const found = v.textLower.indexOf(q, pos);
+        if (found === -1) break;
+        count++;
+        pos = found + q.length;
+      }
+      const wholeWord = qWordBoundary.test(v.textLower);
+      out.push({ v, score: (wholeWord ? 100 : 0) + count });
+    }
+    if (state.sort === 'relevance') {
+      out.sort((a, b) => b.score - a.score);
+    }
+    return out.map(o => o.v);
+  }
+
+  function runSearch() {
+    const q = normalizeQuery(els.input.value);
+    state.query = q;
+    els.clearBtn.hidden = !q;
+    syncUrl();
+
+    if (!q) {
+      state.results = [];
+      state.shown = 0;
+      els.results.innerHTML = '';
+      els.loadMoreWrap.hidden = true;
+      els.emptyState.hidden = true;
+      els.introState.hidden = false;
+      els.statusBar.textContent = '';
+      return;
+    }
+
+    els.introState.hidden = true;
+    state.results = computeResults(q);
+    state.shown = 0;
+    els.results.innerHTML = '';
+    renderMore();
+  }
+
+  function renderMore() {
+    const q = state.query;
+    const remaining = state.results.slice(state.shown, state.shown + state.pageSize);
+    remaining.forEach(v => els.results.appendChild(buildVerseCard(v, q)));
+    state.shown += remaining.length;
+
+    const total = state.results.length;
+    els.emptyState.hidden = total !== 0;
+    els.loadMoreWrap.hidden = state.shown >= total;
+
+    if (total === 0) {
+      els.statusBar.textContent = `No results for “${q}”.`;
+    } else {
+      els.statusBar.textContent = `${total.toLocaleString()} verse${total === 1 ? '' : 's'} found for “${q}” — showing ${state.shown.toLocaleString()}.`;
+    }
+  }
+
+  function highlightText(text, query) {
+    const pattern = new RegExp(`(${escapeRegExp(escapeHtml(query))})`, 'ig');
+    return escapeHtml(text).replace(pattern, '<mark>$1</mark>');
+  }
+
+  function buildVerseCard(v, query) {
+    const node = els.cardTemplate.content.firstElementChild.cloneNode(true);
+    const refBtn = $('.verse-ref', node);
+    refBtn.textContent = `${v.abbr} ${v.chapter}:${v.verse}`;
+    refBtn.setAttribute('aria-label', `Open ${v.book} chapter ${v.chapter}`);
+    $('.verse-genre', node).textContent = v.genre;
+    $('.verse-text', node).innerHTML = highlightText(v.text, query);
+
+    refBtn.addEventListener('click', () => openChapterModal(v.book, v.chapter, v.verse));
+    $('.context-btn', node).addEventListener('click', () => openChapterModal(v.book, v.chapter, v.verse));
+
+    const listenBtn = $('.listen-btn', node);
+    listenBtn.addEventListener('click', () => {
+      const label = `${v.book} ${v.chapter}:${v.verse}`;
+      toggleSpeak(listenBtn, () => ({ text: `${label}. ${v.text}`, label }));
+    });
+
+    const noteBtn = $('.note-btn', node);
+    const noteEl = $('.verse-note', node);
+    noteBtn.addEventListener('click', () => {
+      const isOpen = !noteEl.hidden;
+      if (isOpen) {
+        noteEl.hidden = true;
+        noteBtn.classList.remove('is-active');
+        return;
+      }
+      if (!noteEl.dataset.built) {
+        noteEl.innerHTML = buildStudyNoteHtml(v, query);
+        noteEl.dataset.built = '1';
+        $$('.chip-rerun', noteEl).forEach(chip => {
+          chip.addEventListener('click', () => {
+            els.input.value = chip.dataset.term;
+            runSearch();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          });
+        });
+      }
+      noteEl.hidden = false;
+      noteBtn.classList.add('is-active');
+    });
+
+    const copyBtn = $('.copy-btn', node);
+    copyBtn.addEventListener('click', async () => {
+      const label = `${v.book} ${v.chapter}:${v.verse}`;
+      const original = copyBtn.innerHTML;
+      try {
+        await navigator.clipboard.writeText(`"${v.text}" — ${label} (KJV)`);
+        copyBtn.innerHTML = '<span class="action-icon">✓</span> Copied';
+      } catch {
+        copyBtn.innerHTML = '<span class="action-icon">⚠</span> Failed';
+      }
+      setTimeout(() => { copyBtn.innerHTML = original; }, 1500);
+    });
+
+    return node;
+  }
+
+  /* ---------------- Study notes ---------------- */
+  function findThemeMatch(query, verseTextLower) {
+    const q = query.toLowerCase();
+    if (state.themes[q]) return { key: q, ...state.themes[q] };
+    for (const key of state.themeKeys) {
+      if (q.includes(key) || key.includes(q)) {
+        return { key, ...state.themes[key] };
+      }
+    }
+    for (const key of state.themeKeys) {
+      if (verseTextLower.includes(key)) return { key, ...state.themes[key] };
+    }
+    return null;
+  }
+
+  function relatedThemeChips(verseTextLower, excludeKey) {
+    const found = [];
+    for (const key of state.themeKeys) {
+      if (key === excludeKey) continue;
+      if (verseTextLower.includes(key)) found.push(key);
+      if (found.length >= 4) break;
+    }
+    return found;
+  }
+
+  function genericNote(v) {
+    const testamentName = v.testament === 'OT' ? 'Old Testament' : 'New Testament';
+    return `This verse is from ${v.book}, part of the ${v.genre} section of the ${testamentName}. Reading the surrounding verses will give fuller context — try “Read chapter” below to see it alongside the rest of ${v.book} ${v.chapter}.`;
+  }
+
+  function buildStudyNoteHtml(v, query) {
+    const match = findThemeMatch(query, v.textLower);
+    const related = relatedThemeChips(v.textLower, match ? match.key : null);
+    let html = '<h4>Study note</h4>';
+    if (match) {
+      html += `<p><strong>${escapeHtml(match.theme)}.</strong> ${escapeHtml(match.note)}</p>`;
+    } else {
+      html += `<p>${escapeHtml(genericNote(v))}</p>`;
+    }
+    if (related.length) {
+      html += `<div class="note-crossrefs">Also appears here: ${related.map(k => `<button type="button" class="chip-rerun" data-term="${escapeHtml(k)}">${escapeHtml(k)}</button>`).join('')}</div>`;
+    }
+    html += `<div class="note-crossrefs">Study notes are brief, non-denominational starting points for reflection — not official doctrine.</div>`;
+    return html;
+  }
+
+  /* ---------------- Chapter modal ---------------- */
+  function openChapterModal(bookName, chapter, targetVerse) {
+    const bmeta = state.booksByName.get(bookName);
+    const chapterVerses = state.verses.filter(v => v.book === bookName && v.chapter === chapter);
+    els.modalTitle.textContent = `${bookName} ${chapter}`;
+    els.modalBody.innerHTML = chapterVerses.map(v => {
+      const isTarget = v.verse === targetVerse;
+      return `<span class="cv${isTarget ? ' is-target' : ''}" data-verse="${v.verse}"><sup>${v.verse}</sup>${isTarget ? `<mark>${escapeHtml(v.text)}</mark>` : escapeHtml(v.text)}</span> `;
+    }).join('');
+
+    els.modal.hidden = false;
+    els.modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+
+    requestAnimationFrame(() => {
+      const targetEl = $(`.cv[data-verse="${targetVerse}"]`, els.modalBody);
+      if (targetEl) targetEl.scrollIntoView({ block: 'center' });
+    });
+
+    els.chapterListenBtn.onclick = () => {
+      const fullText = chapterVerses.map(v => v.text).join(' ');
+      toggleSpeak(els.chapterListenBtn, () => ({ text: fullText, label: `${bookName} ${chapter}` }), '🔊 Read chapter', '⏸ Stop reading');
+    };
+  }
+
+  function closeModal() {
+    els.modal.hidden = true;
+    els.modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  /* ---------------- Speech / audio ---------------- */
+  let currentUtterance = null;
+  let currentSpeakBtn = null;
+  let currentLabels = null;
+
+  function pickVoice() {
+    const voices = speechSynthesis.getVoices();
+    if (!voices.length) return null;
+    return voices.find(v => /en[-_]US/i.test(v.lang) && /female|samantha|zira/i.test(v.name))
+      || voices.find(v => /^en/i.test(v.lang))
+      || voices[0];
+  }
+
+  function speak(text, label) {
+    if (!('speechSynthesis' in window)) {
+      alert('Sorry, your browser does not support spoken audio.');
+      return;
+    }
+    speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = state.rate;
+    const voice = pickVoice();
+    if (voice) utter.voice = voice;
+
+    utter.onstart = () => {
+      els.audioBar.hidden = false;
+      els.audioBarLabel.textContent = label;
+    };
+    utter.onend = utter.onerror = () => {
+      els.audioBar.hidden = true;
+      resetSpeakButton();
+    };
+    currentUtterance = utter;
+    speechSynthesis.speak(utter);
+  }
+
+  function resetSpeakButton() {
+    if (currentSpeakBtn && currentLabels) {
+      currentSpeakBtn.innerHTML = currentLabels.idle;
+      currentSpeakBtn.classList.remove('is-active');
+    }
+    currentSpeakBtn = null;
+    currentLabels = null;
+  }
+
+  function toggleSpeak(btn, buildFn, idleLabel, activeLabel) {
+    const isThisSpeaking = currentSpeakBtn === btn && speechSynthesis.speaking;
+    if (isThisSpeaking) {
+      speechSynthesis.cancel();
+      els.audioBar.hidden = true;
+      resetSpeakButton();
+      return;
+    }
+    if (currentSpeakBtn) resetSpeakButton();
+
+    const { text, label } = buildFn();
+    state.lastUtteranceBuilder = buildFn;
+    currentSpeakBtn = btn;
+    currentLabels = {
+      idle: idleLabel || '<span class="action-icon">🔊</span> Listen',
+      active: activeLabel || '<span class="action-icon">⏸</span> Stop',
+    };
+    btn.innerHTML = currentLabels.active;
+    btn.classList.add('is-active');
+    speak(text, label);
+  }
+
+  els.audioStopBtn.addEventListener('click', () => {
+    speechSynthesis.cancel();
+    els.audioBar.hidden = true;
+    resetSpeakButton();
+  });
+
+  els.rateSelect.addEventListener('change', () => {
+    state.rate = parseFloat(els.rateSelect.value);
+    if (speechSynthesis.speaking && state.lastUtteranceBuilder) {
+      const { text, label } = state.lastUtteranceBuilder();
+      speak(text, label);
+    }
+  });
+
+  if ('speechSynthesis' in window) {
+    speechSynthesis.onvoiceschanged = () => {};
+  }
+
+  /* ---------------- Theme (light/dark) ---------------- */
+  function initTheme() {
+    const saved = localStorage.getItem('kypher-theme');
+    if (saved) document.documentElement.setAttribute('data-theme', saved);
+    els.themeToggle.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme')
+        || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('kypher-theme', next);
+    });
+  }
+
+  /* ---------------- URL sync ---------------- */
+  function syncUrl() {
+    const url = new URL(location.href);
+    if (state.query) url.searchParams.set('q', state.query); else url.searchParams.delete('q');
+    history.replaceState(null, '', url);
+  }
+
+  /* ---------------- Event wiring ---------------- */
+  function initEvents() {
+    els.form.addEventListener('submit', e => { e.preventDefault(); runSearch(); });
+    els.input.addEventListener('input', debounce(runSearch, 280));
+    els.clearBtn.addEventListener('click', () => { els.input.value = ''; runSearch(); els.input.focus(); });
+
+    $$('.chip', els.filters).forEach(chip => {
+      chip.addEventListener('click', () => {
+        $$('.chip', els.filters).forEach(c => c.classList.remove('is-active'));
+        chip.classList.add('is-active');
+        state.testament = chip.dataset.testament;
+        state.book = '';
+        populateBookFilter();
+        runSearch();
+      });
+    });
+
+    els.bookFilter.addEventListener('change', () => { state.book = els.bookFilter.value; runSearch(); });
+    els.sortOrder.addEventListener('change', () => { state.sort = els.sortOrder.value; runSearch(); });
+
+    els.loadMoreBtn.addEventListener('click', renderMore);
+
+    $$('[data-close-modal]').forEach(el => el.addEventListener('click', () => {
+      closeModal();
+      speechSynthesis.cancel();
+      els.audioBar.hidden = true;
+      resetSpeakButton();
+    }));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !els.modal.hidden) closeModal(); });
+  }
+
+  /* ---------------- Init ---------------- */
+  async function init() {
+    initTheme();
+    renderQuickTags();
+    initEvents();
+    els.statusBar.textContent = 'Loading the Bible…';
+    try {
+      await loadData();
+    } catch (err) {
+      els.statusBar.textContent = 'Could not load Bible data. Please refresh the page.';
+      console.error(err);
+      return;
+    }
+    els.statusBar.textContent = '';
+
+    const params = new URL(location.href).searchParams;
+    const initialQ = params.get('q');
+    if (initialQ) {
+      els.input.value = initialQ;
+      runSearch();
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
