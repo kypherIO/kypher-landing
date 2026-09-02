@@ -1,135 +1,183 @@
 # CoreTrust Lead Gen, Proof of Concept Implementation Timeline
 
-A phased plan from "the tools exist" to "leadership has a go/no-go decision
-backed by real pilot numbers." Tracking is the point of a proof of concept
--- every phase below ends in something written to `POC SCORECARD` or
-`KPI DASHBOARD`, not just a status update.
+The phase structure and day ranges below are copied from
+`docs/CoreTrust_SDR_Playbook.md`'s own "Implementation Timeline" and
+"Roadmap: Crawl, Walk, Run" sections -- this doc doesn't set new dates, it
+operationalizes the playbook's dates against the specific tools in this
+repo. Where an earlier version of this doc said something different (a
+flat 30-day pilot instead of the playbook's 90-day Launch/Validate/Automate
+arc), the playbook wins; that was this doc's own mistake, corrected here.
 
-Dates are expressed as weeks/days from kickoff, not calendar dates, because
-kickoff depends on when the Copilot Studio agent is actually built. Set the
-real anchor once you start: `Pilot_Start` on the `POC SCORECARD` tab
-defaults to the day `fitv3_pipeline.py` was last run, `Pilot_End` to 30
-days after -- edit both cells to match your actual pilot window (the pilot
-window and the "30 days" in the investment proposal's own economics model
-are the same 30 days, so keeping them aligned matters).
+Tracking is the point of a proof of concept -- every phase below ends in
+something written to `POC SCORECARD` or `KPI DASHBOARD`, not just a status
+update.
 
-## Phase 0 -- Foundation (done, this repo)
+**Two views of the same journey.** The playbook gives you both a
+**calendar** (five phases, fixed day ranges, below) and a **trigger-based
+roadmap** (Crawl / Walk / Run, advancement gated on hitting a constraint,
+not a date). Use the calendar to plan; use Crawl/Walk/Run to decide
+whether you're actually *ready* to move to the next phase even if the
+calendar says you should be. It's entirely possible to hit Day 90 still in
+Crawl because the constraint the playbook names hasn't shown up yet --
+that's not falling behind, that's the model telling you honestly what to
+fund next.
 
-Already built and in this PR: the Fit v3-scored master workbook with real
-named Excel Tables, the merge/scoring pipeline, the agent instructions and
-enrichment prompt library, a card-by-card flow build guide, the BANTC
-qualification layer with SME routing, the activity + demand-gen dashboard,
-local scripts for working the file without Copilot Studio open, and this
-timeline. Nothing in Phase 1 onward is blocked on more code -- it's blocked
-on building the Copilot Studio agent itself (a Power Platform maker task,
-not a repo task) and on running the pilot.
+Set `Pilot_Start` on `POC SCORECARD` to the actual day you begin Phase 1
+below; the tab computes Day 30/60/90 from it automatically.
 
-## Phase 1 -- Agent build (Week 1)
+---
 
-First time in Copilot Studio? Work this phase as
-`agent/CoreTrust_Copilot_Studio_Workshop_Guide.md` Workshops 0-6 instead of
-the compressed table below -- same outcome, with checkpoints at each step
-so a stall is caught the day it happens, not on Day 5.
+## Roadmap: Crawl, Walk, Run
 
-| Day | Task | Done when |
+| Stage | Operating model / capabilities added | Success measure / value unlocked | Advance to next stage when |
+|---|---|---|---|
+| **Crawl** -- Prove the Model | One employee uses the agent, Excel, and a manual Salesforce upload. The agent enriches leads through structured web research. | Generate 6-10 qualified opportunities per month, meet speed-to-lead SLAs, exceed a 5% positive reply rate. | Manual enrichment or CRM entry becomes the primary constraint on output, rather than lead quality or available demand. |
+| **Walk** -- Automate the Constraints | Connect Salesforce through Power Automate; activate the ZoomInfo API using existing licenses. | Automate CRM creation, eliminate manual file uploads, improve contact accuracy, reachability, and response rates. | The Tier A and Tier B pipeline consistently exceeds one employee's capacity and verified demand supports broader investment. |
+| **Run** -- Scale Across Categories | Add a private equity enrichment platform, expand Copilot Studio automation, hire a second representative when justified by demand. | Convert one sponsor relationship into multiple portfolio-company conversations, automate enrichment at scale, apply the same engine across logistics and material handling. | -- (this is the destination; from here it's ongoing scale, not a further gate) |
+
+Everything already built in this repo (the pipeline, the six flows, BANTC,
+the dashboard, the workshop guide) is what makes Crawl possible with one
+person. Walk needs nothing new *built* -- it needs the Salesforce connector
+approved and the ZoomInfo API activated, both licensing/IT-approval tasks,
+not engineering. Run needs a funded PE enrichment tool and, per the
+handoff doc section 9, Material Handling's category-specific inputs (ICPs,
+target lists, the Hyster-Yale lease-end report) before that second score
+can exist.
+
+---
+
+## Phase 1: Launch and Baseline (Days 1-30)
+
+*Playbook's objective: "Configure the agent and workflows, load the master
+file, begin outreach to Tier A and Tier B accounts, and establish baseline
+performance."*
+
+First time in Copilot Studio? Work the agent-build part of this phase as
+`agent/CoreTrust_Copilot_Studio_Workshop_Guide.md` Workshops 0-7 instead of
+the compressed table below -- same outcome, with a checkpoint at each step
+so a stall is caught the day it happens, not on Day 20.
+
+| Days | Task | Done when |
 |---|---|---|
-| 1-2 | Build the agent shell, paste Agent Instructions v3, upload Knowledge (`agent/Copilot_Studio_Flow_Build_Guide.md`'s setup steps 1-4, or Workshops 0-1 of the workshop guide). | Agent responds to "who should I call today" with *something*, even before flows exist. |
-| 2-4 | Build all six flows per `agent/Copilot_Studio_Flow_Build_Guide.md`, in the order it recommends (Get Today List, Draft Email, Log Touch, Save Qualification, Export For Salesforce, Nightly Enrichment last). | Each flow passes its own test-pane run once, using a real `Lead_ID` from the workbook. |
-| 5 | Run the guide's six-step test plan end to end with 5-10 real accounts (or the workshop guide's 8-row formal QA table, Workshop 6). | Five members answered correctly, ten New rows enriched without touching green columns, three emails drafted and logged, follow-up list returns the right accounts, one CSV export test-imports into a Salesforce sandbox. |
-| 5 | Publish and connect the Teams channel (workshop guide, Workshop 7). | Rep can reach the agent from Teams, not just the maker test pane. |
+| 1-5 | Build the agent shell, paste Agent Instructions v3, upload Knowledge, build all six flows per `agent/Copilot_Studio_Flow_Build_Guide.md`. | Run the guide's test plan (or the workshop guide's 8-row QA table) end to end with 5-10 real accounts; publish and connect Teams. |
+| 5-10 | Load `CoreTrust_Master_Members.xlsx` into OneDrive for Business (`ONEDRIVE_HOSTING_GUIDE.md`), confirm the agent's Excel Online (Business) connector sees it. Merge in the real freight-analysis file if you have it by now (see "Data depth," below) -- if not, proceed with what shipped in this repo and merge it in during Phase 2. | Agent answers "who should I call today" with real Tier A/B accounts from the live file. |
+| 10-30 | Begin outreach to Tier A and Tier B, Ready to Call first. Work the daily and weekly rhythm from the root `README.md`. Let Nightly Enrichment run every night from Day 10 on. | By Day 30: a baseline week of real touches, replies, and (per playbook SLAs) same-day response on hot leads, is on `TOUCHPOINTS` and `KPI DASHBOARD`. |
 
-**Tracked:** none yet -- this phase is infrastructure, not pipeline. The
-first real entry on `POC SCORECARD` is Phase 3, Day 1.
-
-## Phase 2 -- Data depth (Week 1-2, runs in parallel with Phase 1)
-
-The workbook shipped in this repo is built from the SFDC export plus a
-15-account verified-contact sample (11 matched or newly filed). The
-handoff document's real numbers -- 1,050+ verified contacts, the full PE
-sponsor rollup, ~$560B addressable freight across the complete base --
-depend on merging in the actual freight analysis files
+**Data depth, any time during this phase:** the workbook shipped in this
+repo is built from the SFDC export plus a 15-account verified-contact
+sample (11 matched or newly filed). The playbook's full numbers depend on
+merging in the real freight analysis files
 (`CoreTrust_Freight_Leads_full.csv`, `CoreTrust_Freight_Master.csv`) once
-you have them.
+you have them -- drop them in `data/source/`, re-run
+`scripts/fitv3_pipeline.py`, re-publish to OneDrive. `KPI DASHBOARD`'s
+Verified Contacts and Addressable Freight tiles should visibly move.
 
-| Task | Done when |
-|---|---|
-| Get the freight analysis files (or the ZoomInfo/PE-tool exports that replace them, if those get activated -- see the investment proposal). | Files land in `data/source/`. |
-| Re-run `scripts/fitv3_pipeline.py --master ... --verified <freight file> --out data/CoreTrust_Master_Members.xlsx`. | Tier A/B counts and verified-contact count on `SUMMARY` jump the way section 2.1 of the handoff doc describes. |
-| Re-publish to OneDrive (and the VPS mirror, if you're using one -- `deploy/update-coretrust.sh`). | The agent's next `List rows` call sees the enriched data. |
+**Tracked:** run `scripts/weekly_kpi_snapshot.py` weekly starting Day 7.
+By Day 30, `POC SCORECARD`'s Level 1 and Level 3 rows should show real
+Actuals, not just formulas with nothing behind them yet.
 
-**Tracked:** `KPI DASHBOARD`'s "Verified contacts" and "Addressable freight
-$" tiles should visibly move after this phase. Note the before/after in
-`POC SCORECARD`'s notes column so the pilot's baseline is honest about
-when real enrichment started.
+---
 
-## Phase 3 -- Pilot launch (Day 1 of the 30-day window)
+## Phase 2: Validate the Pilot (Days 31-60)
 
-1. Set `Pilot_Start` on `POC SCORECARD` to today.
-2. Rep's first morning: ask the agent "who should I call today," work the
-   returned list, draft and log every touch.
-3. Turn on Nightly Enrichment (Recurrence trigger) so New/Enriching rows
-   start filling in behind the pilot without anyone asking for it.
-4. Confirm `TOUCHPOINTS` picks up today's activity -- open the file, check
-   row count and `Last_Touch_Date`.
+*Playbook's objective: "Generate 6 to 10 qualified opportunities, validate
+speed to lead and reply rates, and identify the first constraint that
+requires investment."*
 
-**Tracked:** this is the first day `POC SCORECARD`'s "Actual" formulas
-have anything to count.
-
-## Phase 4 -- Weekly operating cadence (Days 1-30)
-
-Follow the root `README.md`'s "weekly operating cadence" table day to day.
-Once a week, specifically for the POC:
-
-1. Run `python3 scripts/weekly_kpi_snapshot.py` -- appends one row to
-   `KPI DASHBOARD`'s history log.
-2. Open `POC SCORECARD`. Compare Actuals to Targets (or to nothing, for
-   the TBD rows -- those exist to *get* a number, not to already have one).
-3. Every `BANTC_Status` = "Qualified - Ready for SME" row should have a
+1. Keep working the daily/weekly rhythm -- this phase is about volume and
+   honesty, not new setup.
+2. Every `BANTC_Status` = "Qualified - Ready for SME" row should have a
    matching `SME HANDOFF` row with `Meeting_Status` moving from
-   "Requested" to "Scheduled" to "Completed" -- if it's stuck on
-   "Requested" for more than a few days, that's the pilot's first real
-   process gap, worth raising with the SME directly rather than waiting
-   for the 30-day readout.
-4. Note anything qualitative (which titles reply, which industries land
-   meetings, what enrichment sources were most reliable -- Enrichment
-   Prompt 9, the learning note) in `POC SCORECARD`'s or `SUMMARY`'s notes.
+   "Requested" to "Scheduled" to "Completed." A row stuck on "Requested"
+   for more than a few days is the first real process gap -- raise it with
+   the SME directly rather than waiting for Day 60.
+3. **Mid-phase checkpoint, around Day 45:** read `POC SCORECARD` in full.
+   Is the qualified-opportunity pace on track for 6-10/month (Level 1)? Is
+   MQL-to-SQL near 22% (Level 2) -- if not, that's a targeting/scoring
+   quality problem, per the playbook's own diagnosis column, not an
+   effort problem. Is reply rate beating 5%? Adjust the cadence (`CADENCE`
+   tab) or the authority-title keyword list
+   (`scripts/save_qualification.py`'s `AUTHORITY_TITLES`, if
+   `BANT_Authority` is misreading titles) now, so the back half of this
+   phase benefits.
+4. **By Day 60, identify the constraint.** Per Crawl's advance condition:
+   is manual enrichment or manual CRM entry now the thing actually
+   limiting output -- more than lead quality or available demand? Write
+   this down (POC SCORECARD's notes, or `SUMMARY`) -- it's the single most
+   important sentence in the Day 90 leadership readout.
 
-## Phase 5 -- Mid-pilot checkpoint (Day 15)
+**Tracked:** `POC SCORECARD` Level 1 rows compared against target every
+week from now on, not just glanced at. `LEARNING NOTES` should have real
+entries by now (Nightly Enrichment's end-of-day step, or written by hand)
+-- read a week of them before Day 60, they're the qualitative complement to
+the numbers.
 
-A checkpoint, not a decision gate. Read `POC SCORECARD` and ask: is the
-qualified-opportunity pace on track for the ~15/month baseline? Is BANTC
-actually catching leads and routing them, or is the SME meeting count
-stuck at zero because Need/Timeline never get filled in during calls? Is
-reply rate suggesting the email templates or cadence need a tweak before
-the back half of the pilot? Adjust the cadence (CADENCE tab) or the
-authority-title keyword list (`scripts/save_qualification.py`'s
-`AUTHORITY_TITLES`, if BANT_Authority is misreading titles) now, not on
-Day 30, so the second half of the pilot benefits from the fix.
+---
 
-## Phase 6 -- Measurement and go/no-go (Day 30)
+## Phase 3: Automate and Present (Days 61-90)
 
-1. Run `weekly_kpi_snapshot.py` one final time.
-2. Fill in every remaining TBD on `POC SCORECARD` with what actually
-   happened -- reply rate, SME meetings completed, cost per qualified
-   opportunity if you have a cost basis.
-3. Compare against `docs/CoreTrust_Aspirational_Investment_KPI_Proposal.md`'s
-   "what the money produces" section -- did the pilot's qualified-opp rate
-   and reachability numbers support the same conclusion (reachability, not
-   freight size, is the binding constraint)?
-4. Use `POC SCORECARD`'s Go/No-Go section as the readout structure for
-   leadership: connector approval, ZoomInfo API activation, and the PE
-   enrichment tool ask, each judged against what the pilot actually showed
-   rather than the aspirational numbers alone.
+*Playbook's objective: "Connect Salesforce, activate ZoomInfo, measure the
+performance lift, and present the funded recommendation to leadership."*
 
-## Phase 7 -- Scale decision
+This phase only makes sense if Phase 2 actually found a constraint worth
+automating -- don't request the connector or the API as a calendar
+formality if manual entry genuinely isn't the bottleneck yet. If it is:
 
-If leadership approves: activate the connector and API per the investment
-proposal, fund the PE tool, and revisit `SME ROUTING` and `Category` to add
-Material Handling once Nick Beach provides that category's ICPs, target
-lists, and the Hyster-Yale lease-end report (handoff doc section 9). The
-same pipeline and the same BANTC gate extend to a second category without
-a second engine -- only a second set of scoring inputs.
+1. Request the Salesforce connector (Power Automate Premium) and ZoomInfo
+   API activation -- both are approval/licensing tasks per the investment
+   proposal's own framing ("mostly buying activations and approvals, not
+   a new platform").
+2. Once connected, re-measure the same `POC SCORECARD` rows and note the
+   lift, specifically on Level 1's Speed to Lead and Level 2's Positive
+   Reply Rate / Connect Rate -- these are exactly the metrics the
+   investment proposal predicts will move.
+3. **By Day 90, present to leadership.** Use `POC SCORECARD`'s Go/No-Go
+   section as the readout structure. Bring the actual numbers, not the
+   aspirational ones from `docs/CoreTrust_Aspirational_Investment_KPI_Proposal.md`
+   -- that doc is the *hypothesis*, `POC SCORECARD` after 90 days is the
+   *result*.
 
-If leadership says not yet: the pilot's `POC SCORECARD` and
-`KPI DASHBOARD` history are still the artifact -- they're what makes the
-next pitch a rerun with real numbers instead of a cold re-ask.
+**Tracked:** `weekly_kpi_snapshot.py`'s history log on `KPI DASHBOARD` now
+spans 12-13 weeks -- graph it (or just read the table) for the leadership
+deck; a trend line is more convincing than a single end-state number.
+
+---
+
+## Phase 4: Expand the Model (Months 4-6)
+
+*Playbook's objective: "Evaluate a private equity enrichment tool, add
+material handling scoring, and determine whether demand supports a second
+representative."* This is the Walk-to-Run transition.
+
+- Evaluate Grata (preferred) or Cyndx (lower cost) per the investment
+  proposal's numbers, now backed by the pilot's actual portfolio-mapping
+  experience rather than the proposal's estimate alone.
+- Material handling scoring: get Nick Beach's category inputs (ICP,
+  target/whitespace lists, the Hyster-Yale lease-end report -- handoff doc
+  section 9) and add "Material Handling" as a real second `Category` in
+  the pipeline, alongside a second set of scoring inputs (not a second
+  engine -- `fitv3_pipeline.py`'s structure already supports this,
+  `SME_ROUTING` already has Nick Beach seeded).
+- Second representative: justified only if the Tier A/B pipeline is
+  consistently outrunning one person's capacity (Crawl/Walk/Run's own
+  Walk-to-Run trigger) -- check `KPI DASHBOARD`'s New/Enriching and Ready
+  to Call counts against actual throughput before making this case.
+
+---
+
+## Phase 5: Scale Across Categories (Month 7 and beyond)
+
+*Playbook's objective: "Build a small operating pod, expand automated
+enrichment, and run logistics and material handling through one shared
+lead-generation engine."* Expected outcome per the playbook: 15 or more
+qualified opportunities per representative per month, across multiple
+category scores on the same member base -- notably higher than Crawl's
+6-10, because by this point the Walk-stage automation (Salesforce
+connector, ZoomInfo) and Run-stage tools (PE enrichment, a second rep) are
+all in place removing the constraints that capped Crawl's output.
+
+At this point `POC SCORECARD`'s targets themselves should be revisited --
+they were calibrated for "one employee, manual research" (the playbook's
+own framing); re-baseline them once automation changes what's actually
+achievable, the same way this document's own numbers came from the
+playbook rather than being invented.

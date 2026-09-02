@@ -12,9 +12,12 @@ platform to buy to start. Tracking is treated as the deliverable, not an
 afterthought: see `POC SCORECARD` and `KPI DASHBOARD` on the workbook, and
 `docs/CoreTrust_POC_Implementation_Timeline.md` for the phased rollout.
 
-If you only read one thing: `docs/CoreTrust_LeadGen_MASTER_Handoff.md`. It
-has the business case, the full data model, and the six-flow spec this repo
-implements. This README is the "how do I actually run it" companion.
+If you only read one thing: `docs/CoreTrust_SDR_Playbook.md`. It's the
+canonical operating playbook -- the cadence, the KPI targets, the phase
+timeline, and the nurture/recycle rules everywhere else in this repo are
+built to match it exactly, not the other way around. This README is the
+"how do I actually run it" companion; `docs/CoreTrust_LeadGen_MASTER_Handoff.md`
+has the fuller business case and data model narrative.
 
 **The short version of what "quality lead" means here:** Fit v3 answers
 *who's worth calling* (freight budget + CoreTrust relationship + reach).
@@ -31,8 +34,9 @@ data/
   CoreTrust_Master_Members.xlsx        The one file everything runs from.
                                         Tabs: MASTER MEMBERS, TOUCHPOINTS,
                                         CADENCE, SME ROUTING, SME HANDOFF,
-                                        KPI DASHBOARD, POC SCORECARD,
-                                        SUMMARY, READ ME, Data Dictionary.
+                                        LEARNING NOTES, KPI DASHBOARD,
+                                        POC SCORECARD, SUMMARY, READ ME,
+                                        Data Dictionary.
   CoreTrust_SFDC_Import_Leads_sample.csv   Sample Data Import Wizard export.
   source/                              Pipeline inputs (SFDC-scored master +
                                         the verified-contact / freight-
@@ -83,12 +87,21 @@ deploy/
   portal-index.html          Landing page for the optional private VPS
                               mirror (links to the dashboard + workbook).
 docs/
+  CoreTrust_SDR_Playbook.md   The canonical operating playbook -- cadence,
+                               KPI targets, phase timeline, and nurture/
+                               recycle rules everywhere else are built to
+                               match this exactly. Where another doc here
+                               disagrees with it, this one wins.
   CoreTrust_LeadGen_MASTER_Handoff.md            Full project context.
   CoreTrust_Master_AIAgent_Build_Guide.md        Step-by-step, task by task.
   CoreTrust_Fit_v3_Scoring_Methodology.md        Why the score is weighted
                                                    this way.
   CoreTrust_Aspirational_Investment_KPI_Proposal.md   The ask to leadership.
-  CoreTrust_POC_Implementation_Timeline.md        The phased pilot plan --
+  CoreTrust_POC_Implementation_Timeline.md        The phased pilot plan,
+                                                    matching the SDR
+                                                    Playbook's own Launch/
+                                                    Validate/Automate/
+                                                    Expand/Scale timeline --
                                                     start here for "what do
                                                     I do, in what order."
 ONEDRIVE_HOSTING_GUIDE.md   The full OneDrive setup -- folder structure,
@@ -265,22 +278,53 @@ rows in this repo's shipped workbook show a higher score than the
 SFDC-only baseline -- see `data/CoreTrust_Master_Members.xlsx`'s READ ME tab
 for exactly which rows changed and why.
 
-## The weekly operating cadence
+## The operating rhythm
 
-For the phased pilot plan (what to do in what week), see
-`docs/CoreTrust_POC_Implementation_Timeline.md`. Day to day, once the
-pilot is running:
+Straight from the SDR Playbook's own "Operating Rhythm" -- for the phased
+pilot plan (what to do in what 30-day block), see
+`docs/CoreTrust_POC_Implementation_Timeline.md`; this is the daily/weekly
+loop once the pilot is running.
 
-| Day | What happens |
+**Daily rhythm:**
+
+| Time | The rep | The agent, in the background |
+|---|---|---|
+| Morning, 15 min | Asks the agent "who do I call today" (Flow 1). | Returns the ranked list, Tier A and B, follow-ups due first. |
+| Morning block | Works the calls and the follow-ups. | Drafts each email to the title (Flow 3), logs every touch (Flow 2), updates the sheet. |
+| Midday | Runs qualification calls. | Captures the five markers, computes BANTC, sets Qualified, names the supplier (Flow 4) -- and the moment BANTC clears, logs the lead to SME HANDOFF, routed to that category's SME. Offline: `save_qualification.py`. |
+| Afternoon | Reviews and sends the drafted emails. | Keeps the touchpoint clock current, flags who is due next; surfaces `Nurture_Suggested` on any lead past 8 touches with no reply. |
+| End of day | Reads the learning note. | Writes three lines to `LEARNING NOTES` -- which sources, titles, and angles worked (Flow 6's last step, or Enrichment Prompt 9 by hand). |
+
+**SME follow-through** (not on a fixed time, but every day it's pending):
+whoever owns `SME ROUTING` for that category moves the `SME HANDOFF` row's
+`Meeting_Status` from Requested to Scheduled to Completed (or No Show /
+Declined). This isn't automated -- it's a human loop the sheet just makes
+visible.
+
+**Weekly rhythm:**
+
+| Cadence | What happens |
 |---|---|
-| Every morning | Rep asks the agent "who do I call today" (Flow 1). Works Tier A then B, prefers Ready to Call. |
-| Every touch | Draft Email (Flow 3) logs itself via Log Touch (Flow 2); a call or LinkedIn touch gets logged the same way, or via `log_touch.py` if working offline. |
-| After a qualification call | Save Qualification (Flow 4) records the five markers, computes BANTC, and -- the moment the gate clears -- logs the lead to SME HANDOFF and routes it to that category's SME. Offline: `save_qualification.py`. |
-| SME follow-through | Whoever owns `SME ROUTING` for that category moves the `SME HANDOFF` row's `Meeting_Status` from Requested to Scheduled to Completed. This isn't automated -- it's a human loop the sheet just makes visible. |
-| Nightly | Nightly Enrichment (Flow 6) researches New/Enriching rows, adds contacts, files them Ready to Call. |
-| Weekly | Run `scripts/weekly_kpi_snapshot.py`, review `POC SCORECARD` (targets vs actuals) and `KPI DASHBOARD`'s history log, check the Follow Up list (Prompt 5 / the dashboard's follow-up table) with the rep. |
-| As qualified leads accumulate | Export For Salesforce (Flow 5), run the Data Import Wizard, note the load date so nothing double-imports. |
-| Whenever a covered PE sponsor announces an acquisition | Run Enrichment Prompt 8 (PE acquisition watch) manually against the target -- this one isn't a flow yet because it's triggered by news, not a schedule. |
+| Monday | Pull the week's working set: Tier A and B that are Ready to Call, plus anyone Nightly Enrichment promoted over the weekend. |
+| Daily | Work the list, send the drafts, log the touches, keep speed to lead inside SLA. |
+| Wednesday | Mid-week check on `KPI DASHBOARD` -- on pace for qualified opportunities? Is anyone slipping past their follow-up (`Follow_Up_Flag`, `SLA_Status`, or now `Nurture_Suggested`)? |
+| Friday | Full weekly review: `POC SCORECARD` against the playbook's KPI targets (all three levels, not just Level 1), run `scripts/weekly_kpi_snapshot.py`, export qualified leads to Salesforce (Flow 5 / Data Import Wizard), note what to change for next week. |
+| Every Friday | Fifteen-minute review with the manager: one thing working, one thing to fix. |
+
+**Whenever a covered PE sponsor announces an acquisition** (not on a
+schedule -- triggered by news): run Enrichment Prompt 8 (PE acquisition
+watch) manually against the target. This one isn't a flow yet because
+it's event-triggered, not calendar-triggered.
+
+**Retry, nurture, and recycle** (the playbook's own rules, now live on
+`TOUCHPOINTS`): a lead with `Nurture_Suggested` = "Move to Nurture" (8+
+touches, no reply) should get `Cadence_Status` set to `Nurture`, not
+deleted -- record stays, `Disposition_Reason` gets set. Re-enter a nurtured
+member into the cadence the moment a new trigger appears (contract
+renewal, PE event, a new intent signal): reset `Cadence_Step` to 1 and set
+`Cadence_Status` back to `Active`. If a member says the timing isn't right
+this quarter, use `Scheduled_Followup_Date` to record when to come back
+rather than losing the context to a stale `Notes` cell.
 
 ## The numbers, as of this workbook
 
@@ -300,7 +344,9 @@ them into a go/no-go decision.
 Flow-building issues -> the gotchas table at the bottom of
 `agent/Copilot_Studio_Flow_Build_Guide.md`. Scoring questions -> `docs/
 CoreTrust_Fit_v3_Scoring_Methodology.md`. BANTC or SME routing questions ->
-"BANTC qualification and the SME handoff" above. VPS/login issues ->
-`deploy/DEPLOY_CORETRUST.md`. Anything about what's done and what's still
-open -> `docs/CoreTrust_LeadGen_MASTER_Handoff.md` section 10 and
-`docs/CoreTrust_POC_Implementation_Timeline.md`.
+"BANTC qualification and the SME handoff" above. Cadence, KPI target, or
+nurture/recycle questions -> `docs/CoreTrust_SDR_Playbook.md` directly --
+it's the source every number elsewhere in this repo was copied from. VPS/
+login issues -> `deploy/DEPLOY_CORETRUST.md`. Anything about what's done
+and what's still open -> `docs/CoreTrust_LeadGen_MASTER_Handoff.md`
+section 10 and `docs/CoreTrust_POC_Implementation_Timeline.md`.

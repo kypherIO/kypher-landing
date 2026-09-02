@@ -91,15 +91,32 @@ TOUCH_SCHEMA = [
     "Suggested_Supplier", "Cadence_Step", "Total_Touches", "Emails_Sent", "Calls_Made",
     "LinkedIn_Touches", "Last_Touch_Date", "Last_Touch_Channel", "Days_Since_Last",
     "Next_Touch_Due", "Follow_Up_Flag", "SLA_Status", "Reply_Received", "Meeting_Booked",
-    "Outcome", "Cadence_Status", "Notes",
+    "Outcome", "Nurture_Suggested", "Cadence_Status", "Disposition_Reason",
+    "Scheduled_Followup_Date", "Notes",
 ]
 TOUCH_LETTER = {c: get_column_letter(i + 1) for i, c in enumerate(TOUCH_SCHEMA)}
 
+# Per docs/CoreTrust_SDR_Playbook.md, "Recommended Outreach Cadence": 8
+# touches over 14 days (day 0, 1, 3, 4, 7, 8, 11, 14), each spaced two to
+# three business days apart, channel mixed so response rates don't level
+# off on one channel. Days_To_Next is the gap from THIS step to the next
+# (what Next_Touch_Due's VLOOKUP reads); step 8 has none -- it's the last
+# touch, and the playbook's own rule is what happens after it (see
+# Nurture_Suggested on the TOUCHPOINTS sheet, and "Retry, Nurture, and
+# Recycle Rules" in the playbook).
 CADENCE_STEPS = [
-    (1, 3, "Email intro"), (2, 1, "Call + voicemail"), (3, 3, "Email re: savings"),
-    (4, 3, "LinkedIn"), (5, 3, "Call"), (6, 3, "Email case study"), (7, 3, "Call"),
-    (8, 3, "Breakup email"),
+    (1, 1, "Email", "Introduce the opportunity and connect the value proposition to the member's profile."),
+    (2, 2, "Call + voicemail", "Make the first live contact attempt and reinforce the initial email."),
+    (3, 1, "Reply email", "Follow up with a new angle, such as a relevant member savings example."),
+    (4, 3, "LinkedIn", "Send a brief connection request that reinforces familiarity."),
+    (5, 1, "Call + voicemail", "Make a second call at a different time of day to improve reachability."),
+    (6, 3, "Email", "Share a relevant case study, proof point, or member outcome."),
+    (7, 3, "Call", "Make the final live contact attempt and address any likely objections."),
+    (8, 0, "Email + LinkedIn", "Close the loop, provide an easy response option, and leave the door open for future follow-up."),
 ]
+
+LEARNING_NOTES_SCHEMA = ["Date", "Best_Sources", "Titles_That_Replied", "Angles_That_Worked", "Written_By"]
+LEARNING_NOTES_LETTER = {c: get_column_letter(i + 1) for i, c in enumerate(LEARNING_NOTES_SCHEMA)}
 
 # Category -> SME routing. Seeded only with the two names the project docs
 # actually name (docs/CoreTrust_LeadGen_MASTER_Handoff.md sections "Field"
@@ -642,18 +659,27 @@ def write_master_sheet(wb, merged_df):
 def write_touch_sheet(wb, touch_rows):
     ws = wb.create_sheet("TOUCHPOINTS")
     ws.append(TOUCH_SCHEMA)
+    Q, L, S, T, M, W = (TOUCH_LETTER["Last_Touch_Date"], TOUCH_LETTER["Cadence_Step"],
+                         TOUCH_LETTER["Days_Since_Last"], TOUCH_LETTER["Next_Touch_Due"],
+                         TOUCH_LETTER["Total_Touches"], TOUCH_LETTER["Reply_Received"])
     r_i = 2
     for r in touch_rows:
         row = []
         for c in TOUCH_SCHEMA:
             if c == "Days_Since_Last":
-                row.append(f'=IF(Q{r_i}="","",TODAY()-Q{r_i})')
+                row.append(f'=IF({Q}{r_i}="","",TODAY()-{Q}{r_i})')
             elif c == "Next_Touch_Due":
-                row.append(f'=IF(Q{r_i}="","",Q{r_i}+VLOOKUP(L{r_i},CADENCE!$A:$B,2,FALSE))')
+                row.append(f'=IF({Q}{r_i}="","",{Q}{r_i}+VLOOKUP({L}{r_i},CADENCE!$A:$B,2,FALSE))')
             elif c == "Follow_Up_Flag":
-                row.append(f'=IF(T{r_i}="","",IF(TODAY()>=T{r_i},"FOLLOW UP","ok"))')
+                row.append(f'=IF({T}{r_i}="","",IF(TODAY()>={T}{r_i},"FOLLOW UP","ok"))')
             elif c == "SLA_Status":
-                row.append(f'=IF(S{r_i}="","",IF(S{r_i}>14,"OVERDUE",IF(S{r_i}>4,"DUE SOON","ON TRACK")))')
+                row.append(f'=IF({S}{r_i}="","",IF({S}{r_i}>14,"OVERDUE",IF({S}{r_i}>4,"DUE SOON","ON TRACK")))')
+            elif c == "Nurture_Suggested":
+                # Playbook, "Retry, Nurture, and Recycle Rules": after eight completed
+                # touches without a reply, move the member to Nurture rather than
+                # deleting the record. This just surfaces the suggestion -- the rep
+                # (or the extended Log Touch flow) still sets Cadence_Status by hand.
+                row.append(f'=IF(AND({M}{r_i}>=8,{W}{r_i}<>"Yes"),"Move to Nurture","")')
             else:
                 v = r.get(c)
                 if isinstance(v, float) and pd.isna(v):
@@ -665,9 +691,9 @@ def write_touch_sheet(wb, touch_rows):
     nrows = ws.max_row
     ref = f"A1:{get_column_letter(len(TOUCH_SCHEMA))}{nrows}"
     group_of = {c: "FF2E6DA4" for c in TOUCH_SCHEMA}
-    for c in ("Follow_Up_Flag", "SLA_Status", "Days_Since_Last", "Next_Touch_Due"):
+    for c in ("Follow_Up_Flag", "SLA_Status", "Days_Since_Last", "Next_Touch_Due", "Nurture_Suggested"):
         group_of[c] = "FF2E7D32"
-    for c in ("Total_Touches", "Emails_Sent", "Calls_Made", "LinkedIn_Touches", "Last_Touch_Date", "Last_Touch_Channel", "Reply_Received", "Meeting_Booked", "Outcome", "Cadence_Status", "Notes"):
+    for c in ("Total_Touches", "Emails_Sent", "Calls_Made", "LinkedIn_Touches", "Last_Touch_Date", "Last_Touch_Channel", "Reply_Received", "Meeting_Booked", "Outcome", "Cadence_Status", "Disposition_Reason", "Scheduled_Followup_Date", "Notes"):
         group_of[c] = "FF6A4CB5"
     style_header(ws, len(TOUCH_SCHEMA), group_of)
     add_table(ws, "TouchTable", ref, style="TableStyleMedium9")
@@ -681,7 +707,25 @@ def write_touch_sheet(wb, touch_rows):
         ws.conditional_formatting.add(f"{col}2:{col}{nrows}",
             CellIsRule(operator="equal", formula=['"DUE SOON"'], fill=PatternFill("solid", fgColor="FFC9922B"), font=Font(bold=True)))
 
-    widths = {"Company_Name": 28, "Contact_Title": 24, "Contact_Email": 26, "Notes": 26}
+    nurture_col = TOUCH_LETTER["Nurture_Suggested"]
+    ws.conditional_formatting.add(f"{nurture_col}2:{nurture_col}{nrows}",
+        CellIsRule(operator="equal", formula=['"Move to Nurture"'], fill=PatternFill("solid", fgColor="FF6A4CB5"), font=Font(color="FFFFFFFF", bold=True)))
+
+    dv_cadence_status = DataValidation(type="list", formula1='"Active,Nurture,Recycled,Suppressed"', allow_blank=True)
+    ws.add_data_validation(dv_cadence_status)
+    dv_cadence_status.add(f"{TOUCH_LETTER['Cadence_Status']}2:{TOUCH_LETTER['Cadence_Status']}2000")
+
+    # Reason codes straight from the playbook's "Apply a disposition reason" rule:
+    # suppress confirmed nonbuyers, recycle members who may be viable later.
+    dv_disposition = DataValidation(
+        type="list",
+        formula1='"Nonbuyer - suppress,No response after 8 touches - nurture,Timing not right - dated follow-up,New trigger - recycle,Disqualified - BANTC gate failed,Other"',
+        allow_blank=True)
+    ws.add_data_validation(dv_disposition)
+    dv_disposition.add(f"{TOUCH_LETTER['Disposition_Reason']}2:{TOUCH_LETTER['Disposition_Reason']}2000")
+
+    widths = {"Company_Name": 28, "Contact_Title": 24, "Contact_Email": 26, "Notes": 26,
+              "Disposition_Reason": 32, "Nurture_Suggested": 16}
     for c in TOUCH_SCHEMA:
         ws.column_dimensions[TOUCH_LETTER[c]].width = widths.get(c, 14)
     ws.freeze_panes = "C2"
@@ -691,15 +735,19 @@ def write_touch_sheet(wb, touch_rows):
 
 def write_cadence_sheet(wb):
     ws = wb.create_sheet("CADENCE")
-    ws.append(["Step", "Days_To_Next", "Channel"])
+    ws.append(["Step", "Days_To_Next", "Channel", "Purpose"])
     for row in CADENCE_STEPS:
         ws.append(list(row))
     nrows = ws.max_row
-    add_table(ws, "CadenceTable", f"A1:C{nrows}", style="TableStyleMedium9")
-    style_header(ws, 3, {"Step": "FF1F3A5F", "Days_To_Next": "FF1F3A5F", "Channel": "FF1F3A5F"})
+    add_table(ws, "CadenceTable", f"A1:D{nrows}", style="TableStyleMedium9")
+    style_header(ws, 4, {"Step": "FF1F3A5F", "Days_To_Next": "FF1F3A5F", "Channel": "FF1F3A5F", "Purpose": "FF1F3A5F"})
     ws.column_dimensions["A"].width = 8
     ws.column_dimensions["B"].width = 14
-    ws.column_dimensions["C"].width = 22
+    ws.column_dimensions["C"].width = 20
+    ws.column_dimensions["D"].width = 70
+    for row in ws.iter_rows(min_row=2, max_row=nrows, min_col=4, max_col=4):
+        for cell in row:
+            cell.alignment = Alignment(wrap_text=True, vertical="top")
     ws.sheet_view.showGridLines = False
     return ws
 
@@ -751,6 +799,25 @@ def write_sme_handoff_sheet(wb, handoff_rows):
         CellIsRule(operator="equal", formula=['"Completed"'], fill=PatternFill("solid", fgColor="FF2E7D32"), font=Font(color="FFFFFFFF", bold=True)))
 
     ws.freeze_panes = "B2"
+    ws.sheet_view.showGridLines = False
+    return ws
+
+
+def write_learning_notes_sheet(wb):
+    """Per the SDR Playbook's Daily Rhythm ("End of day: the rep reads the
+    learning note; the agent writes three lines -- which sources, titles,
+    and angles worked") and Enrichment Prompts v2 #9. Nightly Enrichment
+    (Flow 6) appends one row here at the end of its run; scripts/log_touch.py
+    and save_qualification.py don't touch this tab, it's specifically the
+    agent's own end-of-day reflection, not a per-touch log."""
+    ws = wb.create_sheet("LEARNING NOTES")
+    ws.append(LEARNING_NOTES_SCHEMA)
+    add_table(ws, "LearningNotesTable", f"A1:{get_column_letter(len(LEARNING_NOTES_SCHEMA))}1", style="TableStyleMedium9")
+    style_header(ws, len(LEARNING_NOTES_SCHEMA), {c: "FF0E7C86" for c in LEARNING_NOTES_SCHEMA})
+    widths = {"Date": 12, "Best_Sources": 40, "Titles_That_Replied": 40, "Angles_That_Worked": 40, "Written_By": 16}
+    for c in LEARNING_NOTES_SCHEMA:
+        ws.column_dimensions[LEARNING_NOTES_LETTER[c]].width = widths.get(c, 20)
+    ws.freeze_panes = "A2"
     ws.sheet_view.showGridLines = False
     return ws
 
@@ -883,71 +950,128 @@ def write_kpi_dashboard(wb, stats):
 
 
 def write_poc_scorecard(wb, stats):
-    """Target-vs-actual tracking for the 30-day proof of concept. Actuals are
-    live formulas over the named tables; targets are filled in only where the
-    project's own docs give a number (docs/CoreTrust_Aspirational_Investment_KPI_Proposal.md
-    section 5: "roughly fifteen qualified opportunities a month" at current
-    state) -- everywhere else the target cell is left for you to set once the
-    pilot window is picked (see docs/CoreTrust_POC_Implementation_Timeline.md),
-    rather than inventing a number that would look authoritative but isn't."""
+    """Target-vs-actual tracking for the proof of concept, against the exact
+    three-level KPI framework in docs/CoreTrust_SDR_Playbook.md ("KPI
+    Measurement Framework" / "Outreach Performance Metrics"): Level 1
+    (Outcomes, for leadership), Level 2 (Conversion, diagnoses funnel gaps),
+    Level 3 (Activity, for coaching -- never treated as success on its own).
+    Every 2026 Benchmark and Our Target value below is copied verbatim from
+    that playbook, not invented here. Actuals are live formulas over the
+    named tables; a metric the current schema genuinely can't compute (call
+    connects vs. attempts, closed-won) says so honestly rather than faking a
+    formula."""
     ws = wb.create_sheet("POC SCORECARD")
     ws["B2"] = "Proof of Concept Scorecard"
     ws["B2"].font = Font(bold=True, size=16, color="FF1F3A5F")
     ws["B3"] = ("Tracking is the point of a POC: this is the one place that says whether the pilot worked. "
-                "Set Pilot_Start / Pilot_End below, fill in any TBD target with your own number once you have "
-                "one, and read this tab at the weekly check-in alongside KPI DASHBOARD.")
+                "Targets below are the SDR Playbook's own numbers (docs/CoreTrust_SDR_Playbook.md), not "
+                "invented here. Set Pilot_Start if it's not today, and read this tab at the weekly check-in "
+                "alongside KPI DASHBOARD.")
     ws["B3"].font = Font(italic=True, color="FF5A6675")
     ws["B3"].alignment = Alignment(wrap_text=True)
-    ws.merge_cells("B3:F3")
+    ws.merge_cells("B3:G3")
     ws.row_dimensions[3].height = 30
 
     ws["B5"] = "Pilot_Start"; ws["C5"] = TODAY
-    ws["B6"] = "Pilot_End"; ws["C6"] = TODAY + datetime.timedelta(days=30)
-    ws["B7"] = "Days_Remaining"; ws["C7"] = '=MAX(0,C6-TODAY())'
-    for r in (5, 6, 7):
+    ws["B6"] = "Day_30 (end of Launch and Baseline)"; ws["C6"] = '=$C$5+30'
+    ws["B7"] = "Day_60 (end of Validate the Pilot)"; ws["C7"] = '=$C$5+60'
+    ws["B8"] = "Day_90 (end of Automate and Present)"; ws["C8"] = '=$C$5+90'
+    ws["B9"] = "Days_Elapsed"; ws["C9"] = '=TODAY()-$C$5'
+    for r in range(5, 10):
         ws.cell(row=r, column=2).font = Font(bold=True)
 
-    headers = ["Metric", "Target", "Actual", "Source / note"]
-    hr = 9
-    for i, h in enumerate(headers):
-        cell = ws.cell(row=hr, column=2 + i, value=h)
+    def section_header(row, title):
+        cell = ws.cell(row=row, column=2, value=title)
+        cell.font = Font(bold=True, size=13, color="FFFFFFFF")
         cell.fill = PatternFill("solid", fgColor="FF1F3A5F")
-        cell.font = Font(color="FFFFFFFF", bold=True)
+        ws.merge_cells(start_row=row, start_column=2, end_row=row, end_column=6)
+        return row + 1
 
-    rows = [
-        ("Qualified opportunities in the pilot window", 15,
-         '=COUNTIFS(MasterTable[Qualified],"Yes",MasterTable[Last_Updated],">="&C5,MasterTable[Last_Updated],"<="&C6)',
-         "Target from the investment proposal's current-state estimate (~15/month, one rep + agent)."),
-        ("SME meetings requested", "TBD", "=COUNTA(SMEHandoffTable[Lead_ID])",
-         "Every BANTC-qualified lead should produce one row on SME HANDOFF."),
-        ("SME meetings completed", "TBD", '=COUNTIF(SMEHandoffTable[Meeting_Status],"Completed")',
-         "Set a target once you know the SME's typical calendar capacity."),
-        ("Reply rate", "TBD",
+    def col_headers(row):
+        for i, h in enumerate(["Metric", "2026 Benchmark", "Our Target", "Actual", "Why / note"]):
+            cell = ws.cell(row=row, column=2 + i, value=h)
+            cell.fill = PatternFill("solid", fgColor="FF2E6DA4")
+            cell.font = Font(color="FFFFFFFF", bold=True)
+        return row + 1
+
+    def write_rows(row, rows):
+        for metric, bench, target, actual, note in rows:
+            ws.cell(row=row, column=2, value=metric)
+            ws.cell(row=row, column=3, value=bench)
+            ws.cell(row=row, column=4, value=target)
+            ws.cell(row=row, column=5, value=actual)
+            ws.cell(row=row, column=6, value=note)
+            ws.cell(row=row, column=6).alignment = Alignment(wrap_text=True, vertical="top")
+            row += 1
+        return row + 1
+
+    r = 11
+    r = section_header(r, "Level 1 -- Outcomes (leadership reporting, performance evaluation)")
+    r = col_headers(r)
+    r = write_rows(r, [
+        ("Qualified opportunities per month", "8-15 (outbound SDR)", "6-10",
+         '=COUNTIFS(MasterTable[Qualified],"Yes",MasterTable[Last_Updated],">="&$C$5)',
+         "The number that proves the POC -- one person, manual research."),
+        ("Pipeline created per month", "$150K-$400K/SDR/quarter", "$1M+ influenced",
+         '=SUMIFS(MasterTable[Est_Freight_Spend],MasterTable[Qualified],"Yes",MasterTable[Last_Updated],">="&$C$5)',
+         "A single strategic freight account carries $1M+ in spend, so a few land big."),
+        ("Speed to lead", "respond within 5 min lifts qualify odds 21x", "new lead <24h, reply <1h",
+         '=IFERROR(COUNTIF(TouchTable[SLA_Status],"ON TRACK")/COUNTA(TouchTable[Lead_ID]),"")',
+         "Proxy only -- TouchTable tracks days, not minutes. Actual = share of tracked leads currently within SLA."),
+        ("Qualified-to-opportunity rate", "30-50%, median 40%", "40% or better",
+         '=IFERROR(COUNTIF(MasterTable[Qualified],"Yes")/(COUNTIF(MasterTable[Qualified],"Yes")+COUNTIF(MasterTable[Record_Status],"Disqualified")),"")',
+         "The five-marker gate keeps this honest."),
+        ("Cost per qualified opportunity", "derived, a few hundred dollars", "a small fraction of one $1M account",
+         "TBD (manual)", "Needs your own cost basis (rep time, any tool spend) -- not computable from the workbook alone."),
+    ])
+
+    r = section_header(r, "Level 2 -- Conversion (diagnoses funnel gaps, focuses coaching)")
+    r = col_headers(r)
+    r = write_rows(r, [
+        ("MQL to SQL, marker 1 to 3 pass", "15-30%, median 22%", "22% or better",
+         '=IFERROR(SUMPRODUCT((MasterTable[Freight_Relevant]="Yes")*(((MasterTable[TMS_In_Use]<>"")+(MasterTable[Under_Contract]<>"")+(MasterTable[Contract_Status]<>"")+(MasterTable[Capacity_Source]<>"")+(MasterTable[Private_Fleet]<>""))>=3))/COUNTIF(MasterTable[Freight_Relevant],"Yes"),"")',
+         "Targeting and scoring quality -- share of freight-relevant members with 3+ of 5 markers answered."),
+        ("Positive reply rate", "2-5% cold, 8-15% trigger-based", "beat 5%, we work warm members",
          '=IFERROR(COUNTIF(TouchTable[Reply_Received],"Yes")/COUNTA(TouchTable[Lead_ID]),"")',
-         "No documented baseline yet -- this pilot sets one."),
-        ("Verified contacts on hand", "TBD", '=COUNTIF(MasterTable[Contact_Email],"*@*")',
-         "1,050 verified across the full freight analysis per the investment proposal; this workbook starts "
-         "with far fewer until the real freight-analysis file is merged in."),
-        ("Cost per qualified opportunity", "TBD", "TBD (manual)",
-         "Needs your own cost basis (rep time, any tool spend) -- not something the workbook can compute alone."),
-    ]
-    r = hr + 1
-    for metric, target, actual, note in rows:
-        ws.cell(row=r, column=2, value=metric)
-        ws.cell(row=r, column=3, value=target)
-        ws.cell(row=r, column=4, value=actual)
-        ws.cell(row=r, column=5, value=note)
-        r += 1
+         "Message and list quality."),
+        ("Meetings per 100 emails", "1-4, good is 3-4", "3-4",
+         '=IFERROR(COUNTIF(TouchTable[Meeting_Booked],"Yes")/SUM(TouchTable[Emails_Sent])*100,"")',
+         "The output metric that matters most."),
+        ("Meeting show rate", "70-85%", "80%+",
+         '=IFERROR(COUNTIF(SMEHandoffTable[Meeting_Status],"Completed")/(COUNTIF(SMEHandoffTable[Meeting_Status],"Completed")+COUNTIF(SMEHandoffTable[Meeting_Status],"No Show")),"")',
+         "Confirm 24 hours ahead, book within a week. Reads Meeting_Status on SME HANDOFF."),
+        ("Connect rate on calls", "5-12% mid-market", "8-12%", "TBD (manual)",
+         "Data quality and call timing. Not computable -- TouchTable counts calls made, not calls connected; "
+         "would need a Calls_Connected counter to automate."),
+        ("SQL to closed-won, outbound", "14%, top quartile 22%", "track, prove over time", "TBD (manual)",
+         "Overall qualification and fit. Not computable -- the schema has no closed-won outcome yet; "
+         "track this once Salesforce is connected (Walk phase)."),
+    ])
 
-    ws.column_dimensions["B"].width = 40
-    ws.column_dimensions["C"].width = 14
-    ws.column_dimensions["D"].width = 14
-    ws.column_dimensions["E"].width = 60
-    for row in ws.iter_rows(min_row=hr + 1, max_row=r - 1, min_col=5, max_col=5):
-        for cell in row:
-            cell.alignment = Alignment(wrap_text=True, vertical="top")
+    r = section_header(r, "Level 3 -- Activity (coaching and process management -- never a success measure alone)")
+    r = col_headers(r)
+    r = write_rows(r, [
+        ("Touches per sequence", "8-12 across multiple channels", "8 touches over 14 days",
+         '=IFERROR(AVERAGEIF(TouchTable[Cadence_Step],8,TouchTable[Total_Touches]),"")',
+         "Average total touches among leads that completed the full 8-step cadence."),
+        ("Emails drafted and sent per day", "agent drafts; rep reviews and sends", "10-20 with agent support",
+         '=IFERROR(SUM(TouchTable[Emails_Sent])/MAX(1,$C$9),"")',
+         "Use drafting support to reduce prep time while preserving human review."),
+        ("Calls per day", "40-60 in a high-volume outbound model", "15-30",
+         '=IFERROR(SUM(TouchTable[Calls_Made])/MAX(1,$C$9),"")',
+         "Prioritize well-researched members and conversation quality over raw call volume."),
+        ("Cadence completion rate", "60-75%", "70% or higher",
+         '=IFERROR(COUNTIF(TouchTable[Cadence_Step],8)/COUNTA(TouchTable[Lead_ID]),"")',
+         "Complete the full sequence unless the member responds, opts out, or is disqualified."),
+    ])
 
-    gate_r = r + 2
+    ws.column_dimensions["B"].width = 34
+    ws.column_dimensions["C"].width = 24
+    ws.column_dimensions["D"].width = 24
+    ws.column_dimensions["E"].width = 16
+    ws.column_dimensions["F"].width = 60
+
+    gate_r = r + 1
     ws.cell(row=gate_r, column=2, value="Go / No-Go, from the investment proposal's own ask").font = Font(bold=True, size=13, color="FF1F3A5F")
     for i, line in enumerate([
         "Approve the Salesforce connector (Power Automate Premium, ~$15/user/month) once speed-to-lead matters.",
@@ -957,7 +1081,7 @@ def write_poc_scorecard(wb, stats):
     ], start=1):
         ws.cell(row=gate_r + i, column=2, value=f"{i}. {line}")
         ws.cell(row=gate_r + i, column=2).alignment = Alignment(wrap_text=True)
-        ws.merge_cells(start_row=gate_r + i, start_column=2, end_row=gate_r + i, end_column=5)
+        ws.merge_cells(start_row=gate_r + i, start_column=2, end_row=gate_r + i, end_column=6)
 
     ws.sheet_view.showGridLines = False
     return ws
@@ -1081,14 +1205,15 @@ def main():
     write_cadence_sheet(wb)
     write_sme_routing_sheet(wb)
     write_sme_handoff_sheet(wb, handoff_rows)
+    write_learning_notes_sheet(wb)
     _, stats = write_summary_sheet(wb, merged_df)
     write_kpi_dashboard(wb, stats)
     write_poc_scorecard(wb, stats)
     write_readme(wb, stats, matched, inserted)
     write_data_dictionary(wb)
 
-    order = ["MASTER MEMBERS", "TOUCHPOINTS", "CADENCE", "SME ROUTING", "SME HANDOFF", "KPI DASHBOARD",
-              "POC SCORECARD", "SUMMARY", "READ ME", "Data Dictionary"]
+    order = ["MASTER MEMBERS", "TOUCHPOINTS", "CADENCE", "SME ROUTING", "SME HANDOFF", "LEARNING NOTES",
+              "KPI DASHBOARD", "POC SCORECARD", "SUMMARY", "READ ME", "Data Dictionary"]
     wb._sheets.sort(key=lambda ws: order.index(ws.title))
     wb.active = 0
 

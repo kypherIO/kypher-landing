@@ -119,6 +119,10 @@ def main():
                    value=f'=IF({T}{t_row}="","",IF(TODAY()>={T}{t_row},"FOLLOW UP","ok"))')
         touch.cell(row=t_row, column=t_idx["SLA_Status"],
                    value=f'=IF({S}{t_row}="","",IF({S}{t_row}>14,"OVERDUE",IF({S}{t_row}>4,"DUE SOON","ON TRACK")))')
+        M = get_column_letter(t_idx["Total_Touches"])
+        W = get_column_letter(t_idx["Reply_Received"])
+        touch.cell(row=t_row, column=t_idx["Nurture_Suggested"],
+                   value=f'=IF(AND({M}{t_row}>=8,{W}{t_row}<>"Yes"),"Move to Nurture","")')
         expand_table(touch, "TouchTable", t_row)
         print(f"Added new TOUCHPOINTS row for {args.lead} ({mval('Company_Name')})")
     else:
