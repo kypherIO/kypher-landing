@@ -105,9 +105,22 @@ This is the read-then-update-or-add pattern from
 | 2 | **Condition** | `length(body('List_rows'))` is greater than `0`. |
 | 3a | **If yes** -- Excel Online (Business) -- **Update a row** | Table: `TouchTable`. Key Column: `Lead_ID`, Key Value: the input. Set `Total_Touches` = `add(outputs('List_rows')?[0]?['Total_Touches'], 1)`; increment the matching channel column (`Emails_Sent`/`Calls_Made`/`LinkedIn_Touches`) the same way; set `Last_Touch_Date` = `utcNow('yyyy-MM-dd')`; `Last_Touch_Channel` = the Channel input; `Cadence_Step` = `min(add(current step, 1), 8)`; `Reply_Received`/`Meeting_Booked`/`Outcome` from inputs when provided. **Do not touch** `Days_Since_Last`, `Next_Touch_Due`, `Follow_Up_Flag`, `SLA_Status` -- those are live formulas on the sheet, writing to them through the connector overwrites the formula with a static value. |
 | 3b | **If no** -- Excel Online (Business) -- **Get a row** | Table: `MasterTable`, Key Column `Lead_ID`, to pull Company_Name/Contact_First/Contact_Last/Contact_Title/Contact_Email/Fit_Tier/Priority/Spend_Bucket/Suggested_Supplier. |
-| 3b.2 | Excel Online (Business) -- **Add a row into a table** | Table: `TouchTable`. Map every non-formula column from the values in 3b plus `Cadence_Step`=1, `Total_Touches`=1, the matching channel column=1, `Last_Touch_Date`=today, `Last_Touch_Channel`=input, `Outcome`="contacted", `Cadence_Status`="Active". Leave `Days_Since_Last`/`Next_Touch_Due`/`Follow_Up_Flag`/`SLA_Status` **blank** -- Excel Online's Add a row does not carry formulas into a new row automatically; either leave them for the next person to open the file in Excel (which recalculates on open) or run `scripts/log_touch.py` locally once to backfill the formula strings for that row (it writes the exact same four formulas the pipeline uses). |
+| 3b.2 | Excel Online (Business) -- **Add a row into a table** | Table: `TouchTable`. Map every non-formula column from the values in 3b plus `Cadence_Step`=1, `Total_Touches`=1, the matching channel column=1, `Last_Touch_Date`=today, `Last_Touch_Channel`=input, `Outcome`="contacted", `Cadence_Status`="Active". Leave `Days_Since_Last`/`Next_Touch_Due`/`Follow_Up_Flag`/`SLA_Status` blank here -- the next card sets them. |
+| 3b.3 | Excel Online (Business) -- **Update a row**, `TouchTable`, Key Column `Lead_ID`, Key Value the input | Set the four live-formula columns explicitly, as **structured table references** rather than a specific cell address (`Q11`, etc.) -- this is what makes it work without knowing which row Add a row just created: `Days_Since_Last` = `=IF([@Last_Touch_Date]="","",TODAY()-[@Last_Touch_Date])`; `Next_Touch_Due` = `=IF([@Last_Touch_Date]="","",[@Last_Touch_Date]+VLOOKUP([@Cadence_Step],CADENCE!$A:$B,2,FALSE))`; `Follow_Up_Flag` = `=IF([@Next_Touch_Due]="","",IF(TODAY()>=[@Next_Touch_Due],"FOLLOW UP","ok"))`; `SLA_Status` = `=IF([@Days_Since_Last]="","",IF([@Days_Since_Last]>14,"OVERDUE",IF([@Days_Since_Last]>4,"DUE SOON","ON TRACK")))`. |
 | 4 | Excel Online (Business) -- **Update a row**, `MasterTable` | Set `Record_Status` = "In Cadence" (only if it was Ready to Call/New/Enriching), `Updated_By` = "AI Agent", `Last_Updated` = today. |
 | 5 | **Respond to the agent** | Output `Logged` = true, `Total_Touches`, `Cadence_Step`. |
+
+**Why step 3b.3 exists, and why the formulas look different from the ones
+already on the sheet:** the seed rows this repo's pipeline writes use
+plain cell references (`Q11`, `T11`) because the pipeline knows the exact
+row number the moment it writes the row. A flow adding a row through the
+connector doesn't get a convenient row number back, and guessing wrong
+would silently corrupt another row's formula. Structured references
+(`[@Last_Touch_Date]`) sidestep the problem entirely -- they mean "this
+row's value in that column," so the same formula text is correct no
+matter which row it ends up in. Either style works in a real Excel Table;
+if you're ever adding a formula to this workbook by hand, structured
+references are the safer default to reach for.
 
 **Tool description:**
 > "Use this immediately after drafting an email, making a call, or sending
