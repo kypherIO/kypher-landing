@@ -20,20 +20,34 @@ the *flow* is the only thing the agent ever touches, through one clean
 generative orchestration, not documentation -- write them the way you'd
 brief a new hire on when to reach for this specific tool and nothing else.
 
+This build also implements BANTC qualification (Budget, Authority, Need,
+Timeline, Category) inside Flow 4, and the meeting trigger it fires to a
+category SME -- see that flow's extended steps below and the two new tabs,
+`SME ROUTING` (Category -> SME name/email, edit this as your category
+structure grows) and `SME HANDOFF` (one row per BANTC-qualified lead, the
+handoff log). A quality lead is not "someone who might ship freight" here;
+it's a lead that cleared Fit v3 (worth calling) *and* BANTC (worth a
+category SME's time) -- that's the whole point of separating the two
+gates.
+
 ## Before you build any flow
 
-1. Put `CoreTrust_Master_Members.xlsx` in OneDrive or SharePoint (see the
-   root `README.md`, "Where the file lives"). Every flow points at that one
-   file and never a local copy.
-2. Confirm the three tables exist and are named exactly `MasterTable`,
-   `TouchTable`, `CadenceTable` -- open the file, click inside each range,
-   check the Table Design tab. `scripts/fitv3_pipeline.py` already builds
-   them with the right names; if the table-picker in a flow shows nothing,
-   this is the first thing to check (see Gotchas below).
+1. Put `CoreTrust_Master_Members.xlsx` in OneDrive (see the root
+   `README.md`, "Where the file lives" -- this build is OneDrive-only, no
+   SharePoint site required). Every flow points at that one file and never
+   a local copy.
+2. Confirm the five tables exist and are named exactly `MasterTable`,
+   `TouchTable`, `CadenceTable`, `SMERoutingTable`, `SMEHandoffTable` --
+   open the file, click inside each range, check the Table Design tab.
+   `scripts/fitv3_pipeline.py` already builds them with the right names; if
+   the table-picker in a flow shows nothing, this is the first thing to
+   check (see Gotchas below).
 3. In Power Automate (make.powerautomate.com), confirm you can see
-   **Excel Online (Business)**, **Office 365 Outlook**, and **SharePoint**
-   connectors under your account -- all three ship with standard M365
-   licensing, no premium connector needed for this build.
+   **Excel Online (Business)** and **Office 365 Outlook** connectors under
+   your account -- both ship with standard M365 licensing, no premium
+   connector needed for this build. Flow 5's export lands in OneDrive, not
+   SharePoint (see that flow below) -- **OneDrive for Business** is the
+   third connector to confirm.
 
 ## Shared card settings, every flow
 
@@ -140,14 +154,34 @@ markers from a call -- `TMS_In_Use`, `Under_Contract`/`Contract_Status`,
 | 3a | **If yes** -- Excel Online (Business) -- **Update a row** | `Qualified` = "Yes", `Record_Status` = "Qualified". |
 | 3b | **If no** -- nothing further; the row stays in cadence. |
 | 4 | Excel Online (Business) -- **Update a row** | `Updated_By` = "AI Agent", `Last_Updated` = today, on every call regardless of the gate result. |
-| 5 | **Respond to the agent** | `Qualified` (true/false), `Markers_Set` (count), and which markers are still missing so the agent can tell the rep what's left. |
+| 5 | Excel Online (Business) -- **Get a row** | Table: `MasterTable`, Key `Lead_ID` -- re-read the row so steps 6-7 compute BANTC from what was just written, not stale values. |
+| 6 | **Compose** (four expressions, one per BANT letter) | `BANT_Budget`: `Yes` if `Confirmed_Freight_Spend>0` or `Est_Freight_Spend>=1000000`, else `Unconfirmed` if `Est_Freight_Spend>0`, else blank. `BANT_Authority`: `Yes` if `Contact_Title` matches a decision-maker pattern (vp/director/chief/svp/evp/president/head of/c-suite) **and** `Contact_Email` is set, else `Unconfirmed` if a title exists, else blank. `BANT_Need`: `Yes` if `TMS_In_Use`="Manual / No TMS" or `Capacity_Source` in ("Broker/Spot","Mixed") or `Under_Contract`="No", `No` if markers are filled but show none of that, blank if no markers are filled yet. `BANT_Timeline`: `Yes` if `Contract_Status` is "None" or "Renewal <6mo", `No` if "Locked", blank otherwise. (`scripts/save_qualification.py` has these as plain Python functions if you'd rather test the logic there first.) |
+| 7 | Excel Online (Business) -- **Update a row** | Write `BANT_Budget`/`BANT_Authority`/`BANT_Need`/`BANT_Timeline` from step 6, and `BANTC_Status` = "Qualified - Ready for SME" when `BANT_Budget`="Yes" and `BANT_Authority`="Yes" and at least 3 of the 4 are "Yes"; "In Progress" if any is set; "Not Started" otherwise. |
+| 8 | **Condition -- the SME trigger** | `BANTC_Status` equals "Qualified - Ready for SME". This is the moment a lead becomes a category SME's problem, not just a rep's. |
+| 9a | **If yes** -- Excel Online (Business) -- **List rows present in a table**, `SMERoutingTable`, filter `Category eq '@{outputs('Get_a_row')?['Category']}'` | Look up the SME name/email for this lead's category. |
+| 9b | Excel Online (Business) -- **Get a row** on `MasterTable` then **Add a row into a table**, `SMEHandoffTable` | Populate every SME HANDOFF column from the master row plus the routing lookup: `Meeting_Requested_Date`=today, `Meeting_Status`="Requested". |
+| 9c | Office 365 Outlook -- **Create draft** (recommended, optional) | To: the SME's email from step 9a (when it's filled in -- SME ROUTING ships with no emails, add them once you have them). Subject: `SME meeting -- {Company_Name}, {Fit_Tier} / {BANTC_Status}`. Body: the BANT summary plus contact info. Draft only, same never-send rule as Flow 3. |
+| 10 | **Respond to the agent** | `Qualified` (true/false), `Markers_Set` (count), missing markers, `BANTC_Status`, and `SME_Meeting_Requested` (true/false) so the agent can tell the rep exactly what's left and whether the SME has been looped in. |
 
 **Tool description:**
 > "Use this after a qualification call to save the five markers (TMS in
 > use, contract status, capacity source, private fleet, lane data
 > available) and, when at least three are answered and it isn't a private
-> fleet account, mark the lead Qualified. Never sets Qualified on its own
-> guess -- only from what the rep reports."
+> fleet account, mark the lead Qualified. Also computes BANTC (Budget,
+> Authority, Need, Timeline, Category) from the same markers plus the
+> contact on file -- when a lead clears the BANTC gate, this automatically
+> logs it to SME HANDOFF and routes it to that category's SME from SME
+> ROUTING. Never sets Qualified or BANTC status on its own guess -- only
+> from what the rep reports or what's already verified on the row."
+
+**Why BANTC lives inside Save Qualification rather than its own flow:**
+the five markers this flow already collects (TMS, contract status,
+capacity source, private fleet, lane data) map directly onto Need and
+Timeline; Budget comes from the freight-spend fields already on the row;
+Authority comes from the contact already on file. There is no new data to
+collect -- BANTC is a second read of the same qualification call, so
+splitting it into a separate agent-callable flow would just mean asking
+the rep the same questions twice.
 
 ---
 
@@ -164,15 +198,16 @@ already shows, for the Data Import Wizard.
 | 1 | Excel Online (Business) -- **List rows present in a table** | Table: `MasterTable`. Filter Query: `Qualified eq 'Yes'`. |
 | 2 | **Apply to each** row from step 1, **Compose** | Build one object per row with the Salesforce Lead terminology headers: `Company`=Company_Name, `First Name`=Contact_First, `Last Name`=Contact_Last (fallback "Unknown" if blank -- Last Name is required by the Wizard), `Title`=Contact_Title, `Email`=Contact_Email, `Phone`=Contact_Phone, `Website`=Website, `Industry`=Industry, `State/Province`=HQ_State, `Country`="United States", `Lead Source`="CoreTrust Lead Gen", `No. of Employees`=Employees, `Annual Revenue`=Annual_Revenue, `Rating`= map Fit_Tier A→"Hot" B→"Warm" C/D→"Cold", `Description`=concat("Fit v3 ", Fit_v3_Score, " \| Tier ", Fit_Tier, " \| Est freight ", Est_Freight_Spend, " \| ", Suggested_Supplier, " \| Service: ", Service_Fit), `Freight Spend`=Est_Freight_Spend, `Lead Tier`=Fit_Tier, `Fit Score`=Fit_v3_Score, `Preferred Partner`=Suggested_Supplier, `PE Sponsor`=PE_Sponsor. |
 | 3 | **Create CSV table** | From the array of composed objects, `From`=`outputs('Apply_to_each')`, with headers. |
-| 4 | SharePoint -- **Create file** | Site: your team site. Folder: `/CoreTrust Lead Gen/Exports`. File Name: `CoreTrust_SFDC_Import_@{utcNow('yyyy-MM-dd')}.csv`. File Content: the CSV table output. |
-| 5 | **Respond to the agent** | `File_Url` (the SharePoint link), `Row_Count`. |
+| 4 | OneDrive for Business -- **Create file** | Folder: `/CoreTrust Lead Gen/Exports` in the same OneDrive account the master workbook lives in (no SharePoint site needed). File Name: `CoreTrust_SFDC_Import_@{utcNow('yyyy-MM-dd')}.csv`. File Content: the CSV table output. |
+| 5 | OneDrive for Business -- **Create share link** (optional) | On the file from step 4, "View" access, so the rep gets one hyperlink rather than having to browse OneDrive. |
+| 6 | **Respond to the agent** | `File_Url` (the OneDrive share link, or the file path if you skip step 5), `Row_Count`. |
 
 **Tool description:**
 > "Use this when the rep asks to export qualified leads for Salesforce.
 > Builds a Data Import Wizard-ready CSV of every Qualified='Yes' account
-> and saves it to SharePoint, returns the link. Note the load date so the
-> rep doesn't import the same file twice -- Salesforce isn't connected
-> yet, this is the file-based bridge until the connector is approved."
+> and saves it to OneDrive, returns a link. Note the load date so the rep
+> doesn't import the same file twice -- Salesforce isn't connected yet,
+> this is the file-based bridge until the connector is approved."
 
 ---
 

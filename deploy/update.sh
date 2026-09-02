@@ -23,8 +23,11 @@ else
 fi
 
 echo "==> Publishing to ${APP_DIR}"
+# coretrust-leadgen holds real company/contact records and has its own
+# password-gated deploy path (deploy/update-coretrust.sh) — it must never
+# land in the public, unauthenticated biblebot root.
 rsync -a --delete \
-  --exclude '.git' --exclude 'deploy' --exclude 'README.md' \
+  --exclude '.git' --exclude 'deploy' --exclude 'README.md' --exclude 'coretrust-leadgen' \
   "$REPO_DIR"/ "$APP_DIR"/
 chown -R caddy:caddy "$APP_DIR"
 find "$APP_DIR" -type d -exec chmod 755 {} \;

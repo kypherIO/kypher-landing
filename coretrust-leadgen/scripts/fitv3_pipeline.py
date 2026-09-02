@@ -53,6 +53,7 @@ GROUP_COLOR = {
     "markers": "FF6A4CB5",
     "score_inputs": "FFC9922B",
     "computed": "FF2E7D32",
+    "bantc": "FFD35400",
     "outcome": "FF1F3A5F",
 }
 
@@ -77,6 +78,8 @@ SCHEMA = [
     ("Warmth", "score_inputs"), ("Exclusion_Reason", "score_inputs"),
     ("Fit_v3_Score", "computed"), ("Fit_Tier", "computed"), ("Spend_Bucket", "computed"),
     ("Priority", "computed"), ("Suggested_Supplier", "computed"), ("Service_Fit", "computed"),
+    ("Category", "bantc"), ("BANT_Budget", "bantc"), ("BANT_Authority", "bantc"),
+    ("BANT_Need", "bantc"), ("BANT_Timeline", "bantc"), ("BANTC_Status", "bantc"),
     ("Qualified", "outcome"), ("Notes", "outcome"),
 ]
 COLS = [c for c, _ in SCHEMA]
@@ -97,6 +100,27 @@ CADENCE_STEPS = [
     (4, 3, "LinkedIn"), (5, 3, "Call"), (6, 3, "Email case study"), (7, 3, "Call"),
     (8, 3, "Breakup email"),
 ]
+
+# Category -> SME routing. Seeded only with the two names the project docs
+# actually name (docs/CoreTrust_LeadGen_MASTER_Handoff.md sections "Field"
+# and 9). Add rows here as CoreTrust's category structure grows -- never
+# invent a name or email that isn't verified.
+SME_ROUTING = [
+    ("Logistics", "Rod Andrews", "", "Category Manager, Logistics -- owns this motion end to end."),
+    ("Material Handling", "Nick Beach", "",
+     "Material handling category lead. Forklifts (Hyster-Yale), propane (Ferrellgas), "
+     "pallets (Millwood). Scoring for this category isn't built yet -- see the handoff doc "
+     "section 9, 'the material handling extension.'"),
+]
+SME_ROUTING_SCHEMA = ["Category", "SME_Name", "SME_Email", "Notes"]
+
+SME_HANDOFF_SCHEMA = [
+    "Lead_ID", "Company_Name", "Category", "BANTC_Status", "Fit_Tier", "Est_Freight_Spend",
+    "Contact_First", "Contact_Last", "Contact_Title", "Contact_Email", "CT_Account_Manager",
+    "SME_Name", "SME_Email", "Meeting_Requested_Date", "Meeting_Status", "Meeting_Date",
+    "Outcome", "Notes",
+]
+SME_HANDOFF_LETTER = {c: get_column_letter(i + 1) for i, c in enumerate(SME_HANDOFF_SCHEMA)}
 
 HEAVY_FREIGHT_INDUSTRIES = {
     "manufacturing", "distribution", "wholesale", "building materials", "chemicals",
@@ -197,6 +221,74 @@ def recompute_fit(fo, eng, fi, act, wm):
     return fit, tier
 
 
+# ---------------------------------------------------------------------------
+# BANTC qualification: Budget, Authority, Need, Timeline, Category. Fit v3
+# decides who is worth calling; BANTC decides whether a call becomes a
+# qualified opportunity that gets handed to the category SME. Every function
+# here is a pure read of columns already on the row -- BANTC never invents
+# evidence, it only reads what the call (Markers 1-5) and the contact
+# (Contact_Title) already captured. Blank/Unconfirmed is the honest answer
+# until a rep actually asks.
+# ---------------------------------------------------------------------------
+AUTHORITY_TITLES = ("vp", "vice president", "director", "chief", "svp", "evp", "president",
+                    "head of", "cfo", "coo", "ceo", "cpo", "owner", "partner")
+
+
+def category_of(freight_relevant):
+    # Only one category is scored today. Material Handling is a second score
+    # the handoff doc proposes (section 9) but the data to run it -- ICPs,
+    # signed/whitespace lists, the Hyster-Yale lease-end report -- hasn't
+    # been provided yet, so it is never guessed here.
+    return "Logistics" if norm_str(freight_relevant).lower() == "yes" else ""
+
+
+def bant_budget_of(est_freight_spend, confirmed_freight_spend):
+    if confirmed_freight_spend and float(confirmed_freight_spend) > 0:
+        return "Yes"
+    if est_freight_spend and float(est_freight_spend) >= 1_000_000:
+        return "Yes"
+    if est_freight_spend and float(est_freight_spend) > 0:
+        return "Unconfirmed"
+    return ""
+
+
+def bant_authority_of(contact_title, contact_email):
+    title = norm_str(contact_title).lower()
+    if not title:
+        return ""
+    if any(t in title for t in AUTHORITY_TITLES) and norm_str(contact_email):
+        return "Yes"
+    return "Unconfirmed"
+
+
+def bant_need_of(tms_in_use, private_fleet, capacity_source, under_contract):
+    filled = any(norm_str(v) for v in (tms_in_use, private_fleet, capacity_source, under_contract))
+    if not filled:
+        return ""
+    pain = (
+        norm_str(tms_in_use) == "Manual / No TMS"
+        or norm_str(capacity_source) in ("Broker/Spot", "Mixed")
+        or norm_str(under_contract).lower() == "no"
+    )
+    return "Yes" if pain else "No"
+
+
+def bant_timeline_of(contract_status):
+    status = norm_str(contract_status)
+    if not status:
+        return ""
+    return "Yes" if status in ("None", "Renewal <6mo") else "No"
+
+
+def bantc_status_of(budget, authority, need, timeline):
+    yes_count = sum(1 for v in (budget, authority, need, timeline) if v == "Yes")
+    if budget == "Yes" and authority == "Yes" and yes_count >= 3:
+        return "Qualified - Ready for SME"
+    if any((budget, authority, need, timeline)):
+        return "In Progress"
+    return "Not Started"
+
+
 def load_master(path):
     df = pd.read_excel(path, sheet_name="MASTER MEMBERS")
     df = df.loc[:, ~df.columns.duplicated()]
@@ -281,6 +373,14 @@ def build_merged_master(master_df, verified_df):
             rec.get("Freight_Relevant"), rec.get("Industry"), rec.get("Sub_Industry"),
             rec.get("Employees"), rec.get("CT_TTM_Spend"),
         )
+        rec["Category"] = category_of(rec.get("Freight_Relevant"))
+        rec["BANT_Budget"] = bant_budget_of(rec.get("Est_Freight_Spend"), rec.get("Confirmed_Freight_Spend"))
+        rec["BANT_Authority"] = bant_authority_of(rec.get("Contact_Title"), rec.get("Contact_Email"))
+        rec["BANT_Need"] = bant_need_of(rec.get("TMS_In_Use"), rec.get("Private_Fleet"),
+                                          rec.get("Capacity_Source"), rec.get("Under_Contract"))
+        rec["BANT_Timeline"] = bant_timeline_of(rec.get("Contract_Status"))
+        rec["BANTC_Status"] = bantc_status_of(rec["BANT_Budget"], rec["BANT_Authority"],
+                                                rec["BANT_Need"], rec["BANT_Timeline"])
         out_rows.append(rec)
 
     # Verified/freight-analysis rows that don't match any existing SFDC member are net-new
@@ -316,6 +416,14 @@ def build_merged_master(master_df, verified_df):
         rec["Spend_Bucket"] = spend_bucket_of(est)
         if not rec.get("Suggested_Supplier"):
             rec["Suggested_Supplier"] = supplier_of(rec["Spend_Bucket"])
+        rec["Category"] = category_of(rec.get("Freight_Relevant"))
+        rec["BANT_Budget"] = bant_budget_of(rec.get("Est_Freight_Spend"), rec.get("Confirmed_Freight_Spend"))
+        rec["BANT_Authority"] = bant_authority_of(rec.get("Contact_Title"), rec.get("Contact_Email"))
+        rec["BANT_Need"] = bant_need_of(rec.get("TMS_In_Use"), rec.get("Private_Fleet"),
+                                          rec.get("Capacity_Source"), rec.get("Under_Contract"))
+        rec["BANT_Timeline"] = bant_timeline_of(rec.get("Contract_Status"))
+        rec["BANTC_Status"] = bantc_status_of(rec["BANT_Budget"], rec["BANT_Authority"],
+                                                rec["BANT_Need"], rec["BANT_Timeline"])
         new_rows.append(rec)
 
     if new_rows:
@@ -400,6 +508,30 @@ def build_touchpoints(merged_df, verified_df):
     return rows
 
 
+def build_sme_handoff(merged_df):
+    """Seed the SME HANDOFF tab with every row that already cleared the BANTC
+    gate at generation time. This is the automatic trigger the qualification
+    call fires in practice: scripts/save_qualification.py (or the Save
+    Qualification / SME Handoff Copilot Studio flow) appends a row here the
+    moment a lead's BANTC_Status flips to Qualified - Ready for SME."""
+    sme_by_category = {row[0]: (row[1], row[2]) for row in SME_ROUTING}
+    rows = []
+    for _, m in merged_df.iterrows():
+        if m.get("BANTC_Status") != "Qualified - Ready for SME":
+            continue
+        sme_name, sme_email = sme_by_category.get(m.get("Category"), ("", ""))
+        rows.append({
+            "Lead_ID": m["Lead_ID"], "Company_Name": m["Company_Name"], "Category": m["Category"],
+            "BANTC_Status": m["BANTC_Status"], "Fit_Tier": m["Fit_Tier"],
+            "Est_Freight_Spend": m["Est_Freight_Spend"], "Contact_First": m["Contact_First"],
+            "Contact_Last": m["Contact_Last"], "Contact_Title": m["Contact_Title"],
+            "Contact_Email": m["Contact_Email"], "CT_Account_Manager": m["CT_Account_Manager"],
+            "SME_Name": sme_name, "SME_Email": sme_email, "Meeting_Requested_Date": TODAY,
+            "Meeting_Status": "Requested", "Meeting_Date": None, "Outcome": None, "Notes": None,
+        })
+    return rows
+
+
 VERIFIED_PATH_GLOBAL = None
 
 
@@ -472,6 +604,22 @@ def write_master_sheet(wb, merged_df):
     dv_capacity = DataValidation(type="list", formula1='"Broker/Spot,Mixed,Direct/Contracted,Private Fleet"', allow_blank=True)
     ws.add_data_validation(dv_capacity)
     dv_capacity.add(f"{COL_LETTER['Capacity_Source']}2:{COL_LETTER['Capacity_Source']}{nrows+2000}")
+
+    dv_bant = DataValidation(type="list", formula1='"Yes,No,Unconfirmed"', allow_blank=True)
+    ws.add_data_validation(dv_bant)
+    for c in ("BANT_Budget", "BANT_Authority", "BANT_Need", "BANT_Timeline"):
+        dv_bant.add(f"{COL_LETTER[c]}2:{COL_LETTER[c]}{nrows+2000}")
+
+    dv_category = DataValidation(type="list", formula1='"Logistics,Material Handling"', allow_blank=True)
+    ws.add_data_validation(dv_category)
+    dv_category.add(f"{COL_LETTER['Category']}2:{COL_LETTER['Category']}{nrows+2000}")
+
+    bantc_col = COL_LETTER["BANTC_Status"]
+    ws.conditional_formatting.add(f"{bantc_col}2:{bantc_col}{nrows}",
+        CellIsRule(operator="equal", formula=['"Qualified - Ready for SME"'],
+                   fill=PatternFill("solid", fgColor="FFD35400"), font=Font(color="FFFFFFFF", bold=True)))
+    ws.conditional_formatting.add(f"{bantc_col}2:{bantc_col}{nrows}",
+        CellIsRule(operator="equal", formula=['"In Progress"'], fill=PatternFill("solid", fgColor="FFC9922B")))
 
     tier_col = COL_LETTER["Fit_Tier"]
     tier_colors = {"A": "FF2E7D32", "B": "FFC9922B", "C": "FF5A6675", "D": "FFB0B8C1"}
@@ -552,6 +700,57 @@ def write_cadence_sheet(wb):
     ws.column_dimensions["A"].width = 8
     ws.column_dimensions["B"].width = 14
     ws.column_dimensions["C"].width = 22
+    ws.sheet_view.showGridLines = False
+    return ws
+
+
+def write_sme_routing_sheet(wb):
+    ws = wb.create_sheet("SME ROUTING")
+    ws.append(SME_ROUTING_SCHEMA)
+    for row in SME_ROUTING:
+        ws.append(list(row))
+    nrows = ws.max_row
+    add_table(ws, "SMERoutingTable", f"A1:D{nrows}", style="TableStyleMedium9")
+    style_header(ws, 4, {c: "FFD35400" for c in SME_ROUTING_SCHEMA})
+    ws.column_dimensions["A"].width = 20
+    ws.column_dimensions["B"].width = 20
+    ws.column_dimensions["C"].width = 24
+    ws.column_dimensions["D"].width = 60
+    ws.sheet_view.showGridLines = False
+    return ws
+
+
+def write_sme_handoff_sheet(wb, handoff_rows):
+    ws = wb.create_sheet("SME HANDOFF")
+    ws.append(SME_HANDOFF_SCHEMA)
+    for r in handoff_rows:
+        row = []
+        for c in SME_HANDOFF_SCHEMA:
+            v = r.get(c)
+            if isinstance(v, float) and pd.isna(v):
+                v = None
+            row.append(v)
+        ws.append(row)
+    nrows = ws.max_row
+    ref = f"A1:{get_column_letter(len(SME_HANDOFF_SCHEMA))}{nrows}"
+    add_table(ws, "SMEHandoffTable", ref, style="TableStyleMedium9")
+    style_header(ws, len(SME_HANDOFF_SCHEMA), {c: "FFD35400" for c in SME_HANDOFF_SCHEMA})
+    widths = {"Company_Name": 28, "Contact_Title": 24, "Contact_Email": 26, "SME_Name": 18,
+              "SME_Email": 22, "Notes": 30, "CT_Account_Manager": 20}
+    for c in SME_HANDOFF_SCHEMA:
+        ws.column_dimensions[SME_HANDOFF_LETTER[c]].width = widths.get(c, 16)
+
+    dv_status = DataValidation(type="list", formula1='"Requested,Scheduled,Completed,No Show,Declined"', allow_blank=True)
+    ws.add_data_validation(dv_status)
+    dv_status.add(f"{SME_HANDOFF_LETTER['Meeting_Status']}2:{SME_HANDOFF_LETTER['Meeting_Status']}2000")
+
+    status_col = SME_HANDOFF_LETTER["Meeting_Status"]
+    ws.conditional_formatting.add(f"{status_col}2:{status_col}{max(nrows,2000)}",
+        CellIsRule(operator="equal", formula=['"Requested"'], fill=PatternFill("solid", fgColor="FFD35400"), font=Font(color="FFFFFFFF", bold=True)))
+    ws.conditional_formatting.add(f"{status_col}2:{status_col}{max(nrows,2000)}",
+        CellIsRule(operator="equal", formula=['"Completed"'], fill=PatternFill("solid", fgColor="FF2E7D32"), font=Font(color="FFFFFFFF", bold=True)))
+
+    ws.freeze_panes = "B2"
     ws.sheet_view.showGridLines = False
     return ws
 
@@ -683,6 +882,87 @@ def write_kpi_dashboard(wb, stats):
     return ws
 
 
+def write_poc_scorecard(wb, stats):
+    """Target-vs-actual tracking for the 30-day proof of concept. Actuals are
+    live formulas over the named tables; targets are filled in only where the
+    project's own docs give a number (docs/CoreTrust_Aspirational_Investment_KPI_Proposal.md
+    section 5: "roughly fifteen qualified opportunities a month" at current
+    state) -- everywhere else the target cell is left for you to set once the
+    pilot window is picked (see docs/CoreTrust_POC_Implementation_Timeline.md),
+    rather than inventing a number that would look authoritative but isn't."""
+    ws = wb.create_sheet("POC SCORECARD")
+    ws["B2"] = "Proof of Concept Scorecard"
+    ws["B2"].font = Font(bold=True, size=16, color="FF1F3A5F")
+    ws["B3"] = ("Tracking is the point of a POC: this is the one place that says whether the pilot worked. "
+                "Set Pilot_Start / Pilot_End below, fill in any TBD target with your own number once you have "
+                "one, and read this tab at the weekly check-in alongside KPI DASHBOARD.")
+    ws["B3"].font = Font(italic=True, color="FF5A6675")
+    ws["B3"].alignment = Alignment(wrap_text=True)
+    ws.merge_cells("B3:F3")
+    ws.row_dimensions[3].height = 30
+
+    ws["B5"] = "Pilot_Start"; ws["C5"] = TODAY
+    ws["B6"] = "Pilot_End"; ws["C6"] = TODAY + datetime.timedelta(days=30)
+    ws["B7"] = "Days_Remaining"; ws["C7"] = '=MAX(0,C6-TODAY())'
+    for r in (5, 6, 7):
+        ws.cell(row=r, column=2).font = Font(bold=True)
+
+    headers = ["Metric", "Target", "Actual", "Source / note"]
+    hr = 9
+    for i, h in enumerate(headers):
+        cell = ws.cell(row=hr, column=2 + i, value=h)
+        cell.fill = PatternFill("solid", fgColor="FF1F3A5F")
+        cell.font = Font(color="FFFFFFFF", bold=True)
+
+    rows = [
+        ("Qualified opportunities in the pilot window", 15,
+         '=COUNTIFS(MasterTable[Qualified],"Yes",MasterTable[Last_Updated],">="&C5,MasterTable[Last_Updated],"<="&C6)',
+         "Target from the investment proposal's current-state estimate (~15/month, one rep + agent)."),
+        ("SME meetings requested", "TBD", "=COUNTA(SMEHandoffTable[Lead_ID])",
+         "Every BANTC-qualified lead should produce one row on SME HANDOFF."),
+        ("SME meetings completed", "TBD", '=COUNTIF(SMEHandoffTable[Meeting_Status],"Completed")',
+         "Set a target once you know the SME's typical calendar capacity."),
+        ("Reply rate", "TBD",
+         '=IFERROR(COUNTIF(TouchTable[Reply_Received],"Yes")/COUNTA(TouchTable[Lead_ID]),"")',
+         "No documented baseline yet -- this pilot sets one."),
+        ("Verified contacts on hand", "TBD", '=COUNTIF(MasterTable[Contact_Email],"*@*")',
+         "1,050 verified across the full freight analysis per the investment proposal; this workbook starts "
+         "with far fewer until the real freight-analysis file is merged in."),
+        ("Cost per qualified opportunity", "TBD", "TBD (manual)",
+         "Needs your own cost basis (rep time, any tool spend) -- not something the workbook can compute alone."),
+    ]
+    r = hr + 1
+    for metric, target, actual, note in rows:
+        ws.cell(row=r, column=2, value=metric)
+        ws.cell(row=r, column=3, value=target)
+        ws.cell(row=r, column=4, value=actual)
+        ws.cell(row=r, column=5, value=note)
+        r += 1
+
+    ws.column_dimensions["B"].width = 40
+    ws.column_dimensions["C"].width = 14
+    ws.column_dimensions["D"].width = 14
+    ws.column_dimensions["E"].width = 60
+    for row in ws.iter_rows(min_row=hr + 1, max_row=r - 1, min_col=5, max_col=5):
+        for cell in row:
+            cell.alignment = Alignment(wrap_text=True, vertical="top")
+
+    gate_r = r + 2
+    ws.cell(row=gate_r, column=2, value="Go / No-Go, from the investment proposal's own ask").font = Font(bold=True, size=13, color="FF1F3A5F")
+    for i, line in enumerate([
+        "Approve the Salesforce connector (Power Automate Premium, ~$15/user/month) once speed-to-lead matters.",
+        "Activate the ZoomInfo API on seats already held -- Fit v3's own actionability component says reachability, not freight size, is the binding constraint.",
+        "Fund one PE-focused enrichment tool (Grata preferred, ~$155K/yr; Cyndx as the lower-cost alternative, ~$45K/yr) if the portfolio-mapping multiplier proves out in the pilot.",
+        "Hold Apollo and premium automation for later unless the pilot shows a specific gap they'd close.",
+    ], start=1):
+        ws.cell(row=gate_r + i, column=2, value=f"{i}. {line}")
+        ws.cell(row=gate_r + i, column=2).alignment = Alignment(wrap_text=True)
+        ws.merge_cells(start_row=gate_r + i, start_column=2, end_row=gate_r + i, end_column=5)
+
+    ws.sheet_view.showGridLines = False
+    return ws
+
+
 def write_readme(wb, stats, matched, inserted):
     ws = wb.create_sheet("READ ME")
     lines = [
@@ -741,10 +1021,19 @@ def write_data_dictionary(wb):
         "Fit_Tier": "A>=70 B>=55 C>=40 D. Never overwrite by hand.",
         "Priority": "HOT (tier A) / WARM (tier B) / COLD (tier C or D), auto from Fit_Tier",
         "Service_Fit": "rule-based tags from industry + engagement: LTL/FTL/Retail Cross Dock/Brokerage",
+        "Category": "Which CoreTrust category this opportunity belongs to. Logistics only today -- "
+                    "Material Handling is scored once that category's ICPs/signals are provided (see docs).",
+        "BANT_Budget": "Yes if Confirmed_Freight_Spend>0 or Est_Freight_Spend>=$1M, Unconfirmed if smaller/unverified, blank if unknown",
+        "BANT_Authority": "Yes if Contact_Title reads as a decision-maker AND a verified email is on file, Unconfirmed if titled but not clearly senior, blank with no title",
+        "BANT_Need": "Yes if the qualification call's markers (TMS/capacity/contract) show a pain signal, No if they show a well-optimized shipper, blank until the call happens",
+        "BANT_Timeline": "Yes if Contract_Status is None or Renewal <6mo (a real trigger), No if Locked, blank until known",
+        "BANTC_Status": "Not Started / In Progress / Qualified - Ready for SME. The last state is the trigger: run "
+                        "scripts/save_qualification.py (or the Save Qualification flow) to log it on SME HANDOFF.",
         "Qualified": "Yes once the five markers plus the discipline gate pass",
     }
     group_label = {"record": "Record", "company": "Company", "contact": "Contact", "markers": "Markers 1-5",
-                   "score_inputs": "Score inputs", "computed": "Scoring, GREEN, computed", "outcome": "Outcome"}
+                   "score_inputs": "Score inputs", "computed": "Scoring, GREEN, computed",
+                   "bantc": "BANTC qualification", "outcome": "Outcome"}
     for c, g in SCHEMA:
         ws.append([c, group_label[g], notes.get(c)])
     ws.column_dimensions["A"].width = 26
@@ -781,18 +1070,25 @@ def main():
     touch_rows = build_touchpoints(merged_df, verified_df)
     print(f"  {len(touch_rows)} seed touchpoint rows")
 
+    handoff_rows = build_sme_handoff(merged_df)
+    print(f"  {len(handoff_rows)} accounts already clear the BANTC gate and are seeded on SME HANDOFF")
+
     print("Writing workbook...")
     wb = Workbook()
     wb.remove(wb.active)
     write_master_sheet(wb, merged_df)
     write_touch_sheet(wb, touch_rows)
     write_cadence_sheet(wb)
+    write_sme_routing_sheet(wb)
+    write_sme_handoff_sheet(wb, handoff_rows)
     _, stats = write_summary_sheet(wb, merged_df)
     write_kpi_dashboard(wb, stats)
+    write_poc_scorecard(wb, stats)
     write_readme(wb, stats, matched, inserted)
     write_data_dictionary(wb)
 
-    order = ["MASTER MEMBERS", "TOUCHPOINTS", "CADENCE", "KPI DASHBOARD", "SUMMARY", "READ ME", "Data Dictionary"]
+    order = ["MASTER MEMBERS", "TOUCHPOINTS", "CADENCE", "SME ROUTING", "SME HANDOFF", "KPI DASHBOARD",
+              "POC SCORECARD", "SUMMARY", "READ ME", "Data Dictionary"]
     wb._sheets.sort(key=lambda ws: order.index(ws.title))
     wb.active = 0
 

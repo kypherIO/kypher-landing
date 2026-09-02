@@ -21,6 +21,24 @@ kypher.cc {
 		-Server
 	}
 
+	# CoreTrust Lead Gen — private, password-gated, kept out of the public
+	# site root on purpose (real company/contact records live under here).
+	# Served from its own directory (/var/www/coretrust-leadgen), never from
+	# /var/www/biblebot, so the public file_server below can never reach it.
+	# See deploy/DEPLOY_CORETRUST.md for setup, including where the password
+	# hash actually lives (not in this file, and not in git).
+	handle_path /coretrust-leadgen/* {
+		basic_auth {
+			rod {$CORETRUST_AUTH_HASH}
+		}
+		header {
+			X-Robots-Tag "noindex, nofollow, noarchive"
+			Cache-Control "private, no-store"
+		}
+		root * /var/www/coretrust-leadgen
+		file_server browse
+	}
+
 	# Bible text and map data never change without a filename change —
 	# cache them hard. Everything else revalidates.
 	@immutable path /data/* /icons/* /social-card.png
