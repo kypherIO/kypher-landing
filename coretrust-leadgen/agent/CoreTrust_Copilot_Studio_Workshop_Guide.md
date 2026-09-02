@@ -128,9 +128,13 @@ reason a first build stalls halfway through.
   "Business" data group) or flows will fail silently on publish. Ask your
   admin to check if you hit this — the symptom is a flow that saves fine
   but errors the moment you try to turn it on.
-- [ ] **`CoreTrust_Master_Members.xlsx` is already in OneDrive**, per the
-  root `README.md`'s "Where the file lives" section, and you've opened it
-  once in desktop Excel or Excel Online (so its formulas have cached
+- [ ] **`CoreTrust_Master_Members.xlsx` is already in OneDrive *for
+  Business*** (not personal/consumer OneDrive -- the Excel Online
+  (Business) connector Workshop 2 sets up won't see a personal OneDrive
+  file at all; see `../ONEDRIVE_HOSTING_GUIDE.md` Part 0 if you're not
+  sure which one you have), per the root `README.md`'s "Where the file
+  lives" section, and you've opened it once in desktop Excel or Excel
+  Online (so its formulas have cached
   values — see that README section for why this matters).
 - [ ] **You've read `docs/CoreTrust_Fit_v3_Scoring_Methodology.md`** and
   the BANTC section of the root README. You don't need to memorize the

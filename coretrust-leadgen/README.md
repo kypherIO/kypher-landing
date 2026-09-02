@@ -91,6 +91,11 @@ docs/
   CoreTrust_POC_Implementation_Timeline.md        The phased pilot plan --
                                                     start here for "what do
                                                     I do, in what order."
+ONEDRIVE_HOSTING_GUIDE.md   The full OneDrive setup -- folder structure,
+                             Files On-Demand, sharing, version history/
+                             backup, conflict handling, mobile access,
+                             troubleshooting. "Where the file lives" below
+                             is the condensed version.
 ```
 
 The repo root also has `deploy/Caddyfile`, `deploy/update-coretrust.sh`,
@@ -100,8 +105,13 @@ below.
 
 ## Where the file lives (OneDrive only, no SharePoint)
 
-This is a personal OneDrive setup on purpose -- no SharePoint site, no team
-drive to provision, just a folder and a shareable link.
+This is a OneDrive-for-Business setup on purpose -- no SharePoint team
+site to provision, just your own OneDrive folder and a shareable link.
+**For the full setup** -- folder structure, Files On-Demand gotchas that
+break the local scripts, version history/backup, avoiding write conflicts
+between the agent's flows and your own edits, mobile access, and a
+troubleshooting table -- see `ONEDRIVE_HOSTING_GUIDE.md` in this folder's
+root. The steps below are the condensed version.
 
 1. Create a folder in your OneDrive: `CoreTrust Lead Gen/`.
 2. Copy `data/CoreTrust_Master_Members.xlsx` (and, if you want them handy,
