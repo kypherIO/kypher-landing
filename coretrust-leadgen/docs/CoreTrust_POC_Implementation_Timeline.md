@@ -26,11 +26,17 @@ not a repo task) and on running the pilot.
 
 ## Phase 1 -- Agent build (Week 1)
 
+First time in Copilot Studio? Work this phase as
+`agent/CoreTrust_Copilot_Studio_Workshop_Guide.md` Workshops 0-6 instead of
+the compressed table below -- same outcome, with checkpoints at each step
+so a stall is caught the day it happens, not on Day 5.
+
 | Day | Task | Done when |
 |---|---|---|
-| 1-2 | Build the agent shell, paste Agent Instructions v3, upload Knowledge (`agent/Copilot_Studio_Flow_Build_Guide.md`'s setup steps 1-4). | Agent responds to "who should I call today" with *something*, even before flows exist. |
+| 1-2 | Build the agent shell, paste Agent Instructions v3, upload Knowledge (`agent/Copilot_Studio_Flow_Build_Guide.md`'s setup steps 1-4, or Workshops 0-1 of the workshop guide). | Agent responds to "who should I call today" with *something*, even before flows exist. |
 | 2-4 | Build all six flows per `agent/Copilot_Studio_Flow_Build_Guide.md`, in the order it recommends (Get Today List, Draft Email, Log Touch, Save Qualification, Export For Salesforce, Nightly Enrichment last). | Each flow passes its own test-pane run once, using a real `Lead_ID` from the workbook. |
-| 5 | Run the guide's six-step test plan end to end with 5-10 real accounts. | Five members answered correctly, ten New rows enriched without touching green columns, three emails drafted and logged, follow-up list returns the right accounts, one CSV export test-imports into a Salesforce sandbox. |
+| 5 | Run the guide's six-step test plan end to end with 5-10 real accounts (or the workshop guide's 8-row formal QA table, Workshop 6). | Five members answered correctly, ten New rows enriched without touching green columns, three emails drafted and logged, follow-up list returns the right accounts, one CSV export test-imports into a Salesforce sandbox. |
+| 5 | Publish and connect the Teams channel (workshop guide, Workshop 7). | Rep can reach the agent from Teams, not just the maker test pane. |
 
 **Tracked:** none yet -- this phase is infrastructure, not pipeline. The
 first real entry on `POC SCORECARD` is Phase 3, Day 1.

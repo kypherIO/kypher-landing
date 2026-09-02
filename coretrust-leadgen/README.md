@@ -58,6 +58,12 @@ scripts/
                               KPI DASHBOARD history log. Run weekly.
   requirements.txt            pandas + openpyxl.
 agent/
+  CoreTrust_Copilot_Studio_Workshop_Guide.md    Start here if you've never
+                                                 used Copilot Studio -- nine
+                                                 workshops from a blank
+                                                 environment to the full
+                                                 agent, with checkpoints and
+                                                 a team-training agenda.
   CoreTrust_LeadGen_Agent_Instructions_v3.md   Paste into Copilot Studio's
                                                  Instructions field.
   CoreTrust_Enrichment_Prompts_v2.md            The nine prompts the agent
@@ -65,7 +71,9 @@ agent/
                                                  can paste them into topics.
   Copilot_Studio_Flow_Build_Guide.md            Card-by-card build steps for
                                                  the six flows, including the
-                                                 BANTC/SME-handoff extension.
+                                                 BANTC/SME-handoff extension
+                                                 -- the fast reference the
+                                                 workshop guide points to.
 dashboard/
   CoreTrust_Activity_Dashboard.html   Open in any browser. Load a MASTER
                                        MEMBERS export for demand-gen tiles,
@@ -175,6 +183,16 @@ and/or TOUCHPOINTS (File > Save a Copy > CSV in Excel, one tab at a time) to
 see it populate with real numbers instead of the demo data.
 
 ## Setting up the Copilot Studio agent
+
+**Never built anything in Copilot Studio before?** Use
+`agent/CoreTrust_Copilot_Studio_Workshop_Guide.md` instead of the steps
+below -- it's the same build, broken into nine hands-on workshops (0-8)
+with a checkpoint after each one, prerequisites/licensing/DLP checks up
+front, and a facilitator's agenda if you're training more than yourself.
+It also covers publishing to Teams and ongoing monitoring, which the quick
+version below doesn't.
+
+The quick version, if you already know Copilot Studio:
 
 1. Follow `docs/CoreTrust_Master_AIAgent_Build_Guide.md` section 2 to create
    the agent shell (generative orchestration on, web search on, moderation
