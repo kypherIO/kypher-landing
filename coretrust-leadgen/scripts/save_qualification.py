@@ -15,6 +15,14 @@ Usage:
         --tms "Optimized TMS" --contract-status "Renewal <6mo" \
         --capacity-source "Broker/Spot" --private-fleet No --under-contract Yes \
         --confirmed-freight-spend 4200000
+
+Also applies the SDR Playbook's "Retry, Nurture, and Recycle Rules" (a
+disposition reason on TOUCHPOINTS, never a deleted record) via --disposition:
+
+    python3 save_qualification.py --lead CT-00001 --disposition "Nonbuyer - suppress"
+    python3 save_qualification.py --lead CT-00001 --disposition "New trigger - recycle"
+    python3 save_qualification.py --lead CT-00001 --disposition "Timing not right - dated follow-up" \
+        --followup-date 2026-11-01
 """
 import argparse
 import datetime
@@ -36,6 +44,12 @@ MARKER_ARGS = {
 
 AUTHORITY_TITLES = ("vp", "vice president", "director", "chief", "svp", "evp", "president",
                     "head of", "cfo", "coo", "ceo", "cpo", "owner", "partner")
+
+DISPOSITION_REASONS = [
+    "Nonbuyer - suppress", "No response after 8 touches - nurture",
+    "Timing not right - dated follow-up", "New trigger - recycle",
+    "Disqualified - BANTC gate failed", "Other",
+]
 
 
 def norm_str(v):
@@ -117,6 +131,10 @@ def main():
     ap.add_argument("--capacity-source", choices=["Broker/Spot", "Mixed", "Direct/Contracted", "Private Fleet"])
     ap.add_argument("--private-fleet", choices=["Yes", "No"])
     ap.add_argument("--confirmed-freight-spend", type=float)
+    ap.add_argument("--disposition", choices=DISPOSITION_REASONS,
+                     help="Apply a Retry/Nurture/Recycle disposition. Never deletes the record.")
+    ap.add_argument("--followup-date", help="YYYY-MM-DD, used with --disposition "
+                     "'Timing not right - dated follow-up'.")
     ap.add_argument("--file", default=str(DEFAULT_FILE))
     args = ap.parse_args()
 
@@ -204,6 +222,48 @@ def main():
         else:
             handoff.cell(row=h_row, column=h_idx["BANTC_Status"], value=status)
             print(f"  -> Already on SME HANDOFF (row {h_row}); status refreshed.")
+
+    if args.disposition:
+        touch = wb["TOUCHPOINTS"]
+        t_idx = sheet_index(touch)
+        t_row = find_row(touch, t_idx, "Lead_ID", args.lead)
+        if t_row is None:
+            # Applying a disposition to a lead with no TOUCHPOINTS row yet (e.g.
+            # disqualifying before a single touch went out) -- add a minimal row
+            # rather than silently doing nothing.
+            t_row = touch.max_row + 1
+            touch.cell(row=t_row, column=t_idx["Lead_ID"], value=args.lead)
+            touch.cell(row=t_row, column=t_idx["Company_Name"], value=mget("Company_Name"))
+            touch.cell(row=t_row, column=t_idx["Fit_Tier"], value=mget("Fit_Tier"))
+            touch.cell(row=t_row, column=t_idx["Cadence_Step"], value=1)
+            touch.cell(row=t_row, column=t_idx["Total_Touches"], value=0)
+            expand_table(touch, "TouchTable", t_row)
+
+        touch.cell(row=t_row, column=t_idx["Disposition_Reason"], value=args.disposition)
+
+        if args.disposition == "Nonbuyer - suppress":
+            touch.cell(row=t_row, column=t_idx["Cadence_Status"], value="Suppressed")
+            mset("Record_Status", "Disqualified")
+            mset("Qualified", "No")
+        elif args.disposition == "Disqualified - BANTC gate failed":
+            touch.cell(row=t_row, column=t_idx["Cadence_Status"], value="Suppressed")
+            mset("Record_Status", "Disqualified")
+            mset("Qualified", "No")
+        elif args.disposition == "No response after 8 touches - nurture":
+            touch.cell(row=t_row, column=t_idx["Cadence_Status"], value="Nurture")
+        elif args.disposition == "New trigger - recycle":
+            # Re-enter the cadence from the top, per the playbook: reset the step,
+            # go back to Active. The record was never deleted, so nothing else to undo.
+            touch.cell(row=t_row, column=t_idx["Cadence_Status"], value="Active")
+            touch.cell(row=t_row, column=t_idx["Cadence_Step"], value=1)
+        elif args.disposition == "Timing not right - dated follow-up":
+            touch.cell(row=t_row, column=t_idx["Cadence_Status"], value="Nurture")
+            if args.followup_date:
+                touch.cell(row=t_row, column=t_idx["Scheduled_Followup_Date"],
+                           value=datetime.date.fromisoformat(args.followup_date))
+
+        print(f"  -> Disposition set: {args.disposition}"
+              + (f", follow-up scheduled {args.followup_date}" if args.followup_date else ""))
 
     wb.save(path)
     print(f"Saved {path}")

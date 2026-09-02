@@ -240,7 +240,8 @@ flow, and your Excel Online (Business) connection is ready for Workshop 3.
    Design** tab (appears when a cell inside a table is selected), and
    confirm the **Table Name** field reads exactly `MasterTable`. Repeat for
    TOUCHPOINTS (`TouchTable`), CADENCE (`CadenceTable`), SME ROUTING
-   (`SMERoutingTable`), and SME HANDOFF (`SMEHandoffTable`). `scripts/
+   (`SMERoutingTable`), SME HANDOFF (`SMEHandoffTable`), and LEARNING NOTES
+   (`LearningNotesTable`) — six tabs, six tables. `scripts/
    fitv3_pipeline.py` already builds them this way — this step is just
    confirming nothing got renamed or re-saved into a plain range along the
    way.
@@ -354,7 +355,10 @@ For each flow:
   the flow in Power Automate and use **Run > Test > Manually** to fire it
   once immediately. Confirm it processes New/Enriching rows and doesn't
   touch any green computed column (spot-check a row's `Fit_v3_Score`
-  before and after — it must be identical).
+  before and after — it must be identical), and confirm a new row landed
+  on `LEARNING NOTES` (the flow's last step) with today's date and
+  something in all three of `Best_Sources`/`Titles_That_Replied`/
+  `Angles_That_Worked` — not just one filled in and two blank.
 
 **Checkpoint (end of workshop):** all six tools listed under Copilot
 Studio's Tools pane, each with its sharp description, each individually
@@ -422,8 +426,9 @@ that" later.
 | 4 | Ask "who do I need to follow up with?" | Returns accounts flagged FOLLOW UP or OVERDUE on TOUCHPOINTS, ordered by tier then spend bucket. |
 | 5 | Qualify one lead all the way through BANTC to "Qualified - Ready for SME." | A row appears on SME HANDOFF, `SME_Name` populated from SME ROUTING, `Meeting_Status`="Requested". |
 | 6 | Run the Salesforce export. | CSV headers match the sample file exactly; `Last Name` fallback to "Unknown" works for a blank-name test row; `Rating` maps A→Hot, B→Warm, C/D→Cold. |
-| 7 | Fire Nightly Enrichment manually once. | Runs without error against the current New/Enriching backlog; a spot-checked row's Fit v3 score is unchanged before/after. |
+| 7 | Fire Nightly Enrichment manually once. | Runs without error against the current New/Enriching backlog; a spot-checked row's Fit v3 score is unchanged before/after; a new row lands on LEARNING NOTES. |
 | 8 | Ask a question about a K-12, non-US, PE/VC, and transportation-company record (one of each). | Each is correctly declined with the specific exclusion reason, never scored or pitched. |
+| 9 | Log 8 touches for one test lead with `Reply_Received` left "No" the whole time (`log_touch.py --lead <id> --channel Email` run 8 times is the fastest way, or the equivalent through the agent). | `Nurture_Suggested` on that row reads "Move to Nurture" after the 8th touch, not before. |
 
 **Checkpoint:** all 8 rows pass. If any fail, fix and re-run *that row
 only* before moving on — don't re-run the whole table for one fix, it

@@ -12,12 +12,19 @@ platform to buy to start. Tracking is treated as the deliverable, not an
 afterthought: see `POC SCORECARD` and `KPI DASHBOARD` on the workbook, and
 `docs/CoreTrust_POC_Implementation_Timeline.md` for the phased rollout.
 
-If you only read one thing: `docs/CoreTrust_SDR_Playbook.md`. It's the
-canonical operating playbook -- the cadence, the KPI targets, the phase
-timeline, and the nurture/recycle rules everywhere else in this repo are
-built to match it exactly, not the other way around. This README is the
-"how do I actually run it" companion; `docs/CoreTrust_LeadGen_MASTER_Handoff.md`
-has the fuller business case and data model narrative.
+**Deploying this for the first time? Start at `DEPLOYMENT_GUIDE.md`, not
+here** -- it's the single linear checklist from "I have this repo" to
+"the agent is live in Teams and verified," with prerequisites, an actual
+tested OneDrive-path verification, and a go-live sign-off. This README is
+the reference companion: file map, the operating rhythm once you're
+running, and how the pieces fit together.
+
+If you only read one narrative doc: `docs/CoreTrust_SDR_Playbook.md`.
+It's the canonical operating playbook -- the cadence, the KPI targets, the
+phase timeline, and the nurture/recycle rules everywhere else in this
+repo are built to match it exactly, not the other way around.
+`docs/CoreTrust_LeadGen_MASTER_Handoff.md` has the fuller business case
+and data model narrative.
 
 **The short version of what "quality lead" means here:** Fit v3 answers
 *who's worth calling* (freight budget + CoreTrust relationship + reach).
@@ -56,8 +63,10 @@ scripts/
   save_qualification.py       Save the five qualification markers, compute
                               BANTC, and -- the moment a lead clears the
                               gate -- log it to SME HANDOFF routed to the
-                              right category SME. Offline version of the
-                              extended Save Qualification flow.
+                              right category SME. Also applies Retry/
+                              Nurture/Recycle dispositions (--disposition).
+                              Offline version of the extended Save
+                              Qualification flow.
   weekly_kpi_snapshot.py      Append this week's demand-gen numbers to the
                               KPI DASHBOARD history log. Run weekly.
   requirements.txt            pandas + openpyxl.
@@ -109,6 +118,12 @@ ONEDRIVE_HOSTING_GUIDE.md   The full OneDrive setup -- folder structure,
                              backup, conflict handling, mobile access,
                              troubleshooting. "Where the file lives" below
                              is the condensed version.
+DEPLOYMENT_GUIDE.md         Start here for a first deployment: the single
+                             linear checklist from clone to a verified,
+                             published, Teams-connected agent -- ties
+                             every guide above together in build order,
+                             including an actually-tested OneDrive-path
+                             verification (not just an assurance).
 ```
 
 The repo root also has `deploy/Caddyfile`, `deploy/update-coretrust.sh`,

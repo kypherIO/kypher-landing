@@ -36,12 +36,12 @@ gates.
    `README.md`, "Where the file lives" -- this build is OneDrive-only, no
    SharePoint site required). Every flow points at that one file and never
    a local copy.
-2. Confirm the five tables exist and are named exactly `MasterTable`,
-   `TouchTable`, `CadenceTable`, `SMERoutingTable`, `SMEHandoffTable` --
-   open the file, click inside each range, check the Table Design tab.
-   `scripts/fitv3_pipeline.py` already builds them with the right names; if
-   the table-picker in a flow shows nothing, this is the first thing to
-   check (see Gotchas below).
+2. Confirm all six tables exist and are named exactly `MasterTable`,
+   `TouchTable`, `CadenceTable`, `SMERoutingTable`, `SMEHandoffTable`, and
+   `LearningNotesTable` -- open the file, click inside each range, check
+   the Table Design tab. `scripts/fitv3_pipeline.py` already builds them
+   with the right names; if the table-picker in a flow shows nothing,
+   this is the first thing to check (see Gotchas below).
 3. In Power Automate (make.powerautomate.com), confirm you can see
    **Excel Online (Business)** and **Office 365 Outlook** connectors under
    your account -- both ship with standard M365 licensing, no premium
@@ -195,6 +195,25 @@ Authority comes from the contact already on file. There is no new data to
 collect -- BANTC is a second read of the same qualification call, so
 splitting it into a separate agent-callable flow would just mean asking
 the rep the same questions twice.
+
+**Optional extension -- Retry, Nurture, and Recycle (the playbook's own
+rules):** add a `Disposition` input to this same flow (one of the six
+strings the `Disposition_Reason` dropdown on `TouchTable` accepts --
+`scripts/save_qualification.py`'s `DISPOSITION_REASONS` has the exact
+list) and a **Switch** after step 10 that writes it to `TouchTable` and
+does the matching state change: `Nonbuyer - suppress` or
+`Disqualified - BANTC gate failed` -> `Cadence_Status`="Suppressed" on
+`TouchTable` *and* `Record_Status`="Disqualified", `Qualified`="No" on
+`MasterTable`; `No response after 8 touches - nurture` ->
+`Cadence_Status`="Nurture"; `New trigger - recycle` ->
+`Cadence_Status`="Active" and `Cadence_Step`=1 (re-enters the cadence from
+the top); `Timing not right - dated follow-up` -> `Cadence_Status`=
+"Nurture" plus a `Scheduled_Followup_Date` input written through. This is
+optional for a first build -- `save_qualification.py` already does all of
+this locally, and the rep can set `Disposition_Reason` by hand in Excel in
+the meantime -- but wiring it into the flow means the agent can do it
+conversationally ("suppress this one, they told me they went with a
+competitor") instead of the rep switching to the spreadsheet.
 
 ---
 
