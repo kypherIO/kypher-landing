@@ -153,12 +153,16 @@ root. The steps below are the condensed version.
    `C:\Users\you\OneDrive\CoreTrust Lead Gen\CoreTrust_Master_Members.xlsx`
    on Windows, or the equivalent under `~/OneDrive` / `~/Library/CloudStorage`
    on Mac).
-3. **Access via hyperlink:** in OneDrive (web or desktop), right-click the
-   file -> **Share** -> **Copy link**. Set it to "People with the link can
-   view" (or "can edit" for your own use) rather than a SharePoint-style
-   site invite -- that link is what you hand to anyone who needs the file
-   without giving them a OneDrive folder tour. The same works for the
-   dashboard HTML file, so a link opens it straight in the browser.
+3. **Access via hyperlink, for the workbook:** in OneDrive (web or
+   desktop), right-click the file -> **Share** -> **Copy link**. Set it to
+   "People with the link can view" (or "can edit" for your own use)
+   rather than a SharePoint-style site invite -- that link opens the
+   workbook live in Excel Online. **This does not work the same way for
+   the dashboard HTML file** -- OneDrive doesn't render raw `.html` files
+   from a share link (it shows source code or forces a download, not a
+   running page); see `ONEDRIVE_HOSTING_GUIDE.md` Part 5 for exactly why,
+   and use the VPS mirror (`deploy/DEPLOY_CORETRUST.md`) if you need a
+   link that actually opens the dashboard rendered.
 4. Everything else in this repo (`scripts/`, `agent/`, `docs/`,
    `dashboard/`) can live wherever you keep code -- only the workbook (and
    optionally the dashboard/CSV) needs to be inside the synced OneDrive

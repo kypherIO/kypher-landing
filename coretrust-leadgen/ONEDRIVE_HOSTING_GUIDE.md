@@ -4,8 +4,10 @@
 ## matters more than any other
 
 Everything in this deliverable that needs to be *live* -- the workbook
-Copilot Studio reads and writes, the dashboard you open by hyperlink, the
-CSV exports -- lives in one OneDrive folder. Everything that's *code* --
+Copilot Studio reads and writes, the dashboard (open it locally or via
+the VPS mirror -- see Part 5's callout on why a plain OneDrive link
+doesn't render it), the CSV exports -- lives in one OneDrive folder.
+Everything that's *code* --
 the pipeline script, the local helper scripts, the agent instructions, the
 docs -- lives in this git repo and only needs to exist on whatever machine
 you run Python from. This guide is entirely about the first category.
@@ -28,16 +30,15 @@ email. If the top-left shows your organization's name/logo and the URL
 after signing in contains `-my.sharepoint.com`, that's OneDrive for
 Business -- the right one. If it's just `onedrive.live.com` with no
 organization branding, that's personal OneDrive, and the setup below needs
-a different account before Copilot Studio's flows will work (the
-dashboard and workbook still open fine from a personal OneDrive link,
-manually -- it's specifically the automated flows that require OneDrive
-for Business).
+a different account before Copilot Studio's flows will work -- it's
+specifically the automated flows that require OneDrive for Business.
 
 **Fallback if you genuinely only have personal OneDrive and no CoreTrust
 M365 work account with Copilot Studio access:** the workbook and dashboard
-still work perfectly as files you open, edit by hand, and run the
-`scripts/*.py` helpers against locally -- see `README.md`'s weekly cadence
-for what that looks like without the six Copilot Studio flows. You lose
+still work perfectly as files you download and open by hand, and you can
+run the `scripts/*.py` helpers against your local copy -- see
+`README.md`'s weekly cadence for what that looks like without the six
+Copilot Studio flows. You lose
 the agent, not the tracking.
 
 Everything past this point assumes OneDrive for Business.
@@ -55,7 +56,9 @@ need to exist on your own machine.
 OneDrive (CoreTrust)/
 └── CoreTrust Lead Gen/
     ├── CoreTrust_Master_Members.xlsx      <- the one file everything reads/writes
-    ├── CoreTrust_Activity_Dashboard.html  <- open by hyperlink, no server needed
+    ├── CoreTrust_Activity_Dashboard.html  <- download and open locally, or
+    │                                        use the VPS mirror for a real
+    │                                        clickable link (Part 5)
     ├── Exports/                            <- Flow 5 (Export For Salesforce) writes here
     │   └── (CoreTrust_SFDC_Import_*.csv, one per export, dated)
     └── Archive/                            <- your own periodic backups, see Part 6
@@ -190,7 +193,13 @@ Part 7 covers -- cheaper to just close it first.
 
 ## Part 5 -- Sharing by hyperlink (no SharePoint site, no email invite tour)
 
-This is the "access via hyperlink" requirement, done properly:
+**This works reliably for the workbook. It does not work the same way for
+the dashboard HTML file -- read the callout below before assuming a link
+to the dashboard "just opens" for whoever you send it to.**
+
+The workbook is straightforward: OneDrive natively previews and edits
+`.xlsx` files in the browser (Excel Online), so a share link opens it as
+a real, interactive spreadsheet. Steps:
 
 1. In OneDrive (web or desktop), **right-click the file > Share.**
 2. Click the link-type dropdown (default is usually "People in
@@ -219,6 +228,39 @@ This is the "access via hyperlink" requirement, done properly:
 **Checkpoint:** open the link in a private/incognito browser window while
 signed out (or from a different account) -- confirm it correctly prompts
 for CoreTrust sign-in rather than opening for anyone.
+
+**The dashboard HTML file is a different case, and the honest answer is
+that a OneDrive share link to it will not reliably render as a live,
+interactive page.** OneDrive's browser preview only renders a specific
+set of file types (Office documents, PDFs, images, video). A raw `.html`
+file isn't one of them -- sharing its link typically either shows the
+**raw HTML source as text** or **prompts a download**, rather than
+executing the page's JavaScript. This isn't a bug or a settings problem
+to fix: Microsoft deliberately doesn't execute arbitrary uploaded
+JavaScript under a trusted `onedrive.live.com`/`sharepoint.com` origin,
+since doing so would let anyone who can upload a file run script under a
+domain the browser (and any logged-in session) trusts. The dashboard's
+canvas charts, CSV loader, and computed tiles all depend on that
+JavaScript actually running, so a source-code view or a forced download
+doesn't give the recipient a working dashboard.
+
+Two ways to actually get "click a link, the dashboard renders":
+
+1. **The VPS mirror** (`deploy/DEPLOY_CORETRUST.md`, repo root) -- a real
+   web server (Caddy) serves the file with the correct content type and
+   no sandboxing, so it renders exactly like any other website. This is
+   the recommended path if you need a clickable link at all; it's
+   password-gated and excluded from search indexing.
+2. **Download and open locally.** The recipient downloads the `.html`
+   file from OneDrive (not previews it) and double-clicks it -- opening a
+   local file directly in a browser (a `file://` URL) does execute its
+   JavaScript normally, since that trust boundary doesn't apply to files
+   already on your own disk. This works, but it's "send the file," not
+   "send a link that just opens."
+
+The workbook doesn't have this problem -- Excel Online is a genuine
+rendering surface for `.xlsx`, so its share link behaves the way you'd
+expect.
 
 ---
 
