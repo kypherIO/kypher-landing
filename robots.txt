@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /coretrust-leadgen/
 
 Sitemap: https://kypher.cc/sitemap.xml
